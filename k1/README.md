@@ -5,6 +5,10 @@ of the Proactive Cooking Assistance system.
 
 Design spec: [`../Notes/08-k1-pipeline.md`](../Notes/08-k1-pipeline.md)
 Evaluation protocol: [`../Notes/09-k1-evaluation.md`](../Notes/09-k1-evaluation.md)
+Open work, concerns, and status: [`TODO.md`](TODO.md)
+
+> **Before running:** two blocking bugs are open (temperature regex false positives, and
+> REQUIRES edge cycles that abort `k1 validate`). See Section A of [`TODO.md`](TODO.md).
 
 ## Quick start
 

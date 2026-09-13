@@ -12,6 +12,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Root `CHANGELOG.md` (this file)
 - `Notes/08-k1-pipeline.md` — K1 pipeline design spec
 - `Notes/09-k1-evaluation.md` — evaluation protocol and bias controls
+- `k1/TODO.md` — open work, known bugs, and verified status
+
+### Known issues (see `k1/TODO.md` Section A)
+- Critic temperature regex matches any 2–3 digit number in the serialised node, so confidence
+  and duration values are misread as invented temperatures and nearly every node is rejected.
+- REQUIRES edge construction can produce cycles between steps that both consume and produce the
+  same K2 label, which makes validation Gate 2 fail and aborts `k1 run`.
+
+No end-to-end run has been executed at this version; the graph has not yet been produced.
 
 ### Architecture decisions (frozen in this release)
 - **Ontology:** schema-driven, not GraphRAG. Node types `Process`, `Transfer`, `Plate` per Kumbhakern [14] + PIC §4.6. Frozen in `k1/config/ontology.yaml`.

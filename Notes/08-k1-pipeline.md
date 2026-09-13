@@ -3,6 +3,10 @@
 This note is the authoritative reference for the offline K1 knowledge graph construction pipeline.
 Agents and implementers: read this after `00-agent-briefing.md`.
 
+Current implementation status, open bugs, and things still to verify live in
+[`../k1/TODO.md`](../k1/TODO.md). This note describes the intended design; `TODO.md` records
+where the code does not yet match it.
+
 ## What K1 must be (from PIC §4.6)
 
 An **offline, immutable, multi-path Neo4j DAG** of `Process` / `Transfer` / `Plate` nodes with:
