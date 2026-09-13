@@ -144,14 +144,14 @@ See [`05-evaluation.md`](05-evaluation.md).
 
 ## Implementation order implied by the Gantt
 
-1. `K1` knowledge graph construction
+1. `K1` knowledge graph construction ← **current phase** — see `08-k1-pipeline.md` and `09-k1-evaluation.md`
 2. `K2` live state buffer and perception pipeline
 3. Fusion module and intervention policy
 4. End-to-end integration, validation, pilot
 5. Ethics, recruitment, data collection
 6. Dissertation writing
 
-Existing `Cooking-Advisor` work is a starting point for step 1 only.
+`Cooking-Advisor` is a **frozen prototype** for K1. Do not continue it or ingest `data/kag/full_graph.json` into the runtime store. The K1 pipeline lives at `k1/` in the thesis repo root. See `Notes/08-k1-pipeline.md` for module contracts and what Fusion will query.
 
 ## Notation cheat sheet
 

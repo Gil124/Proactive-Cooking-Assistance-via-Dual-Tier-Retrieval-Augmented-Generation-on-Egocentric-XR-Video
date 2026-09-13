@@ -1,0 +1,23 @@
+# Frozen gold entity synonym table — v1
+# Used by L3 entity resolution and eval/metrics.py alias_accuracy check.
+# Do not modify after v1 annotation.
+
+aliases:
+  - canonical: egg
+    aliases: [eggs, whole egg, whole eggs, egg mixture, egg mix, beaten egg, beaten eggs, whisked egg, the eggs]
+  - canonical: butter
+    aliases: [unsalted butter, salted butter, cold butter, knob of butter, a knob of butter, tablespoon of butter]
+  - canonical: oil
+    aliases: [olive oil, cooking oil, vegetable oil, neutral oil, a drizzle of oil]
+  - canonical: salt
+    aliases: [fine salt, sea salt, kosher salt, table salt, a pinch of salt, seasoning]
+  - canonical: pan
+    aliases: [non-stick pan, frying pan, skillet, saucepan, non-stick skillet, the pan]
+  - canonical: spatula
+    aliases: [rubber spatula, silicone spatula, heatproof spatula, wooden spoon, flexible spatula]
+  - canonical: bowl
+    aliases: [mixing bowl, small bowl, a bowl]
+  - canonical: whisk
+    aliases: [fork, balloon whisk, a fork, a whisk]
+  - canonical: plate
+    aliases: [serving plate, dish, serving dish]

@@ -1,0 +1,61 @@
+# Physics Bounds — T_concept layer of K1 (frozen in k1-0.1.0)
+# These values come from food science, NOT from LLM extraction.
+# Every thermal Process node receives HAS_SAFETY_BOUND edges pointing to
+# the relevant bound(s) below.
+# Source: cited in PIC / standard food science references.
+
+bounds:
+
+  - id: coagulation_onset
+    label: "Egg coagulation onset"
+    temperature_c: 62
+    description: >
+      Egg proteins begin to denature and form a gel network around 62 °C.
+      K2 state transitions from liquid → coagulating at this boundary.
+    k2_transition: "liquid → coagulating"
+    entity: egg
+    severity: suggestion  # D_t=1 if K2 visually indicates this is being approached unsafely
+
+  - id: coagulation_full
+    label: "Full egg coagulation"
+    temperature_c: 70
+    description: >
+      Egg proteins fully cross-linked into a firm solid above 70 °C.
+      K2 state transitions from coagulating → solid at this boundary.
+      Irreversible beyond this point.
+    k2_transition: "coagulating → solid"
+    entity: egg
+    severity: alert  # D_t=2 if visual proxies indicate this boundary being exceeded unexpectedly
+
+  - id: maillard_onset
+    label: "Maillard browning onset"
+    temperature_c: 140
+    description: >
+      Maillard reaction between reducing sugars and amino acids begins ~140 °C.
+      Produces browning, flavour changes, and aroma compounds.
+      For scrambled eggs: indicates pan temperature is dangerously high.
+    k2_transition: "solid → scorched"
+    entity: egg
+    severity: alert
+
+  - id: butter_smoke_point
+    label: "Butter smoke point"
+    temperature_c: 150
+    description: >
+      Unsalted butter smoke point ~150 °C. Clarified butter is higher (~250 °C).
+      Indicates pan is too hot for fat medium.
+    k2_transition: null
+    entity: butter
+    severity: alert
+
+  - id: syneresis_risk
+    label: "Syneresis (weeping) risk"
+    temperature_c: null
+    description: >
+      Over-contraction of the protein matrix forces liquid out of curds.
+      Caused by over-heating past full coagulation (70 °C+) or mechanical
+      over-agitation of set curds. Not a single temperature; triggered by
+      continuing to cook past solid state.
+    k2_transition: "solid → scorched"
+    entity: egg
+    severity: alert

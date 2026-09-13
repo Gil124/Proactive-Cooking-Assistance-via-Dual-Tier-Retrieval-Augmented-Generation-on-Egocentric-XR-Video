@@ -1,0 +1,16 @@
+.env
+.venv
+__pycache__/
+*.pyc
+*.pyo
+
+# Data — re-producible; do NOT commit
+data/recipes/*/raw.html
+data/artifacts/
+
+# K1 graph outputs (commit graph.json and graph.cypher when they pass all gates)
+# data/k1/graph.json  <-- intentionally NOT gitignored; this is the committed artifact
+data/k1/graph.cypher
+
+# Chroma / vector stores
+data/chroma/

@@ -1,0 +1,70 @@
+# K1 Recipe Allowlist — scrambled eggs only
+# Frozen in k1-0.1.0. Do not add non-scrambled-egg dishes.
+#
+# Fields:
+#   recipe_id     : unique slug used as artifact directory name
+#   url           : source URL
+#   variant_label : short descriptor for branch labelling in the DAG
+#   gold          : true = held-out gold recipe (do NOT use as prompt example)
+#   notes         : optional
+
+recipes:
+
+  # ── Gold hold-out (3 recipes) ────────────────────────────────────────────
+  # These are NOT used as few-shot examples. They are only used in k1 eval.
+
+  - recipe_id: serious_eats
+    url: https://www.seriouseats.com/fluffy-scrambled-eggs-recipe
+    variant_label: "Whipped high-heat"
+    gold: true
+    notes: "Gold recipe 1. Annotate before first eval run."
+
+  - recipe_id: gordon_ramsay
+    url: https://www.gordonramsayrestaurants.com/recipes/scrambled-eggs/
+    variant_label: "French low-heat"
+    gold: true
+    notes: "Gold recipe 2. Annotate before first eval run."
+
+  - recipe_id: bon_appetit
+    url: https://www.bonappetit.com/test-kitchen/how-to/article/best-scrambled-eggs
+    variant_label: "Medium-low butter"
+    gold: true
+    notes: "Gold recipe 3. Annotate before first eval run."
+
+  # ── Training corpus (used for extraction + graph construction) ───────────
+
+  - recipe_id: jamie_oliver
+    url: https://www.jamieoliver.com/recipes/eggs/scrambled-eggs/
+    variant_label: "Butter medium"
+    gold: false
+
+  - recipe_id: martha_stewart
+    url: https://www.marthastewart.com/945345/scrambled-eggs
+    variant_label: "Low-heat pull"
+    gold: false
+    notes: "Step 3 contains SEO tail — junk filter required."
+
+  - recipe_id: food_network_goat_cheese
+    url: https://foodnetwork.co.uk/recipes/slow-cooked-scrambled-eggs-goat-cheese
+    variant_label: "Slow-cooked"
+    gold: false
+
+  - recipe_id: the_kitchn_soft_creamy
+    url: https://www.thekitchn.com/how-to-make-soft-creamy-scrambled-eggs-113371
+    variant_label: "Soft-creamy low-heat"
+    gold: false
+
+  - recipe_id: food52_fluffiest
+    url: https://food52.com/recipes/56468-the-fluffiest-scrambled-egg
+    variant_label: "Fluffy aerated"
+    gold: false
+
+  - recipe_id: simply_recipes_creme_fraiche
+    url: https://www.simplyrecipes.com/scrambled-eggs-upgrade-creme-fraiche-11877075
+    variant_label: "Creme fraiche"
+    gold: false
+
+  - recipe_id: food_wine_brown_butter
+    url: https://www.foodandwine.com/for-the-best-scrambled-eggs-cook-them-in-brown-butter-7096705
+    variant_label: "Brown butter Maillard"
+    gold: false

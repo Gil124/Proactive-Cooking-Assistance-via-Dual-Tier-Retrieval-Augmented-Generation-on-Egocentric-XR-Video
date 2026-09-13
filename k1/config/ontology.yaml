@@ -1,0 +1,108 @@
+# K1 Ontology — frozen in k1-0.1.0
+# Do not modify without updating CHANGELOG.md.
+# Source: Kumbhakern et al. [14] + PIC §4.6.
+
+node_types:
+  - name: Process
+    description: >
+      A cooking action that changes ingredient state.
+      Must have HAS_SAFETY_BOUND if it involves heat.
+    required_fields: [pre_conditions, post_conditions]
+    thermal_requires_safety_bound: true
+
+  - name: Transfer
+    description: >
+      Movement of an ingredient or item (e.g. pour into pan, remove from heat).
+    required_fields: [pre_conditions, post_conditions]
+    thermal_requires_safety_bound: false
+
+  - name: Plate
+    description: >
+      Plating or serving step. Final node in any recipe branch.
+    required_fields: [pre_conditions]
+    thermal_requires_safety_bound: false
+
+edge_types:
+  - name: NEXT
+    description: Sequential ordering within a recipe branch
+  - name: REQUIRES
+    description: Pre-condition dependency across nodes
+  - name: HAS_SAFETY_BOUND
+    description: Typed physics constraint edge on a Process node
+  - name: INGREDIENT_OF
+    description: Links Ingredient node → Process node
+  - name: USES_TOOL
+    description: Links Tool node → Process node
+
+# ── K2 compile map (frozen) ───────────────────────────────────────────────────
+# The LLM extracts fine-grained physics_state strings.
+# These are compiled to k2_label BEFORE storage.
+# k2_label must be one of the four values below.
+
+k2_compile_map:
+  liquid:
+    - raw
+    - heterogeneous_liquid
+    - homogenized
+    - aerated_liquid
+    - whisked
+    - unwhisked
+    - unbeaten
+    - beaten
+    - mixed
+    - runny
+    - fluid
+
+  coagulating:
+    - coagulating
+    - gel
+    - soft_curd
+    - semi_solid
+    - partial_set
+    - warming
+    - loose_curd
+    - creamy
+    - custard_like
+    - thickening
+
+  solid:
+    - solid
+    - solid_curd
+    - fully_set
+    - firm
+    - cross_linked
+    - set
+    - cooked_through
+
+  scorched:
+    - scorched
+    - burnt
+    - over_contracted
+    - browning
+    - maillard_advanced
+    - syneresis_weeping
+    - rubbery
+    - dry
+    - overcooked
+
+# ── Canonical entities (for entity resolution) ───────────────────────────────
+
+canonical_entities:
+  - canonical: egg
+    aliases: [eggs, whole egg, whole eggs, egg mixture, egg mix, beaten egg]
+  - canonical: butter
+    aliases: [unsalted butter, salted butter, cold butter, knob of butter]
+  - canonical: oil
+    aliases: [olive oil, cooking oil, vegetable oil, neutral oil]
+  - canonical: salt
+    aliases: [fine salt, sea salt, kosher salt, table salt]
+  - canonical: pan
+    aliases: [non-stick pan, frying pan, skillet, saucepan, non-stick skillet]
+  - canonical: spatula
+    aliases: [rubber spatula, silicone spatula, heatproof spatula, wooden spoon]
+  - canonical: bowl
+    aliases: [mixing bowl, small bowl]
+  - canonical: whisk
+    aliases: [fork, balloon whisk]
+  - canonical: plate
+    aliases: [serving plate, dish]
