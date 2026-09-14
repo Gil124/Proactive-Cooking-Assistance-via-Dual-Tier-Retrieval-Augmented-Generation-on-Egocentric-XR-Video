@@ -39,6 +39,7 @@ def _minimal_node(node_type=NodeType.Process) -> K1Node:
         source_spans=["Crack 3 eggs"],
         extractor_models=["test"],
         critic_verdicts=["accept"],
+        confidences=[0.9],
         mean_confidence=0.9,
     )
 

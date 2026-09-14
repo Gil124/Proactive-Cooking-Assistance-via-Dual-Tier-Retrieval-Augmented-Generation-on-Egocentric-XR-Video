@@ -1,0 +1,46 @@
+{
+  "recipe_id": "jamie_oliver",
+  "title": "Scrambled eggs",
+  "source_url": "https://www.jamieoliver.com/recipes/eggs/scrambled-eggs/",
+  "variant_label": "Butter medium",
+  "gold": false,
+  "ingredients": [
+    "8 large eggs",
+    "1 small knob of unsalted butter"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "Crack the eggs into a measuring jug."
+    },
+    {
+      "number": 2,
+      "text": "Add a tiny pinch of sea salt and black pepper, then use a fork to beat them together well."
+    },
+    {
+      "number": 3,
+      "text": "Put a medium saucepan over a low heat and add the butter."
+    },
+    {
+      "number": 4,
+      "text": "Leave it to melt slowly, then when it starts to bubble carefully pour in the eggs."
+    },
+    {
+      "number": 5,
+      "text": "Stir slowly with a wooden spoon, or a spatula if you’ve got one, so you can get right to the edges of the pan."
+    },
+    {
+      "number": 6,
+      "text": "Keep gently stirring until the eggs still look silky, slightly runny and slightly underdone, and then remove from the heat – the heat of the pan will continue to cook the eggs to perfection."
+    },
+    {
+      "number": 7,
+      "text": "Serve with lightly buttered toast."
+    }
+  ],
+  "temperatures_mentioned": [
+    "low heat"
+  ],
+  "timings_mentioned": []
+}

@@ -49,10 +49,13 @@ def run_ingest(
 
     results: list[CanonicalRecipe] = []
     errors: list[tuple[str, str]] = []
+    total_kept = 0
+    total_dropped = 0
 
     table = Table(title="L1 Ingest", show_lines=True)
     table.add_column("Recipe ID")
     table.add_column("Steps")
+    table.add_column("Dropped")
     table.add_column("Gold")
     table.add_column("Status")
 
@@ -72,7 +75,8 @@ def run_ingest(
             try:
                 recipe = CanonicalRecipe.model_validate_json(canonical_path.read_text())
                 results.append(recipe)
-                table.add_row(recipe_id, str(len(recipe.steps)), "✓" if gold else "", "[green]cached[/green]")
+                total_kept += len(recipe.steps)
+                table.add_row(recipe_id, str(len(recipe.steps)), "?", "✓" if gold else "", "[green]cached[/green]")
                 continue
             except Exception:
                 pass  # will re-parse below
@@ -80,10 +84,10 @@ def run_ingest(
         console.print(f"  Fetching [bold]{recipe_id}[/bold] from {url} ...")
         try:
             html = fetch_html(url, dest, force=force)
-            recipe = parse_recipe(html, recipe_id, url, variant_label, gold)
+            recipe, dropped = parse_recipe(html, recipe_id, url, variant_label, gold)
         except Exception as e:
             errors.append((recipe_id, str(e)))
-            table.add_row(recipe_id, "-", "✓" if gold else "", f"[red]ERROR: {e}[/red]")
+            table.add_row(recipe_id, "-", "-", "✓" if gold else "", f"[red]ERROR: {e}[/red]")
             continue
 
         # Save canonical.json
@@ -93,9 +97,15 @@ def run_ingest(
         (l1_dir / f"{recipe_id}.canonical.json").write_text(recipe.model_dump_json(indent=2))
 
         results.append(recipe)
-        table.add_row(recipe_id, str(len(recipe.steps)), "✓" if gold else "", "[green]OK[/green]")
+        total_kept += len(recipe.steps)
+        total_dropped += dropped
+        table.add_row(recipe_id, str(len(recipe.steps)), str(dropped), "✓" if gold else "", "[green]OK[/green]")
 
     console.print(table)
+
+    # Write ingest stats for eval/metrics.py
+    stats = {"steps_kept": total_kept, "steps_dropped": total_dropped}
+    (l1_dir / "ingest_stats.json").write_text(json.dumps(stats, indent=2))
 
     if errors:
         console.print(f"\n[yellow]⚠ {len(errors)} recipe(s) failed:[/yellow]")

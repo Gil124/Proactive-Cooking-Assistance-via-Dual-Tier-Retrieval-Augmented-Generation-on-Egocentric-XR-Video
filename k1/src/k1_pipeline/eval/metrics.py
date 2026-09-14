@@ -1,91 +1,120 @@
 """
 Eval -- Per-stage metrics computed from run artifacts vs frozen gold.
 No LLM judge is used. Ontology, physics bounds, and gold labels are frozen files.
+
+Fixes in v0.2.0:
+  - L1: real Pydantic schema validation (not just "has ingredients")
+  - L2: use physics.find_invented_temperatures (unit-bearing only)
+  - L3: alias accuracy against entity_aliases.yaml
+  - gold_comparison: safety bounds read from L3 fused graph
+  - validate_gold_files: validate *.gold.json against GoldNode schema
 """
 
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
-from k1_pipeline.config_loader import load_physics_bounds
-from k1_pipeline.models import K1Graph, K2Label, NodeType
+import yaml
 
-_PHYSICS_BOUNDS = load_physics_bounds()
-_KNOWN_TEMPS = {b["temperature_c"] for b in _PHYSICS_BOUNDS if b["temperature_c"] is not None}
-_TEMP_RE = re.compile(r"\b(\d{2,3})\b")
+from k1_pipeline.models import GoldNode, K1Graph, K2Label, NodeType
 
 
 # ── L1 metrics ────────────────────────────────────────────────────────────────
 
 def l1_metrics(l1_dir: Path, recipes_dir: Path) -> dict:
-    canonical_files = list(l1_dir.glob("*.canonical.json"))
+    """
+    Compute L1 ingest metrics.
+    - schema_valid_pct: percentage of canonical.json files that pass Pydantic validation.
+    - junk_drop_rate: from ingest_stats.json written by the runner.
+    """
+    from k1_pipeline.models import CanonicalRecipe
+
+    canonical_files = list(recipes_dir.glob("*/canonical.json"))
     schema_valid = 0
-    missing_ingredients = 0
+    schema_errors = []
 
     for f in canonical_files:
         try:
-            data = json.loads(f.read_text())
-            if data.get("ingredients"):
-                schema_valid += 1
-            else:
-                missing_ingredients += 1
+            CanonicalRecipe.model_validate_json(f.read_text())
+            schema_valid += 1
+        except Exception as e:
+            schema_errors.append(f"{f.parent.name}: {e}")
+
+    # Junk-drop stats written by ingest/runner.py
+    ingest_stats_path = l1_dir / "ingest_stats.json"
+    junk_drop_rate = None
+    if ingest_stats_path.exists():
+        try:
+            stats = json.loads(ingest_stats_path.read_text())
+            kept = stats.get("steps_kept", 0)
+            dropped = stats.get("steps_dropped", 0)
+            total = kept + dropped
+            junk_drop_rate = round(dropped / max(total, 1) * 100, 1)
         except Exception:
             pass
 
     return {
         "canonical_files": len(canonical_files),
         "schema_valid_pct": round(schema_valid / max(len(canonical_files), 1) * 100, 1),
-        "missing_ingredient_recipes": missing_ingredients,
+        "schema_errors": schema_errors,
+        "junk_drop_rate_pct": junk_drop_rate,
     }
 
 
 # ── L2 metrics ────────────────────────────────────────────────────────────────
 
 def l2_metrics(gen_dir: Path, critic_dir: Path, recipes_dir: Path) -> dict:
+    from k1_pipeline.models import ExtractedNode
+    from k1_pipeline.physics import find_invented_temperatures
+
     gen_files = list(gen_dir.glob("*.gen.json"))
     critic_files = list(critic_dir.glob("*.critic.json"))
 
     total = len(gen_files)
     span_grounded = 0
     k2_valid = 0
-    verdict_counts = {"accept": 0, "revise": 0, "reject": 0, "unknown": 0}
+    verdict_counts = {"accept": 0, "revise": 0, "reject": 0}
     invented_temp_count = 0
 
     valid_k2 = {lbl.value for lbl in K2Label}
 
     for gen_file in gen_files:
-        node = json.loads(gen_file.read_text())
-        recipe_id = node.get("recipe_id", "")
-        step_n = node.get("step_number", 0)
+        try:
+            node = ExtractedNode.model_validate_json(gen_file.read_text())
+        except Exception:
+            continue
+
+        recipe_id = node.recipe_id
+        step_n = node.step_number
 
         # Source span groundedness
         canon_path = recipes_dir / recipe_id / "canonical.json"
+        step_text = ""
         if canon_path.exists():
-            recipe = json.loads(canon_path.read_text())
-            step = next((s for s in recipe.get("steps", []) if s["number"] == step_n), None)
-            if step and node.get("source_span", "") in step["text"]:
-                span_grounded += 1
+            recipe_raw = json.loads(canon_path.read_text())
+            step = next((s for s in recipe_raw.get("steps", []) if s["number"] == step_n), None)
+            if step:
+                step_text = step["text"]
+                if node.source_span in step_text:
+                    span_grounded += 1
 
         # K2 label validity
-        all_conds = node.get("pre_conditions", []) + node.get("post_conditions", [])
-        if all(c.get("k2_label") in valid_k2 for c in all_conds):
+        all_conds = node.pre_conditions + node.post_conditions
+        if all(c.k2_label.value in valid_k2 for c in all_conds):
             k2_valid += 1
 
-        # Invented temperature check
-        node_text = json.dumps(node)
-        step_text = step["text"] if step else ""
-        node_temps = {float(m.group(1)) for m in _TEMP_RE.finditer(node_text)}
-        step_temps = {float(m.group(1)) for m in _TEMP_RE.finditer(step_text)}
-        if any(t not in step_temps and t not in _KNOWN_TEMPS for t in node_temps):
+        # Invented temperature check (unit-bearing only)
+        invented = find_invented_temperatures(node, step_text)
+        if invented:
             invented_temp_count += 1
 
     for critic_file in critic_files:
         try:
             critic = json.loads(critic_file.read_text())
             v = critic.get("verdict", "unknown")
-            verdict_counts[v] = verdict_counts.get(v, 0) + 1
+            if v in verdict_counts:
+                verdict_counts[v] += 1
         except Exception:
             pass
 
@@ -102,29 +131,55 @@ def l2_metrics(gen_dir: Path, critic_dir: Path, recipes_dir: Path) -> dict:
 
 # ── L3 metrics ────────────────────────────────────────────────────────────────
 
-def l3_metrics(l3_dir: Path) -> dict:
+def l3_metrics(l3_dir: Path, gold_dir: Path | None = None) -> dict:
     fused_path = l3_dir / "fused_dag.json"
     if not fused_path.exists():
         return {"error": "fused_dag.json not found"}
 
-    graph = json.loads(fused_path.read_text())
-    nodes = graph.get("nodes", [])
-    edges = graph.get("edges", [])
-    branch_labels = graph.get("branch_labels", [])
+    graph_raw = json.loads(fused_path.read_text())
+    nodes = graph_raw.get("nodes", [])
+    edges = graph_raw.get("edges", [])
+    branch_labels = graph_raw.get("branch_labels", [])
 
-    # Check NEXT edge acyclicity (rough check)
-    next_edges = [(e["from_node_id"], e["to_node_id"]) for e in edges if e["edge_type"] == "NEXT"]
-    node_ids = {n["node_id"] for n in nodes}
-
-    return {
+    base = {
         "total_nodes": len(nodes),
         "total_edges": len(edges),
         "branch_count": len(branch_labels),
         "branch_labels": branch_labels,
         "safety_bound_edges": sum(1 for e in edges if e["edge_type"] == "HAS_SAFETY_BOUND"),
-        "ingredient_nodes": len(graph.get("ingredient_nodes", [])),
-        "tool_nodes": len(graph.get("tool_nodes", [])),
+        "ingredient_nodes": len(graph_raw.get("ingredient_nodes", [])),
+        "tool_nodes": len(graph_raw.get("tool_nodes", [])),
     }
+
+    # Alias accuracy: % of aliases in entity_aliases.yaml that resolve to their canonical form.
+    # File schema: {"aliases": [{"canonical": "egg", "aliases": ["eggs", "whole egg", ...]}, ...]}
+    if gold_dir is not None:
+        alias_path = gold_dir / "entity_aliases.yaml"
+        if alias_path.exists():
+            from k1_pipeline.fuse.entity_resolver import resolve_entity
+            alias_data = yaml.safe_load(alias_path.read_text()) or {}
+            entries = alias_data.get("aliases", [])
+            total_aliases = 0
+            correct_aliases = 0
+            for entry in entries:
+                canonical = entry.get("canonical")
+                for alias in entry.get("aliases", []) or []:
+                    total_aliases += 1
+                    if resolve_entity(alias) == canonical:
+                        correct_aliases += 1
+            base["alias_accuracy_pct"] = round(correct_aliases / max(total_aliases, 1) * 100, 1)
+            base["alias_total"] = total_aliases
+
+            # Non-canonical entity_ids still in fused graph
+            non_canonical = [
+                c["entity_id"]
+                for n in nodes
+                for c in (n.get("pre_conditions", []) + n.get("post_conditions", []))
+                if resolve_entity(c["entity_id"]) != c["entity_id"]
+            ]
+            base["non_canonical_entity_ids"] = sorted(set(non_canonical))
+
+    return base
 
 
 # ── L4 metrics ────────────────────────────────────────────────────────────────
@@ -142,49 +197,81 @@ def l4_metrics(l4_dir: Path) -> dict:
     }
 
 
+# ── Gold schema validation ────────────────────────────────────────────────────
+
+def validate_gold_files(gold_dir: Path) -> list[str]:
+    """
+    Validate every *.gold.json against the GoldNode Pydantic schema.
+    Returns a list of error strings (empty = all valid).
+    """
+    errors = []
+    for gf in sorted(gold_dir.glob("*.gold.json")):
+        try:
+            GoldNode.model_validate_json(gf.read_text())
+        except Exception as e:
+            errors.append(f"{gf.name}: {e}")
+    return errors
+
+
 # ── Gold comparison ───────────────────────────────────────────────────────────
 
-def gold_comparison(gen_dir: Path, gold_dir: Path) -> dict:
-    """Compare extracted nodes against frozen gold labels."""
+def gold_comparison(gen_dir: Path, l3_dir: Path, gold_dir: Path) -> dict:
+    """
+    Compare extracted nodes against frozen gold labels.
+    Safety bounds are read from L3 fused graph (not L2 gen artifacts).
+    """
     gold_files = list(gold_dir.glob("*.gold.json"))
     if not gold_files:
         return {"error": "No gold files found. Annotate gold recipes first."}
+
+    # Build lookup: (recipe_id, step_number) -> K1Node from fused graph
+    fused_path = l3_dir / "fused_dag.json"
+    fused_node_map: dict[tuple[str, int], dict] = {}
+    if fused_path.exists():
+        graph_raw = json.loads(fused_path.read_text())
+        for n in graph_raw.get("nodes", []):
+            recipe_ids = n.get("source_recipe_ids", [])
+            step_indices = n.get("source_step_indices", [])
+            for rid, sidx in zip(recipe_ids, step_indices):
+                fused_node_map[(rid, sidx)] = n
 
     node_type_tp = node_type_fp = node_type_fn = 0
     k2_correct = k2_total = 0
     safety_present = safety_expected = 0
 
     for gf in gold_files:
-        gold = json.loads(gf.read_text())
-        recipe_id = gold["recipe_id"]
-        step_n = gold["step_number"]
+        gold = GoldNode.model_validate_json(gf.read_text())
+        recipe_id = gold.recipe_id
+        step_n = gold.step_number
 
+        # L2 gen artifact for node_type and k2 labels
         gen_file = gen_dir / f"{recipe_id}_step{step_n:02d}.gen.json"
         if not gen_file.exists():
             node_type_fn += 1
             continue
 
-        extracted = json.loads(gen_file.read_text())
+        extracted_raw = json.loads(gen_file.read_text())
 
         # Node type
-        if extracted.get("node_type") == gold["expected"].get("node_type"):
+        if extracted_raw.get("node_type") == gold.expected.node_type.value:
             node_type_tp += 1
         else:
             node_type_fp += 1
             node_type_fn += 1
 
-        # K2 label accuracy (per entity)
-        gold_post = {c["entity_id"]: c["k2_label"] for c in gold["expected"].get("post_conditions", [])}
-        ext_post = {c.get("entity_id"): c.get("k2_label") for c in extracted.get("post_conditions", [])}
+        # K2 label accuracy (per entity, post_conditions)
+        gold_post = {c.entity_id: c.k2_label.value for c in gold.expected.post_conditions}
+        ext_post = {c.get("entity_id"): c.get("k2_label") for c in extracted_raw.get("post_conditions", [])}
         for eid, gl in gold_post.items():
             k2_total += 1
             if ext_post.get(eid) == gl:
                 k2_correct += 1
 
-        # Safety bound coverage
-        if gold["expected"].get("has_safety_bound"):
+        # Safety bound coverage: check fused graph node (not L2 artifact)
+        if gold.expected.has_safety_bound:
             safety_expected += 1
-            if extracted.get("safety_bounds"):
+            fused_node = fused_node_map.get((recipe_id, step_n))
+            if fused_node and fused_node.get("safety_bounds"):
                 safety_present += 1
 
     precision = node_type_tp / max(node_type_tp + node_type_fp, 1)
@@ -202,15 +289,17 @@ def gold_comparison(gen_dir: Path, gold_dir: Path) -> dict:
 # ── Report writer ─────────────────────────────────────────────────────────────
 
 def write_report(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: Path) -> str:
-    """
-    Compute all metrics and write a Markdown report.
-    Returns the report text.
-    """
+    """Compute all metrics and write a Markdown report. Returns the report text."""
     l1 = l1_metrics(run_dir / "L1", recipes_dir)
     l2 = l2_metrics(run_dir / "L2" / "gen", run_dir / "L2" / "critic", recipes_dir)
-    l3 = l3_metrics(run_dir / "L3")
+    l3 = l3_metrics(run_dir / "L3", gold_dir)
     l4 = l4_metrics(run_dir / "L4")
-    gold = gold_comparison(run_dir / "L2" / "gen", gold_dir)
+    gold = gold_comparison(run_dir / "L2" / "gen", run_dir / "L3", gold_dir)
+
+    alias_line = (
+        f"| Alias accuracy | {l3.get('alias_accuracy_pct', 'N/A')}% "
+        f"({l3.get('alias_total', 0)} aliases) |"
+    )
 
     report = f"""# K1 Eval Report — Run `{run_id}`
 
@@ -219,7 +308,7 @@ def write_report(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: Path) 
 |---|---|
 | Canonical files | {l1.get('canonical_files')} |
 | Schema valid | {l1.get('schema_valid_pct')}% |
-| Missing ingredient recipes | {l1.get('missing_ingredient_recipes')} |
+| Junk drop rate | {l1.get('junk_drop_rate_pct', 'N/A')}% |
 
 ## L2 Extraction
 | Metric | Value |
@@ -240,6 +329,7 @@ def write_report(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: Path) 
 | Branch count | {l3.get('branch_count')} |
 | Branch labels | {', '.join(l3.get('branch_labels', []))} |
 | HAS_SAFETY_BOUND edges | {l3.get('safety_bound_edges')} |
+{alias_line}
 
 ## L4 Validation
 | Metric | Value |

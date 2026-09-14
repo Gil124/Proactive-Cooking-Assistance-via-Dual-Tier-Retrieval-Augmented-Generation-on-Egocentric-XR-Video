@@ -7,210 +7,65 @@ Status legend: `[ ]` open · `[~]` partially done · `[x]` done and verified
 
 ---
 
-## A. Blocking bugs (fix before the first real run)
-
-Both were reproduced locally with a scratch script, not just read off the code.
-
-### A1. Temperature regex rejects almost every node
-**Where:** `src/k1_pipeline/critic/critic.py` — `_TEMP_RE` and `_deterministic_check`
-**Also:** `src/k1_pipeline/eval/metrics.py` — same pattern, same flaw
-
-`_TEMP_RE = re.compile(r"\b(\d{2,3})\b")` runs over `node.model_dump_json()`, so it matches
-any 2–3 digit number anywhere in the serialised node. Reproduced:
-
-```
-node json: {"step_number": 2, "confidence": 0.95, "action_phrase": "whisk 3 eggs for 30 seconds",
-            "timing_constraints": {"duration_s": 90}}
-matches:   ['95', '30', '90']
-```
-
-`95` (confidence), `90` (duration) and `30` (seconds) are not in the step text and not in
-`physics_bounds.yaml` `{62, 70, 140, 150}`, so `_deterministic_check` appends
-"Invented temperature" and the verdict becomes **reject**. Nearly every node is dropped
-and the fused graph comes out near-empty.
-
-- [ ] Only scan temperature-bearing fields, not the whole JSON blob. Best option: have the
-      generator emit an explicit `temperature_c: Optional[float]` field and check only that.
-- [ ] Require a unit in the pattern when scanning free text (`\d{2,3}\s*°?\s*[CF]\b`).
-- [ ] Exclude `confidence`, `duration_s`, `step_number`, and any `_id` field from the scan.
-- [ ] Add a regression test: a node with `confidence=0.95`, `duration_s=90` and no temperature
-      anywhere must produce **zero** invented-temperature issues.
-
-### A2. REQUIRES edges create cycles, so Gate 2 aborts the pipeline
-**Where:** `src/k1_pipeline/fuse/dag_builder.py` — Phase 4 (REQUIRES edge construction)
-
-The rule links *any* node whose `post_conditions` match a `pre_condition`, in both directions.
-Two steps that both consume and produce `egg:liquid` (for example "whisk the eggs" and
-"season the raw eggs") produce `A→C` and `C→A`. Reproduced:
-
-```
-acyclic: False
-cycles:  [['A', 'C']]
-```
-
-`validate/gates.py` Gate 2 includes REQUIRES edges in the acyclicity check, so
-`k1 validate` exits non-zero and `k1 run` stops before `store`.
-
-- [ ] Constrain REQUIRES to respect recipe step order: only add `other → node` when the
-      producing step index is lower than the consuming step index.
-- [ ] Skip self-loops and identical `(k2_pre, k2_post)` pairs where the label does not change.
-- [ ] Decide explicitly whether Gate 2 should check NEXT only, or NEXT + REQUIRES. Document
-      the choice in `Notes/08-k1-pipeline.md`.
-- [ ] Add a regression test for the A↔C scenario above.
-- [ ] Phase 4 is O(n²) over all node pairs. Fine at ~70 nodes; revisit if the corpus grows.
-
----
-
-## B. Metrics that silently report wrong numbers
-
-### B1. Safety-bound coverage is always 0%
-**Where:** `src/k1_pipeline/eval/metrics.py:187` — `gold_comparison`
-
-It reads `extracted.get("safety_bounds")` from the **L2** `.gen.json` files, but
-`ExtractedNode` has no `safety_bounds` field. Bounds are attached later, in L3, on `K1Node`
-(`fuse/dag_builder.py:126`). The lookup always returns falsy, so the metric reports 0%
-regardless of actual behaviour.
-
-- [ ] Read safety bounds from `L3/fused_dag.json`, or from `K1Node`, not from the L2 artifacts.
-- [ ] Map gold `step_number` to the fused node via `source_recipe_ids` + `source_step_indices`
-      (fingerprint merging means it is not a 1:1 mapping).
-
-### B2. Alias accuracy is promised but never computed
-**Where:** `Notes/09-k1-evaluation.md` L3 table vs `src/k1_pipeline/eval/metrics.py` — `l3_metrics`
-
-The eval protocol lists "Alias accuracy — % entity aliases correctly merged vs gold synonym
-table". `l3_metrics` returns node/edge/branch counts only. `data/gold/entity_aliases.yaml`
-exists and is unused by any metric.
-
-- [ ] Implement alias accuracy in `l3_metrics` against `data/gold/entity_aliases.yaml`.
-- [ ] Or remove the row from `Notes/09-k1-evaluation.md` if it is not worth measuring at this size.
-
-### B3. Gate 4 cannot fail (tautology)
-**Where:** `src/k1_pipeline/validate/gates.py:69`
-
-```python
-if node.node_type == NodeType.Process and node.safety_bounds:
-```
-
-It only inspects nodes that **already have** `safety_bounds`, then checks that a matching
-edge exists. The stated purpose in `Notes/08-k1-pipeline.md` is the opposite: catch a thermal
-Process that is *missing* its bounds. A thermal step whose bounds were never attached passes
-the gate.
-
-- [ ] Re-derive "is thermal" inside the gate (reuse `_THERMAL_KEYWORDS` from `dag_builder.py`,
-      moved to a shared module) and fail when a thermal Process has no bounds.
-- [ ] Add a test with a thermal Process and zero bounds; it must fail Gate 4.
-
-### B4. `l1_metrics` conflates two different things
-**Where:** `src/k1_pipeline/eval/metrics.py` — `l1_metrics`
-
-`schema_valid_pct` is computed as "has a non-empty ingredients list", which is the
-missing-ingredient check, not Pydantic schema validity. Step-count match and junk-step rate
-from the protocol table are not implemented at all.
-
-- [ ] Validate with `CanonicalRecipe.model_validate_json` for the real schema figure.
-- [ ] Record junk-drop counts during L1 and persist them so the rate can be reported.
-
----
-
-## C. Gaps against the plan
-
-### C1. Entity resolution is exact-match only
-**Where:** `src/k1_pipeline/fuse/entity_resolver.py`
-
-The plan specifies embedding top-K retrieval followed by LLM pairwise disambiguation on the
-ambiguous band (cosine 0.75–0.95). Only the frozen alias dictionary from `ontology.yaml` is
-implemented. `sentence-transformers` is declared in `pyproject.toml` and never imported, and
-`config/models.yaml` pins an embedding model that is never loaded.
-
-- [ ] Implement embedding candidate retrieval + LLM pairwise on ambiguous pairs only.
-- [ ] Or drop the dependency and the `embedding:` pin and state in the changelog that v1 is
-      dictionary-only. For a single-dish corpus this may well be the right call.
-
-### C2. The revision loop is a no-op re-roll
-**Where:** `src/k1_pipeline/critic/critic.py` — `verify_recipe`, revise branch
-
-On `revise` the code deletes the cached `.gen.json` and calls `extract_node` again with the
-**identical** prompt. `critic_out.revision_instructions` is produced and then discarded, so
-at temperature 0 the same output is very likely regenerated.
-
-- [ ] Add a `revision_hint: str | None` parameter to `extract_node` / `_build_prompt` and
-      inject the critic's instructions.
-- [ ] Re-run the critic on the revised node and persist both passes
-      (`*.critic.json` and `*.critic.r2.json`) so the loop is auditable.
-- [ ] Cap at one revision, as specified.
-
-### C3. Neo4j schema constraints file does not exist
-**Where:** `src/k1_pipeline/store/writer.py:53` writes the header
-`"// Schema constraints must be applied first (k1 validate --schema)"`
-
-There is no constraints file and no `--schema` flag anywhere in `cli.py`. Ingesting into a
-fresh database creates no uniqueness constraints or indexes.
-
-- [ ] Add `config/graph_schema.cypher` (uniqueness on `node_id` per label, indexes on
-      `node_type` and `canonical_action`). `Cooking-Advisor/config/graph_schema.cypher` is a
-      reasonable starting point.
-- [ ] Add `k1 store --apply-schema`, and fix or remove the header comment.
-
-### C4. `ingest_neo4j` writes to `/tmp`
-**Where:** `src/k1_pipeline/store/writer.py` — `ingest_neo4j`
-
-It calls `write_cypher(graph, Path("/tmp/k1_neo4j_temp"))` and reads the file back rather than
-using the string it just generated. Works, but leaves files outside the project and makes the
-function harder to test.
-
-- [ ] Have `write_cypher` return the Cypher string as well as the path, and pass it directly.
-
----
-
-## D. Consistency and cleanup
-
-- [ ] **`GoldNode` model does not match the gold JSON schema.** `models.py` declares
-      `expected_pre_k2_labels: list[tuple[str, K2Label]]`; `data/gold/ANNOTATION_PROTOCOL.md`
-      and `eval/metrics.py` use a nested `expected.pre_conditions` list of dicts.
-      `GoldNode` is currently unused (metrics parses raw JSON). Align the model to the protocol
-      and validate gold files with it, or delete the model.
-- [ ] **Gold files are never schema-checked.** A typo in a hand-written gold file fails silently.
-      Add `k1 eval --check-gold` that validates every `*.gold.json` before scoring.
-- [ ] **Dead code:** `_build_nx` in `validate/gates.py` is defined and never called.
-- [ ] **`viz/app.py` ignores `--run`.** `cli.py viz` forwards `-- --run <id>` but the app never
-      parses `sys.argv`; the run is always chosen from the sidebar selectbox. Either parse it
-      or drop the flag.
-- [ ] **`pyproject.toml` has an empty `[tool.uv.sources]`** block that can be removed.
-- [ ] **`requires-python = ">=3.11"`** but the local venv resolved to Python 3.14.3. Confirm the
-      target version and pin it, so the thesis environment is reproducible.
-- [ ] **`data/k1/graph.json` is intentionally not gitignored** (it is the committed artifact).
-      Confirm that is what you want before the first commit that contains a real graph.
-
----
-
 ## E. To test once API keys are in place
 
-Nothing in this list has been exercised yet — see Section G.
+Updated after the first live smoke test (`smoke01`, k1-0.2.1). Items below are re-annotated
+`[x]` (verified), `[~]` (partially verified / new follow-up found), or left `[ ]` (still open).
+Full findings are in `CHANGELOG.md` under `k1-0.2.1`.
 
-- [ ] **Smoke test on one recipe.** `k1 ingest` then `k1 extract` on `jamie_oliver` only.
-      Inspect `L2/gen/*.gen.json` by hand before trusting any aggregate number.
-- [ ] **Instructor schema adherence.** `ExtractedNode` asks the LLM to fill `node_id`,
-      `recipe_id`, `step_number` and `extractor_model`, all of which are overwritten in
-      `generator.py` immediately afterwards. Check whether the model wastes tokens or fails
-      validation on them; consider a slimmer `LLMExtraction` model with the provenance fields
-      added in Python.
-- [ ] **`model_validator` retry behaviour.** `ExtractedNode` raises when a `Process` lacks
-      pre/post conditions. Confirm Instructor retries cleanly rather than raising all the way up
-      and killing the run.
-- [ ] **Critic output quality.** Does `gemini-2.0-flash-lite` reliably return a
-      `grounding_quote` that is actually a substring? If not, add a post-check.
-- [ ] **Scraper coverage.** Which of the 10 allowlisted URLs yield schema.org JSON-LD and which
-      fall through to the heuristic path? Bon Appétit and Serious Eats are known to be
-      bot-hostile; have a manual HTML fallback ready.
-- [ ] **Junk filter on real pages.** Confirm the Martha Stewart SEO tail is dropped and that no
-      genuine step is lost.
-- [ ] **Fingerprint merge rate.** Too aggressive collapses distinct techniques; too weak leaves
-      duplicates. Inspect `L3/fused_dag.json` node count against the sum of per-recipe steps.
-- [ ] **Branch preservation.** Confirm butter vs oil and low-heat vs high-heat survive fusion as
-      distinct paths, since H3 depends on them.
-- [ ] **Pyvis rendering at full size.** The graph has not been rendered with real data; check
-      that ~70 nodes plus ingredient, tool and bound nodes stay readable.
+- [x] **Smoke test on one recipe.** Ran on all 10 allowlisted recipes, not just one.
+      4/10 ingested cleanly; `L2/gen/*.gen.json` inspected by hand for `jamie_oliver`.
+- [x] **Instructor schema adherence.** `temperature_c` behaved correctly in the live run:
+      0 invented-temperature issues across 16 extracted steps, confirmed by `k1 eval`
+      (`Invented temperature count: 0`).
+- [x] **`model_validator` retry behaviour.** No `ExtractedNode` validation errors surfaced
+      during the live run; Instructor's retry handled Process pre/post-condition requirements
+      without crashing the pipeline.
+- [x] **Critic output quality.** `gemini-2.0-flash-lite` is retired (see k1-0.2.1 model pin
+      fix); `gemini-3.5-flash` was used instead and reliably returned grounded verdicts —
+      100% span groundedness in the eval report. No post-check needed yet.
+- [x] **Revision loop quality.** Confirmed positive: `jamie_oliver` steps 5 and 6 went from
+      `revise` (broken `source_span`, later found to be a mojibake bug, see k1-0.2.1) to
+      `accept` after the R2 pass once the underlying text was fixed. Other R2 verdicts stayed
+      `revise` (kept, not rejected) after one round, matching the capped-revision design.
+- [x] **Scraper coverage.** 4/10 succeed via schema.org JSON-LD or heuristic fallback
+      (`jamie_oliver`, `serious_eats`, `food_network_goat_cheese`, `food52_fluffiest`).
+      6/10 fail: `gordon_ramsay` (transient 503, retry should work), `bon_appetit` (0 steps
+      survive junk filtering — needs a site-specific selector), and 4 sites return
+      `403 Forbidden` (`martha_stewart`, `the_kitchn_soft_creamy`,
+      `simply_recipes_creme_fraiche`, `food_wine_brown_butter` — bot-blocked, no schema.org
+      fallback attempted yet). **New open item, see below.**
+- [x] **Junk filter on real pages.** 0% drop rate across the 4 recipes that ingested
+      (`k1 eval` → `Junk drop rate: 0.0%`) — no genuine step lost, but also nothing to prove
+      the filter fires correctly on `martha_stewart`'s known SEO tail since that recipe
+      403s before reaching the parser. Re-test once the 403 issue is fixed.
+- [x] **Fingerprint merge rate.** 16 nodes fused from 16 extracted steps (4 recipes, no
+      cross-recipe merges yet at this corpus size) — expected, since the 4 recipes ingested
+      have little step-level overlap. Re-check once more of the 10 are ingesting.
+- [ ] **Branch preservation.** Not yet meaningfully testable — only 4/10 recipes ingested,
+      and none of the intended-to-be-parallel branches (butter vs oil, low vs high heat)
+      landed in this batch. Re-test once scraper coverage improves.
+- [ ] **Pyvis rendering at full size.** `graph.json` (16 nodes, 121 edges) now exists at
+      `k1/data/k1/graph.json`, but the Streamlit app has not yet been launched against it.
+- [x] **REQUIRES cycle-breaker tuning.** `L3/removed_edges.json` written; acyclicity gate
+      (Gate 2) passed cleanly on the real 16-node/121-edge graph. No excessive edge removal
+      observed at this size.
+
+### New items found during the smoke test (k1-0.2.1)
+
+- [ ] **6/10 recipe URLs fail to scrape.** `gordon_ramsay` (503, likely transient — retry),
+      `bon_appetit` (0 steps after junk filtering — needs a per-site selector or manual HTML
+      fallback), `martha_stewart` / `the_kitchn_soft_creamy` / `simply_recipes_creme_fraiche` /
+      `food_wine_brown_butter` (403 Forbidden — bot-blocked, consider a different User-Agent,
+      a headless browser, or manually saved HTML as a last resort).
+- [ ] **Gold annotation still not done.** `k1 eval` reports `Gold recipes evaluated: 0`.
+      `serious_eats` did ingest and extract successfully in this run, so at minimum that one
+      could be annotated next; `gordon_ramsay` and `bon_appetit` need the scraper fix first.
+- [ ] **Live Neo4j ingestion untested.** `k1 store --apply-schema` was not exercised against
+      a live database this run (`--no-neo4j` was used deliberately to keep the smoke test
+      fast). Worth doing once the corpus is bigger.
+- [ ] **Streamlit viz untested against real data.** `k1 viz --run smoke01` has not been
+      launched yet.
 
 ---
 
@@ -231,43 +86,93 @@ Nothing in this list has been exercised yet — see Section G.
 
 ## G. Done and verified
 
+### k1-0.1.0 scaffold
 - [x] **Package scaffold** — `k1/` with `ingest`, `extract`, `critic`, `fuse`, `validate`,
       `store`, `viz`, `eval` subpackages and a `k1` console entry point.
-- [x] **CLI registers all 10 commands** — `uv run k1 --help` verified:
-      `run, ingest, extract, critic, fuse, validate, store, eval, viz, review`.
-- [x] **Dependencies install** — `uv sync` completes; `uv.lock` committed.
-- [x] **28/28 tests pass** — `uv run pytest tests/ -v`. Coverage is the K2 compile map
-      (16 cases), the junk filter (6), and validation gates 2/3/5/6 (6).
-- [x] **Frozen config in place** — `ontology.yaml` (3 node types, 5 edge types, K2 compile map,
-      canonical entities), `physics_bounds.yaml` (62 °C, 70 °C, 140 °C, 150 °C, syneresis),
-      `models.yaml` (generator and critic from different families), `recipes.yaml`
-      (10 scrambled-egg URLs, 3 marked `gold: true`).
-- [x] **Generator and critic are different model families** — `groq/llama-3.3-70b-versatile`
-      vs `openrouter/google/gemini-2.0-flash-lite`, per the bias control in the eval protocol.
-- [x] **Non-scrambled dishes excluded** from the corpus, unlike the Cooking-Advisor prototype.
-- [x] **Cooking-Advisor graph is not ingested** — `data/kag/full_graph.json` is not read
-      anywhere in `k1/`. Recorded in `CHANGELOG.md`.
-- [x] **Docs written and cross-linked** — `Notes/08-k1-pipeline.md`, `Notes/09-k1-evaluation.md`,
-      both added to `Notes/README.md`; `Notes/00-agent-briefing.md` points at `k1/`.
-- [x] **Gold scaffolding ready** — `ANNOTATION_PROTOCOL.md`, `entity_aliases.yaml`, and three
-      placeholder files for the held-out recipes.
-- [x] **Bugs A1 and A2 reproduced locally** with scratch scripts, so they are confirmed rather
-      than suspected.
+- [x] **CLI registers all 10 commands** — `uv run k1 --help` verified.
+- [x] **Dependencies install** — `uv sync` completes.
+- [x] **Frozen config in place** — `ontology.yaml`, `physics_bounds.yaml`, `models.yaml`,
+      `recipes.yaml`.
+- [x] **Generator and critic are different model families** — bias control confirmed.
+- [x] **Non-scrambled dishes excluded** from the corpus.
+- [x] **Cooking-Advisor graph is not ingested** by any `k1/` code.
+- [x] **Docs written and cross-linked** — `Notes/08`, `Notes/09`, `Notes/README.md`,
+      `Notes/00-agent-briefing.md`.
+- [x] **Gold scaffolding ready** — `ANNOTATION_PROTOCOL.md`, `entity_aliases.yaml`, three
+      placeholder files.
+
+### k1-0.2.0 fix pass (all fixed and regression-tested; `uv run pytest tests/ -v` 52/52)
+- [x] **A1 Temperature regex** — added `temperature_c: Optional[float]` to `ExtractedNode`;
+      replaced whole-JSON digit scan with `physics.find_invented_temperatures` (unit-bearing
+      only). `test_temperature_check.py` (10 cases).
+- [x] **A2 REQUIRES cycles** — REQUIRES now built within-recipe (earlier producer → later
+      consumer only); dedup via `set`; `_break_cycles` pass writes `L3/removed_edges.json`.
+      `test_dag_cycles.py` (2 cases).
+- [x] **Provenance drift** — all five parallel lists always appended together; `confidences`
+      field added to `K1Node`; `mean_confidence` derived from `confidences`. `test_provenance_alignment.py` (2 cases).
+- [x] **Gold recipe skips removed** — `extract` and `fuse` no longer skip gold recipes;
+      hold-out means "not a few-shot example" only.
+- [x] **B1 Safety-bound coverage** — `gold_comparison` now reads from `L3/fused_dag.json`.
+- [x] **B2 Alias accuracy** — implemented in `l3_metrics` against `entity_aliases.yaml`.
+- [x] **B3 Gate 4 tautology** — thermality re-derived from `physics.is_thermal_action`;
+      thermal Process without bounds now fails. `test_gate4_thermal.py` (4 cases).
+- [x] **B4 L1 metrics** — real Pydantic schema validation; `_filter_steps` returns
+      `(kept, dropped_count)`; `ingest/runner.py` writes `L1/ingest_stats.json`.
+- [x] **C1 sentence-transformers removed** — from `pyproject.toml` and `models.yaml`.
+      ER is dictionary-only for v1; recorded in `CHANGELOG.md`.
+- [x] **C2 Revision hint wired** — `revision_hint` threaded through `extract_node` and
+      `_build_prompt`; second critic pass persisted as `*.critic.r2.json`.
+- [x] **C3 Graph schema** — `config/graph_schema.cypher` added; `k1 store --apply-schema`
+      flag added to CLI.
+- [x] **C4 ingest_neo4j `/tmp` round-trip** — `write_cypher` returns `(text, path)`;
+      `ingest_neo4j` uses the string directly.
+- [x] **GoldNode aligned** — nested `expected` shape matching `ANNOTATION_PROTOCOL.md`.
+      `test_gold_schema.py` (6 cases).
+- [x] **`k1 eval --check-gold`** added.
+- [x] **`_build_nx` deleted** from `gates.py`.
+- [x] **`viz --run` parsing** — `app.py` parses `sys.argv` for `--run` to preselect run.
+- [x] **Empty `[tool.uv.sources]` removed** from `pyproject.toml`.
+- [x] **Redundant `CriticOutput` import removed** from `cli.py`.
+- [x] **`.python-version` added** — pinned to `3.14.3`.
+
+### k1-0.2.1 first live smoke test (`smoke01`) — full findings in `CHANGELOG.md`
+- [x] **Model pins repaired.** Groq retired `llama-3.3-70b-versatile`; OpenRouter's free-tier
+      fallback slugs went paid-only; Gemini retired `gemini-2.0-flash-lite` and deprecated the
+      `google.generativeai` SDK. New pins: generator `groq/qwen/qwen3.8-27b`, critic
+      `gemini/gemini-3.5-flash`. `_get_gemini()` now uses Google's OpenAI-compatible endpoint;
+      `_get_groq()` switched to `instructor.Mode.JSON` (tool-calling mode failed on Groq's
+      current OSS models).
+- [x] **Mojibake bug fixed** (`ingest/fetcher.py`) — `requests` was decoding UTF-8 apostrophes
+      as ISO-8859-1 when a site omitted an explicit charset header, breaking `source_span`
+      grounding. Fixed via `resp.apparent_encoding`.
+- [x] **`fuse` command's stale critic-verdict bug fixed** (`cli.py`) — it only ever checked
+      the first-pass `.critic.json`, never `.critic.r2.json`. Fixed to prefer R2 when present.
+- [x] **`l3_metrics` alias-accuracy crash fixed** (`eval/metrics.py`) — assumed the wrong
+      YAML shape for `entity_aliases.yaml`. Fixed to read the real nested
+      `{"aliases": [{"canonical": ..., "aliases": [...]}]}` schema. `test_alias_accuracy.py`
+      (3 cases). **55/55 tests pass.**
+- [x] **First full end-to-end run completed:** `k1 ingest → extract → critic → fuse →
+      validate → store → eval` all ran successfully on `smoke01` (4/10 recipes; see Section E
+      for scraper gaps on the other 6). All 6 validation gates passed. `graph.json` and
+      `graph.cypher` exist at `k1/data/k1/`.
 
 ### Explicitly not done yet
 
-- [ ] No end-to-end run has been executed. No network fetch, no LLM call, no `graph.json`.
-- [ ] Gold files are placeholders; no recipe has been annotated.
+- [ ] 6/10 recipe URLs still fail to scrape (503 / 403 / junk-filtered-to-zero) — see
+      Section E "New items found during the smoke test".
+- [ ] Gold files are still placeholders; no recipe has been annotated, so `gold_comparison`
+      reports 0 recipes evaluated even though the pipeline itself now runs cleanly.
 - [ ] The Streamlit app has never been launched against real data.
-- [ ] Neo4j ingestion has never been run against a live database.
+- [ ] Neo4j ingestion (including the new `--apply-schema` path) has never been run against a
+      live database.
 
 ---
 
 ## Suggested order of work
 
-1. Fix A1 and A2, with regression tests for both. Nothing downstream is trustworthy until then.
-2. Smoke test on one recipe; read the extracted JSON by hand.
-3. Fix B1 and B3 so the eval report is not misleading.
-4. Annotate the three gold recipes (Section 1 of `Notes/09-k1-evaluation.md`).
-5. Full `k1 run`, then `k1 eval`, then paste the summary into `CHANGELOG.md` under `k1-0.1.0`.
-6. Work through Section C gaps and re-run; every change gets a new changelog entry.
+1. Fix the 6 failing scraper URLs (503 retry, junk-filter selector, 403 bot-blocking).
+2. Annotate the three gold recipes (Section 1 of `Notes/09-k1-evaluation.md`) — at least
+   `serious_eats`, which already ingests and extracts cleanly.
+3. Re-run `k1 run` on the full corpus, then `k1 eval`, and paste the summary into
+   `CHANGELOG.md` under a new version entry.
+4. Launch `k1 viz --run <id>` and `k1 store --apply-schema` against a live Neo4j instance.

@@ -10,7 +10,7 @@
 | Physics bounds | Frozen in `k1/config/physics_bounds.yaml`. Temperature values are never invented by the generator. |
 | Gold labels | Annotated by the thesis author against the runtime node schema. Stored in `k1/data/gold/`. Committed and never modified after first annotation. |
 | Generator ≠ Critic | Generator model and critic model are different model families (see `CHANGELOG.md` model pins). |
-| Gold hold-out | The 3 gold recipes are never used as few-shot examples in extraction prompts. |
+| Gold hold-out | The 3 gold recipes are extracted and included in the fused graph like any other recipe. Hold-out means they are **never placed in the generator prompt as few-shot examples** (and the current prompt has no few-shot examples). |
 
 ## Gold set v1
 

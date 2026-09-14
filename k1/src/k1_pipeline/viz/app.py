@@ -40,20 +40,33 @@ DEFAULT_EDGE_COLOR = "#AAAAAA"
 
 st.set_page_config(page_title="K1 Graph", layout="wide", initial_sidebar_state="expanded")
 
+# ── Parse --run from sys.argv (passed by `k1 viz --run <id>`) ─────────────────
+
+_cli_run_id: str | None = None
+_argv = sys.argv
+if "--run" in _argv:
+    _idx = _argv.index("--run")
+    if _idx + 1 < len(_argv):
+        _cli_run_id = _argv[_idx + 1]
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 
 with st.sidebar:
     st.title("K1 Knowledge Graph")
     st.markdown("---")
 
-    # Run selector
+    # Run selector -- preselect the run passed via --run if present
     runs_dir = DATA / "artifacts" / "runs"
     available_runs = sorted([d.name for d in runs_dir.iterdir() if d.is_dir()]) if runs_dir.exists() else []
     if not available_runs:
         st.warning("No runs found. Run `k1 run` first.")
         st.stop()
 
-    run_id = st.selectbox("Run", available_runs, index=len(available_runs) - 1)
+    default_idx = len(available_runs) - 1
+    if _cli_run_id and _cli_run_id in available_runs:
+        default_idx = available_runs.index(_cli_run_id)
+
+    run_id = st.selectbox("Run", available_runs, index=default_idx)
     run_dir = runs_dir / run_id
 
     # Load graph.json for this run

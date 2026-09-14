@@ -65,10 +65,14 @@ OR match one of these known bounds:
 """
 
 
-def _build_prompt(recipe: CanonicalRecipe, step_number: int) -> str:
+def _build_prompt(
+    recipe: CanonicalRecipe,
+    step_number: int,
+    revision_hint: str | None = None,
+) -> str:
     step = next(s for s in recipe.steps if s.number == step_number)
     ingredient_list = ", ".join(recipe.ingredients[:8]) or "not listed"
-    return (
+    prompt = (
         f"Recipe: {recipe.title}\n"
         f"Variant: {recipe.variant_label}\n"
         f"Ingredients: {ingredient_list}\n\n"
@@ -76,6 +80,9 @@ def _build_prompt(recipe: CanonicalRecipe, step_number: int) -> str:
         "Extract the K1 node for this step. "
         "source_span must be copied verbatim from the step text above."
     )
+    if revision_hint:
+        prompt += f"\n\nCritic revision note (fix these issues): {revision_hint}"
+    return prompt
 
 
 def compile_k2_label(physics_state: str) -> K2Label:
@@ -101,6 +108,7 @@ def extract_node(
     recipe: CanonicalRecipe,
     step_number: int,
     artifact_dir: Path,
+    revision_hint: str | None = None,
 ) -> ExtractedNode:
     """
     Run the generator for one step. Returns an ExtractedNode.
@@ -118,7 +126,7 @@ def extract_node(
 
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": _build_prompt(recipe, step_number)},
+        {"role": "user", "content": _build_prompt(recipe, step_number, revision_hint)},
     ]
 
     node = call_with_fallback(

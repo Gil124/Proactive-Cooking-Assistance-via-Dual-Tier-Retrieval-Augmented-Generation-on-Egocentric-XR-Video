@@ -38,9 +38,10 @@ _gemini: instructor.Instructor | None = None
 def _get_groq() -> instructor.Instructor:
     global _groq
     if _groq is None:
+        # Groq OSS models require JSON mode (tool calling is unreliable on non-OpenAI OSS models)
         _groq = instructor.from_openai(
             OpenAI(api_key=os.environ.get("GROQ_API_KEY", ""), base_url="https://api.groq.com/openai/v1"),
-            mode=instructor.Mode.TOOLS,
+            mode=instructor.Mode.JSON,
         )
     return _groq
 
@@ -56,13 +57,19 @@ def _get_openrouter() -> instructor.Instructor:
 
 
 def _get_gemini() -> instructor.Instructor:
+    """
+    Use Google's OpenAI-compatible endpoint so we can use the standard
+    instructor.from_openai path (no google.generativeai SDK required).
+    Model name is passed per-call, not fixed at client construction time.
+    """
     global _gemini
     if _gemini is None:
-        import google.generativeai as genai
-        genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
-        _gemini = instructor.from_gemini(
-            client=genai.GenerativeModel(model_name="gemini-2.0-flash-lite"),
-            mode=instructor.Mode.GEMINI_JSON,
+        _gemini = instructor.from_openai(
+            OpenAI(
+                api_key=os.environ.get("GEMINI_API_KEY", ""),
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            ),
+            mode=instructor.Mode.TOOLS,
         )
     return _gemini
 
@@ -73,7 +80,8 @@ def _resolve(full_model: str) -> tuple[instructor.Instructor, str | None]:
     if full_model.startswith("openrouter/"):
         return _get_openrouter(), full_model[len("openrouter/"):]
     if full_model.startswith("gemini/"):
-        return _get_gemini(), None
+        # e.g. "gemini/gemini-3.5-flash" → model name is the part after "gemini/"
+        return _get_gemini(), full_model[len("gemini/"):]
     # litellm fallback
     import litellm
     return instructor.from_litellm(litellm.completion), full_model

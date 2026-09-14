@@ -6,34 +6,25 @@ Validates each ExtractedNode against:
   3. No invented temperatures (not in step text AND not in physics_bounds.yaml)
   4. Structural consistency
 
-On 'revise': one revision loop is triggered (generator re-called with critic instructions).
+On 'revise': one revision loop is triggered (generator re-called with revision_hint).
 On 'reject': the node is dropped from the pipeline with a warning.
 """
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 from rich.console import Console
 
-from k1_pipeline.config_loader import load_models, load_physics_bounds
+from k1_pipeline.config_loader import load_models
 from k1_pipeline.extract.llm_client import CRITIC_MODELS, call_with_fallback
 from k1_pipeline.models import CanonicalRecipe, CriticOutput, CriticVerdict, ExtractedNode, K2Label
+from k1_pipeline.physics import find_invented_temperatures
 
 console = Console()
 
 _MODELS_CFG = load_models()
 _CRITIC_MODEL = _MODELS_CFG["critic"]["model"]
-_PHYSICS_BOUNDS = load_physics_bounds()
-_KNOWN_TEMPS = {b["temperature_c"] for b in _PHYSICS_BOUNDS if b["temperature_c"] is not None}
-
-_TEMP_RE = re.compile(r"\b(\d{2,3})\b")
-
-
-def _extract_temp_values(text: str) -> set[float]:
-    return {float(m.group(1)) for m in _TEMP_RE.finditer(text)}
-
 
 _SYSTEM_PROMPT = """\
 You are a strict knowledge graph critic for cooking recipes.
@@ -47,22 +38,30 @@ Your verdict must be one of:
 Rules:
 1. source_span must be a verbatim substring of the step text. If not -> revise or reject.
 2. k2_label must be one of: liquid, coagulating, solid, scorched. Wrong -> revise.
-3. Temperature values in the extraction must appear verbatim in the step text
-   OR match a known physics bound (62, 70, 140, 150 C). Invented temps -> reject.
+3. temperature_c (if set) must appear verbatim in the step text or match a known physics bound.
+   Invented temps -> reject.
 4. A Process node without pre_conditions or post_conditions -> revise.
 5. grounding_quote must be a substring of the step text that confirms (or denies) the extraction.
 """
 
 
-def _build_critic_prompt(recipe: CanonicalRecipe, step_number: int, node: ExtractedNode) -> str:
+def _build_critic_prompt(
+    recipe: CanonicalRecipe,
+    step_number: int,
+    node: ExtractedNode,
+    revision_hint: str | None = None,
+) -> str:
     step = next(s for s in recipe.steps if s.number == step_number)
     node_json = node.model_dump_json(indent=2)
-    return (
+    prompt = (
         f"Step text: \"{step.text}\"\n\n"
         f"Extracted node:\n{node_json}\n\n"
         "Verify the extraction against the step text. "
         "grounding_quote must be a verbatim substring of the step text above."
     )
+    if revision_hint:
+        prompt += f"\n\nPrevious revision note: {revision_hint}"
+    return prompt
 
 
 def _deterministic_check(node: ExtractedNode, step_text: str) -> list[str]:
@@ -77,11 +76,10 @@ def _deterministic_check(node: ExtractedNode, step_text: str) -> list[str]:
         if cond.k2_label.value not in valid:
             issues.append(f"Invalid k2_label '{cond.k2_label}' on entity '{cond.entity_id}'")
 
-    extracted_temps = _extract_temp_values(node.model_dump_json())
-    step_temps = _extract_temp_values(step_text)
-    for t in extracted_temps:
-        if t not in step_temps and t not in _KNOWN_TEMPS:
-            issues.append(f"Invented temperature {t} C (not in step text or physics_bounds)")
+    # Use the shared physics helper: only checks unit-bearing temps and temperature_c field
+    invented = find_invented_temperatures(node, step_text)
+    for t in invented:
+        issues.append(f"Invented temperature {t} C (not in step text or physics_bounds)")
 
     return issues
 
@@ -91,11 +89,13 @@ def verify_node(
     step_number: int,
     node: ExtractedNode,
     artifact_dir: Path,
+    revision_hint: str | None = None,
+    suffix: str = "critic",
 ) -> CriticOutput:
     artifact_dir.mkdir(parents=True, exist_ok=True)
-    artifact_path = artifact_dir / f"{recipe.recipe_id}_step{step_number:02d}.critic.json"
+    artifact_path = artifact_dir / f"{recipe.recipe_id}_step{step_number:02d}.{suffix}.json"
 
-    if artifact_path.exists():
+    if artifact_path.exists() and suffix == "critic":
         try:
             return CriticOutput.model_validate_json(artifact_path.read_text())
         except Exception:
@@ -126,7 +126,7 @@ def verify_node(
 
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": _build_critic_prompt(recipe, step_number, node)},
+        {"role": "user", "content": _build_critic_prompt(recipe, step_number, node, revision_hint)},
     ]
     result = call_with_fallback(CRITIC_MODELS, CriticOutput, messages, max_tokens=512)
     result.node_id = node.node_id
@@ -144,6 +144,11 @@ def verify_recipe(
     """
     Verify all extracted nodes. Returns (node, critic) pairs for accepted/revised nodes only.
     Rejected nodes are excluded with a warning.
+
+    Revision loop (capped at one round):
+    - On 'revise', pass revision_instructions back to the generator as revision_hint.
+    - Re-run the critic on the revised node (persisted as *.critic.r2.json).
+    - Accept or reject the revised node without further revision.
     """
     from k1_pipeline.extract.generator import extract_node  # lazy to avoid circular
 
@@ -158,13 +163,32 @@ def verify_recipe(
 
         if critic_out.verdict == CriticVerdict.accept:
             results.append((node, critic_out))
+
         elif critic_out.verdict == CriticVerdict.revise:
-            console.print(f"    [yellow]REVISE step {sn}:[/yellow] {'; '.join(critic_out.issues)}")
+            hint = critic_out.revision_instructions or "; ".join(critic_out.issues)
+            console.print(f"    [yellow]REVISE step {sn}:[/yellow] {hint}")
+
+            # Delete cached gen artifact so generator re-runs
             cached = gen_dir / f"{recipe.recipe_id}_step{sn:02d}.gen.json"
             if cached.exists():
                 cached.unlink()
-            revised_node = extract_node(recipe, sn, gen_dir)
-            results.append((revised_node, critic_out))
+
+            # Re-generate with the revision hint threaded in
+            revised_node = extract_node(recipe, sn, gen_dir, revision_hint=hint)
+
+            # Second critic pass (persisted separately so first pass is preserved)
+            critic_r2 = verify_node(
+                recipe, sn, revised_node, critic_dir,
+                revision_hint=hint, suffix="critic.r2",
+            )
+            console.print(
+                f"    [dim]R2 verdict: {critic_r2.verdict.value}[/dim]"
+            )
+            if critic_r2.verdict != CriticVerdict.reject:
+                results.append((revised_node, critic_r2))
+            else:
+                console.print(f"    [red]REJECT after revision step {sn}[/red]")
+
         else:
             console.print(f"    [red]REJECT step {sn}:[/red] {'; '.join(critic_out.issues)}")
 

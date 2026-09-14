@@ -15,8 +15,6 @@ dependencies = [
     "litellm>=1.40",
     # Google Gemini
     "google-generativeai>=0.7",
-    # Embeddings (local)
-    "sentence-transformers>=3.0",
     # Graph + validation
     "networkx>=3.3",
     # Neo4j (optional, for live ingestion)
@@ -42,8 +40,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/k1_pipeline"]
 
-[tool.uv.sources]
-# no special sources
 
 [tool.ruff]
 line-length = 100

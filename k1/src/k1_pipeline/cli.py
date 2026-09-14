@@ -112,9 +112,7 @@ def extract(run_id):
 
     console.print("[bold]L2: Extract (generator)[/bold]")
     for recipe in recipes.values():
-        if recipe.gold:
-            console.print(f"  [dim]Skipping gold recipe {recipe.recipe_id} (held-out)[/dim]")
-            continue
+        # Gold recipes ARE extracted and graphed; hold-out = not used as few-shot examples.
         console.print(f"  Extracting {recipe.recipe_id} ({len(recipe.steps)} steps)...")
         nodes = extract_recipe(recipe, run_dir)
         console.print(f"    [green]OK[/green] {len(nodes)} nodes extracted")
@@ -133,8 +131,6 @@ def critic(run_id):
 
     console.print("[bold]L2: Critic[/bold]")
     for recipe in recipes.values():
-        if recipe.gold:
-            continue
         # Load extracted nodes for this recipe
         gen_files = sorted(gen_dir.glob(f"{recipe.recipe_id}_*.gen.json"))
         if not gen_files:
@@ -149,7 +145,6 @@ def critic(run_id):
 @click.option("--run", "run_id", required=True)
 def fuse(run_id):
     """L3: Resolve entities and build the fused multi-path DAG."""
-    from k1_pipeline.critic.critic import CriticOutput
     from k1_pipeline.fuse.dag_builder import build_k1_graph
     from k1_pipeline.models import CriticOutput as CO, ExtractedNode
 
@@ -161,8 +156,6 @@ def fuse(run_id):
     console.print("[bold]L3: Fuse[/bold]")
     all_pairs: list[tuple[list, str]] = []
     for recipe in recipes.values():
-        if recipe.gold:
-            continue
         gen_files = sorted(gen_dir.glob(f"{recipe.recipe_id}_*.gen.json"))
         if not gen_files:
             continue
@@ -170,7 +163,14 @@ def fuse(run_id):
         for gf in gen_files:
             node = ExtractedNode.model_validate_json(gf.read_text())
             step_n = node.step_number
-            critic_file = critic_dir / f"{recipe.recipe_id}_step{step_n:02d}.critic.json"
+
+            # Prefer the R2 critic verdict when a revision round happened -- that is
+            # the FINAL verdict on the (already-revised) node currently on disk.
+            # Falling back to the first-pass verdict only when no revision occurred.
+            r2_file = critic_dir / f"{recipe.recipe_id}_step{step_n:02d}.critic.r2.json"
+            r1_file = critic_dir / f"{recipe.recipe_id}_step{step_n:02d}.critic.json"
+
+            critic_file = r2_file if r2_file.exists() else r1_file
             if critic_file.exists():
                 critic_out = CO.model_validate_json(critic_file.read_text())
                 if critic_out.verdict.value != "reject":
@@ -210,7 +210,8 @@ def validate(run_id):
 @cli.command()
 @click.option("--run", "run_id", required=True)
 @click.option("--no-neo4j", is_flag=True, default=False)
-def store(run_id, no_neo4j):
+@click.option("--apply-schema", is_flag=True, default=False, help="Apply graph_schema.cypher constraints before ingestion")
+def store(run_id, no_neo4j, apply_schema):
     """L4: Write graph.json, graph.cypher, optionally ingest into Neo4j."""
     from k1_pipeline.models import K1Graph
     from k1_pipeline.store.writer import ingest_neo4j, write_cypher, write_json
@@ -228,7 +229,7 @@ def store(run_id, no_neo4j):
     json_path = write_json(graph, K1_OUT)
     console.print(f"  JSON  -> {json_path}")
 
-    cypher_path = write_cypher(graph, K1_OUT)
+    cypher_text, cypher_path = write_cypher(graph, K1_OUT)
     console.print(f"  Cypher -> {cypher_path}")
 
     # Also copy to run artifacts
@@ -239,20 +240,31 @@ def store(run_id, no_neo4j):
         import os
         if os.environ.get("NEO4J_URI"):
             console.print("  Ingesting into Neo4j...")
-            ingest_neo4j(graph)
+            schema_path = ROOT / "config" / "graph_schema.cypher" if apply_schema else None
+            ingest_neo4j(graph, cypher_text=cypher_text, schema_path=schema_path)
         else:
             console.print("  [yellow]NEO4J_URI not set — skipping live ingestion.[/yellow]")
 
 
 @cli.command("eval")
 @click.option("--run", "run_id", required=True)
-def eval_(run_id):
+@click.option("--check-gold", is_flag=True, default=False, help="Validate gold files against GoldNode schema before scoring")
+def eval_(run_id, check_gold):
     """Compute per-stage metrics and write an eval report."""
-    from k1_pipeline.eval.metrics import write_report
+    from k1_pipeline.eval.metrics import validate_gold_files, write_report
 
     run_dir = RUNS_DIR / run_id
     gold_dir = DATA / "gold"
     recipes_dir = DATA / "recipes"
+
+    if check_gold:
+        console.print("[bold]Checking gold file schemas...[/bold]")
+        errors = validate_gold_files(gold_dir)
+        if errors:
+            for e in errors:
+                console.print(f"  [red]{e}[/red]")
+            sys.exit(1)
+        console.print("  [green]All gold files valid.[/green]")
 
     console.print("[bold]Eval[/bold]")
     report = write_report(run_id, run_dir, recipes_dir, gold_dir)

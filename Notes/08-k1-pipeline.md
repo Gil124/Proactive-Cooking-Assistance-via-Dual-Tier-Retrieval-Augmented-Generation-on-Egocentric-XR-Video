@@ -132,20 +132,39 @@ Rules enforced by critic:
 - `source_span` must be a substring of the step text. If not → `revise`.
 - `k2_label` must be one of the four valid labels. If not → `reject`.
 
+### L2 extract contract — temperature field
+
+The generator must set `temperature_c: Optional[float]` only when the step text explicitly
+states a temperature. This field is checked directly by the critic for invented-temperature
+detection. **Never infer it from digit patterns; leave it null if no temperature is stated.**
+
 ### L3 fuse contracts
 
-Input: all accepted/revised generator outputs from L2.
-Output: `data/artifacts/runs/{run_id}/L3/fused_dag.json`.
+Input: all accepted/revised generator outputs from L2 (gold recipes included — see below).
+Output: `data/artifacts/runs/{run_id}/L3/fused_dag.json` and `L3/removed_edges.json`.
 
 Fingerprint for node dedup: `sha256(node_type + canonical_action + k2_pre + k2_post)`.
-Entity aliases resolved via embedding top-3 then LLM pairwise only on pairs with cosine similarity > 0.75 and < 0.95 (the ambiguous band).
+Entity aliases resolved via **dictionary-only lookup** from `k1/config/ontology.yaml` (v1).
+Embedding + LLM pairwise disambiguation is documented as a future upgrade.
+
+**REQUIRES edge construction (k1-0.2.0 rule):**
+- REQUIRES edges are built *within a single recipe*, using that recipe's step ordering.
+- An edge is added from node i to node j only when `step_index(i) < step_index(j)` and
+  a post-condition of step i matches a pre-condition of step j (`entity_id` + `k2_label`).
+- All edges (NEXT and REQUIRES) are deduplicated via a `(from_id, to_id, edge_type)` set.
+
+**Cycle-breaking pass:**
+After all NEXT and REQUIRES edges are added, `_break_cycles` runs:
+- While any cycle exists in the NEXT + REQUIRES subgraph, remove one edge per cycle:
+  prefer removing REQUIRES over NEXT; among ties prefer the lowest-weight edge.
+- Removed edges are written to `L3/removed_edges.json` for inspection.
 
 ### L4 validate gates (all must pass before store)
 
 1. Pydantic schema valid.
-2. Graph is acyclic (DFS).
+2. Graph (NEXT + REQUIRES edges) is acyclic.
 3. Every `Process` node has ≥ 1 pre_condition and ≥ 1 post_condition.
-4. Every `Process` with `node_type=Process` and any thermal action has a `HAS_SAFETY_BOUND` edge.
+4. **Gate 4 thermal rule (k1-0.2.0):** Thermality is re-derived from `physics.is_thermal_action(node.action_phrase)` — it is **not** inferred from the presence of `safety_bounds`. A thermal `Process` that is missing `safety_bounds` OR is missing a `HAS_SAFETY_BOUND` edge **fails** this gate.
 5. Every `k2_label ∈ {liquid, coagulating, solid, scorched}`.
 6. Every `source_span` is a substring of the recipe step text from `canonical.json`.
 
@@ -167,4 +186,4 @@ Do not add those node types to the runtime graph.
 
 **Allowed:** scrambled-egg recipes in `k1/config/recipes.yaml`.
 **Excluded:** Menemen, Egg Bhurji, Chinese tomato-egg stir-fry, Huevos a la Mexicana, any non-scrambled dish.
-**Gold hold-out:** Serious Eats, Gordon Ramsay, Bon Appétit — must not be used as prompt examples.
+**Gold hold-out (clarified in k1-0.2.0):** Serious Eats, Gordon Ramsay, Bon Appétit are extracted and included in the fused graph like any other recipe. Hold-out strictly means they are **never placed in the generator prompt as few-shot examples**. The current generator prompt carries no few-shot examples, so this is already enforced.

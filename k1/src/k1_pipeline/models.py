@@ -58,8 +58,7 @@ class StateCondition(BaseModel):
     """A (entity, physics_state, k2_label) triple used in pre/post conditions."""
     entity_id: str = Field(description="Canonical entity name, e.g. 'egg', 'butter'")
     physics_state: str = Field(
-        description="Fine-grained physics state from Cooking-Advisor vocabulary, "
-                    "e.g. 'soft_curd', 'HETEROGENEOUS_LIQUID'"
+        description="Fine-grained physics state, e.g. 'soft_curd', 'HETEROGENEOUS_LIQUID'"
     )
     k2_label: K2Label = Field(
         description="Compiled K2 label: liquid | coagulating | solid | scorched"
@@ -80,8 +79,8 @@ class TimingConstraints(BaseModel):
 class ExtractedNode(BaseModel):
     """Generator output for one recipe step."""
     node_id: UUID = Field(default_factory=uuid4)
-    recipe_id: str
-    step_number: int
+    recipe_id: str = Field(default="")
+    step_number: int = Field(default=0)
     node_type: NodeType = Field(description="Process | Transfer | Plate")
     action_phrase: str = Field(description="Short verb phrase naming the action, e.g. 'whisk eggs'")
     pre_conditions: list[StateCondition] = Field(
@@ -98,8 +97,19 @@ class ExtractedNode(BaseModel):
     source_span: str = Field(
         description="Verbatim substring of the step text that grounds this extraction."
     )
+    # Explicit temperature field: LLM sets this ONLY when the step text states a temperature.
+    # temperature_c is checked directly for invented-temperature detection.
+    # Never inferred from digit patterns in the JSON dump.
+    temperature_c: Optional[float] = Field(
+        default=None,
+        description=(
+            "Temperature in Celsius stated explicitly in the recipe step text. "
+            "Set ONLY when the step mentions a specific temperature. "
+            "Do NOT invent a value; leave null if the text has no temperature."
+        ),
+    )
     confidence: float = Field(ge=0.0, le=1.0)
-    extractor_model: str
+    extractor_model: str = Field(default="")
 
     @model_validator(mode="after")
     def check_process_conditions(self) -> "ExtractedNode":
@@ -121,7 +131,7 @@ class CriticVerdict(str, Enum):
 
 class CriticOutput(BaseModel):
     """Critic model output for one extracted node."""
-    node_id: UUID
+    node_id: UUID = Field(default_factory=uuid4)
     verdict: CriticVerdict
     grounding_quote: str = Field(
         description="A substring of the source step text confirming or denying the extraction."
@@ -130,7 +140,7 @@ class CriticOutput(BaseModel):
         default_factory=list,
         description="List of identified problems. Empty for 'accept'."
     )
-    critic_model: str
+    critic_model: str = Field(default="")
     revision_instructions: Optional[str] = Field(
         default=None,
         description="Populated only for 'revise' verdict. Specific fix instructions for the generator."
@@ -161,13 +171,14 @@ class K1Node(BaseModel):
     ingredients: list[str]
     tools: list[str]
     safety_bounds: list[SafetyBound] = Field(default_factory=list)
-    # Provenance
+    # Provenance -- parallel lists, one entry per observation (merge appends to all)
     source_recipe_ids: list[str]
     source_step_indices: list[int]
     source_spans: list[str]
     extractor_models: list[str]
     critic_verdicts: list[str]
-    mean_confidence: float
+    confidences: list[float]          # raw per-observation values
+    mean_confidence: float             # derived: mean(confidences)
 
 
 class K1Edge(BaseModel):
@@ -182,7 +193,7 @@ class K1Edge(BaseModel):
 
 class K1Graph(BaseModel):
     """The complete fused K1 graph."""
-    version: str = "k1-0.1.0"
+    version: str = "k1-0.2.0"
     nodes: list[K1Node]
     edges: list[K1Edge]
     ingredient_nodes: list[dict] = Field(default_factory=list)
@@ -192,15 +203,29 @@ class K1Graph(BaseModel):
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
 
+class GoldCondition(BaseModel):
+    """One (entity_id, k2_label) pair in the gold annotation."""
+    entity_id: str
+    k2_label: K2Label
+
+
+class GoldExpected(BaseModel):
+    """The expected extraction values for one recipe step."""
+    node_type: NodeType
+    action_phrase: str
+    pre_conditions: list[GoldCondition] = Field(default_factory=list)
+    post_conditions: list[GoldCondition] = Field(default_factory=list)
+    has_safety_bound: bool = False
+
+
 class GoldNode(BaseModel):
-    """A human-annotated gold node for evaluation."""
+    """
+    A human-annotated gold node for evaluation.
+    Schema matches data/gold/ANNOTATION_PROTOCOL.md exactly.
+    """
     recipe_id: str
     step_number: int
-    expected_node_type: NodeType
-    expected_action_phrase: str
-    expected_pre_k2_labels: list[tuple[str, K2Label]]   # (entity_id, k2_label)
-    expected_post_k2_labels: list[tuple[str, K2Label]]
-    expected_has_safety_bound: bool
+    expected: GoldExpected
     annotator: str
     annotation_date: str
     notes: str = ""

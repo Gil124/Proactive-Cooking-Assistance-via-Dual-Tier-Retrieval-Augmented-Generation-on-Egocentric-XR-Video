@@ -1,0 +1,36 @@
+{
+  "recipe_id": "food52_fluffiest",
+  "title": "The Fluffiest scrambled egg",
+  "source_url": "https://food52.com/recipes/56468-the-fluffiest-scrambled-egg",
+  "variant_label": "Fluffy aerated",
+  "gold": false,
+  "ingredients": [
+    "3  eggs",
+    "1/4 cup Organic soy cream",
+    "1  Scallion",
+    "Salt'n'pepper",
+    "1 tablespoon Goat cheese",
+    "1 handful Any sprout"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "In a bowl whisk the eggs until they are smooth. Add salt, pepper, goat cheese and about half of the soy cream to start."
+    },
+    {
+      "number": 2,
+      "text": "In a well oiled saucepan heated to medium pour the egg mixture. Use a whisk to stir the eggs. Once your eggs begin to coagulate pour the remaining cream and continue to whisk."
+    },
+    {
+      "number": 3,
+      "text": "Continue whisking and cooking until desired consistency. (I personally love when they are wet). Once your eggs are ready, pour into a bowl, put sprouts on top, drizzle with olive oil and you're done!"
+    },
+    {
+      "number": 4,
+      "text": "Serve with your favorite bread ! (I personally love pumpernickel bread)"
+    }
+  ],
+  "temperatures_mentioned": [],
+  "timings_mentioned": []
+}

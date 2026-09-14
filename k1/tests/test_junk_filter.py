@@ -31,8 +31,9 @@ def test_filter_steps_removes_junk():
         RecipeStep(number=2, text="Melt butter in a non-stick pan over low heat."),
         RecipeStep(number=3, text="Other Egg Recipes to Try: Boiled, Fried"),
     ]
-    filtered = _filter_steps(steps)
+    filtered, dropped = _filter_steps(steps)
     assert len(filtered) == 2
+    assert dropped == 1
     assert all("Other" not in s.text for s in filtered)
 
 

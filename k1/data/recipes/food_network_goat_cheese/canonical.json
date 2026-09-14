@@ -1,0 +1,36 @@
+{
+  "recipe_id": "food_network_goat_cheese",
+  "title": "Slow-cooked scrambled eggs with goat cheese",
+  "source_url": "https://foodnetwork.co.uk/recipes/slow-cooked-scrambled-eggs-goat-cheese",
+  "variant_label": "Slow-cooked",
+  "gold": false,
+  "ingredients": [
+    "50g unsalted butter, divided",
+    "16 extra-large eggs",
+    "300ml milk",
+    "1 1/2 tsp salt",
+    "3/4 tsp freshly ground black pepper",
+    "175g fresh goat cheese, such as Montrachet, crumbled",
+    "2 tbsp minced fresh chives"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "1) Heat a charcoal griddle with coals. Spread them out in one dense layer. Heat half of the butter in a large saute or omelette pan over the hot griddle. <p>"
+    },
+    {
+      "number": 2,
+      "text": "2) Whisk the eggs in a bowl with the milk, salt and pepper. Add the eggs to the omelette pan and cook them until done as desired, stirring constantly."
+    },
+    {
+      "number": 4,
+      "text": "3) Remove the pan from the griddle and add the goat cheese, chives and remaining butter. Stir and allow the eggs to sit for 30 seconds, until the cheese begins to melt. Check for seasonings. Serve hot. <p>"
+    }
+  ],
+  "temperatures_mentioned": [],
+  "timings_mentioned": [
+    "30 seconds",
+    "constantly"
+  ]
+}

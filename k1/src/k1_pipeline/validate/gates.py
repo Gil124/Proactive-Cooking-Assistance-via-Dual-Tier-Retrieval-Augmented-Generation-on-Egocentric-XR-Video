@@ -18,19 +18,7 @@ from pathlib import Path
 import networkx as nx
 
 from k1_pipeline.models import K1Graph, K2Label, NodeType
-
-
-def _build_nx(graph: K1Graph) -> nx.DiGraph:
-    G = nx.DiGraph()
-    for node in graph.nodes:
-        G.add_node(node.node_id)
-    for ing in graph.ingredient_nodes:
-        G.add_node(ing["id"])
-    for tool in graph.tool_nodes:
-        G.add_node(tool["id"])
-    for edge in graph.edges:
-        G.add_edge(edge.from_node_id, edge.to_node_id, edge_type=edge.edge_type)
-    return G
+from k1_pipeline.physics import is_thermal_action
 
 
 def validate(graph: K1Graph, canonical_recipes: dict[str, "CanonicalRecipe"]) -> list[str]:  # noqa: F821
@@ -61,13 +49,20 @@ def validate(graph: K1Graph, canonical_recipes: dict[str, "CanonicalRecipe"]) ->
             if not node.post_conditions:
                 errors.append(f"Gate 3 FAIL: Process node '{node.node_id}' has no post_conditions")
 
-    # Gate 4: Thermal Process has HAS_SAFETY_BOUND
+    # Gate 4: Every thermal Process must have >= 1 HAS_SAFETY_BOUND edge.
+    # Thermality is re-derived from action_phrase (not from the presence of safety_bounds)
+    # so nodes that should have bounds but don't are caught.
     safety_from_nodes = {
         e.from_node_id for e in graph.edges if e.edge_type == "HAS_SAFETY_BOUND"
     }
     for node in graph.nodes:
-        if node.node_type == NodeType.Process and node.safety_bounds:
-            if node.node_id not in safety_from_nodes:
+        if node.node_type == NodeType.Process and is_thermal_action(node.action_phrase):
+            if not node.safety_bounds:
+                errors.append(
+                    f"Gate 4 FAIL: Thermal Process '{node.node_id}' "
+                    f"(action='{node.action_phrase}') has no safety_bounds"
+                )
+            elif node.node_id not in safety_from_nodes:
                 errors.append(
                     f"Gate 4 FAIL: Thermal Process '{node.node_id}' has safety_bounds "
                     "but no HAS_SAFETY_BOUND edge in graph.edges"

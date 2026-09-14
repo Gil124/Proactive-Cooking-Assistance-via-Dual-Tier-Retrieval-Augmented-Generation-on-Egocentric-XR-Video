@@ -39,14 +39,16 @@ def _is_junk(text: str) -> bool:
     return False
 
 
-def _filter_steps(steps: list[RecipeStep]) -> list[RecipeStep]:
+def _filter_steps(steps: list[RecipeStep]) -> tuple[list[RecipeStep], int]:
+    """Return (kept_steps, dropped_count)."""
     filtered = [s for s in steps if not _is_junk(s.text)]
+    dropped = len(steps) - len(filtered)
     if len(filtered) < 2:
         raise ValueError(
             f"After junk filtering, only {len(filtered)} step(s) remain. "
             "Check the recipe URL or add a junk filter exception."
         )
-    return filtered
+    return filtered, dropped
 
 
 # ── Temperature / timing extraction ──────────────────────────────────────────
@@ -117,7 +119,7 @@ def _schema_org_to_canonical(data: dict, recipe_id: str, source_url: str, varian
 
     raw_steps = _parse_instructions(data.get("recipeInstructions", []))
     recipe_steps = [RecipeStep(number=i + 1, text=s) for i, s in enumerate(raw_steps) if s]
-    recipe_steps = _filter_steps(recipe_steps)
+    recipe_steps, dropped = _filter_steps(recipe_steps)
 
     all_text = " ".join(s.text for s in recipe_steps)
     temps = list(set(_extract_temps(all_text)))
@@ -137,7 +139,7 @@ def _schema_org_to_canonical(data: dict, recipe_id: str, source_url: str, varian
         steps=recipe_steps,
         temperatures_mentioned=temps,
         timings_mentioned=timings,
-    )
+    ), dropped
 
 
 # ── Heuristic HTML extraction ─────────────────────────────────────────────────
@@ -191,7 +193,7 @@ def _heuristic_extract(html: str, recipe_id: str, source_url: str, variant_label
             break
 
     recipe_steps = [RecipeStep(number=i + 1, text=s) for i, s in enumerate(steps_texts) if s]
-    recipe_steps = _filter_steps(recipe_steps)
+    recipe_steps, dropped = _filter_steps(recipe_steps)
 
     all_text = " ".join(s.text for s in recipe_steps)
     temps = list(set(_extract_temps(all_text)))
@@ -208,7 +210,7 @@ def _heuristic_extract(html: str, recipe_id: str, source_url: str, variant_label
         steps=recipe_steps,
         temperatures_mentioned=temps,
         timings_mentioned=timings,
-    )
+    ), dropped
 
 
 # ── Public interface ──────────────────────────────────────────────────────────
@@ -219,11 +221,12 @@ def parse_recipe(
     source_url: str,
     variant_label: str,
     gold: bool = False,
-) -> CanonicalRecipe:
+) -> tuple[CanonicalRecipe, int]:
     """
-    Parse HTML into a CanonicalRecipe.
+    Parse HTML into a (CanonicalRecipe, dropped_count) tuple.
     Tries schema.org JSON-LD first, falls back to heuristic HTML extraction.
     Raises ValueError if junk filtering leaves fewer than 2 steps.
+    dropped_count is the number of junk steps removed.
     """
     schema_data = _try_schema_org(html)
     if schema_data:

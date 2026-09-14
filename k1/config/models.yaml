@@ -1,26 +1,30 @@
-# Model pins — frozen in k1-0.1.0
+# Model pins — updated in k1-0.2.1 for current provider availability.
 # Record any change in CHANGELOG.md before modifying.
+#
+# Note: Groq retired llama-3.3-70b-versatile as of 2026-09.
+# Gemini routes through the OpenAI-compatible endpoint (google.generativeai SDK removed).
 
 extraction:
-  generator: "groq/llama-3.3-70b-versatile"
+  # Generator must be a different model family from the critic (bias control).
+  # Qwen family (via Groq) for generator; Gemini family for critic.
+  generator: "groq/qwen/qwen3.8-27b"
   temperature: 0
   max_tokens: 2048
 
 critic:
   # Must be a different model family from the generator
-  model: "openrouter/google/gemini-2.0-flash-lite"
+  model: "gemini/gemini-3.5-flash"
   temperature: 0
   max_tokens: 512
 
-embedding:
-  # Local, no API required
-  model: "sentence-transformers/all-MiniLM-L6-v2"
+# embedding block removed in k1-0.2.0 (entity resolution is dictionary-only for v1)
 
 fallback_generators:
-  - "openrouter/qwen/qwen-2.5-72b-instruct:free"
-  - "openrouter/meta-llama/llama-3.3-70b-instruct:free"
-  - "gemini/gemini-2.0-flash-lite"
+  - "groq/qwen/qwen3.6-27b"
+  - "gemini/gemini-3.5-flash-lite"
+  - "openrouter/google/gemini-2.5-flash"
 
 fallback_critics:
-  - "openrouter/qwen/qwen-2.5-72b-instruct:free"
-  - "groq/llama-3.3-70b-versatile"
+  - "gemini/gemini-3.5-flash-lite"
+  - "openrouter/google/gemini-2.5-flash"
+  - "groq/qwen/qwen3.8-27b"
