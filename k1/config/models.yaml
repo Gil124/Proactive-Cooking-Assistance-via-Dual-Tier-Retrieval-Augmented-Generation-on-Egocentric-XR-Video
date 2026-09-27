@@ -1,30 +1,39 @@
-# Model pins — updated in k1-0.2.1 for current provider availability.
+# Model pins — k1-0.2.3. Chat calls go through OpenRouter only.
 # Record any change in CHANGELOG.md before modifying.
 #
-# Note: Groq retired llama-3.3-70b-versatile as of 2026-09.
-# Gemini routes through the OpenAI-compatible endpoint (google.generativeai SDK removed).
+# Generator and prose critic stay in different families (bias control).
+# Jev is the semantic gate and does not write revision text.
 
 extraction:
-  # Generator must be a different model family from the critic (bias control).
-  # Qwen family (via Groq) for generator; Gemini family for critic.
-  generator: "groq/qwen/qwen3.8-27b"
+  # Qwen family. JSON mode (tool calling is unreliable on this family).
+  generator: "openrouter/qwen/qwen3.5-397b-a17b"
   temperature: 0
-  max_tokens: 2048
+  # Reasoning tokens count against this cap. 2048 truncated the JSON.
+  max_tokens: 16384
 
 critic:
-  # Must be a different model family from the generator
-  model: "gemini/gemini-3.5-flash"
+  # Generative critic. Called only when Jev does not accept the extraction,
+  # because the revision loop needs written revision_instructions.
+  # Gemini family, so it does not grade Qwen's own output.
+  model: "openrouter/google/gemini-3.7-flash"
   temperature: 0
-  max_tokens: 512
+  # Same reason as the generator: thinking tokens share this budget.
+  max_tokens: 8192
+
+# Semantic gate in front of the generative critic.
+# TypeSafe Jev via the OpenRouter Decisions API. Not a text generator.
+# Accepts without calling the critic model only when every Noul and the
+# Choice probability of "accept" are at least noul_accept_threshold.
+jev:
+  model: "typesafe/jev-1.13"
+  noul_accept_threshold: 0.85
 
 # embedding block removed in k1-0.2.0 (entity resolution is dictionary-only for v1)
 
+# Fallbacks stay on OpenRouter and in the same family as the primary.
 fallback_generators:
-  - "groq/qwen/qwen3.6-27b"
-  - "gemini/gemini-3.5-flash-lite"
-  - "openrouter/google/gemini-2.5-flash"
+  - "openrouter/qwen/qwen3.6-flash"
+  - "openrouter/qwen/qwen3.5-flash-02-23"
 
 fallback_critics:
-  - "gemini/gemini-3.5-flash-lite"
-  - "openrouter/google/gemini-2.5-flash"
-  - "groq/qwen/qwen3.8-27b"
+  - "openrouter/google/gemini-3.5-flash"

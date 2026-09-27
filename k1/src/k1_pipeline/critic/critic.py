@@ -1,10 +1,13 @@
 """
 L2 Critic -- Grounded verifier
-Validates each ExtractedNode against:
-  1. source_span is a substring of the step text
-  2. k2_labels are valid
-  3. No invented temperatures (not in step text AND not in physics_bounds.yaml)
-  4. Structural consistency
+
+Each extracted node is checked in three steps:
+  1. Deterministic pre-checks (no model): source_span substring, valid k2 labels,
+     invented temperatures.
+  2. Jev semantic gate: node type, pre/post-conditions, and action faithfulness.
+     A clear accept skips the generative critic.
+  3. Generative critic (Gemini), only when Jev does not accept or Jev is
+     unavailable. This pass writes revision_instructions and grounding_quote.
 
 On 'revise': one revision loop is triggered (generator re-called with revision_hint).
 On 'reject': the node is dropped from the pipeline with a warning.
@@ -17,6 +20,7 @@ from pathlib import Path
 from rich.console import Console
 
 from k1_pipeline.config_loader import load_models
+from k1_pipeline.critic.jev import failed_checks, jev_accepts, jev_settings, judge_extraction, score_map
 from k1_pipeline.extract.llm_client import CRITIC_MODELS, call_with_fallback
 from k1_pipeline.models import CanonicalRecipe, CriticOutput, CriticVerdict, ExtractedNode, K2Label
 from k1_pipeline.physics import find_invented_temperatures
@@ -25,6 +29,7 @@ console = Console()
 
 _MODELS_CFG = load_models()
 _CRITIC_MODEL = _MODELS_CFG["critic"]["model"]
+_CRITIC_MAX_TOKENS = int(_MODELS_CFG["critic"].get("max_tokens", 8192))
 
 _SYSTEM_PROMPT = """\
 You are a strict knowledge graph critic for cooking recipes.
@@ -42,6 +47,10 @@ Rules:
    Invented temps -> reject.
 4. A Process node without pre_conditions or post_conditions -> revise.
 5. grounding_quote must be a substring of the step text that confirms (or denies) the extraction.
+6. entity_id must name a distinct object. A cooked or prepared form of a food
+   (toast for bread, scrambled eggs for egg) -> revise: use the base food as
+   entity_id and put the form in physics_state. A genuinely different ingredient
+   is allowed and must not be renamed onto the canonical list.
 """
 
 
@@ -50,6 +59,7 @@ def _build_critic_prompt(
     step_number: int,
     node: ExtractedNode,
     revision_hint: str | None = None,
+    jev_note: str | None = None,
 ) -> str:
     step = next(s for s in recipe.steps if s.number == step_number)
     node_json = node.model_dump_json(indent=2)
@@ -61,6 +71,12 @@ def _build_critic_prompt(
     )
     if revision_hint:
         prompt += f"\n\nPrevious revision note: {revision_hint}"
+    if jev_note:
+        prompt += (
+            "\n\nA semantic decision model flagged low support for: "
+            f"{jev_note}. Confirm or reject those flags, and write "
+            "revision_instructions for any fixable issue."
+        )
     return prompt
 
 
@@ -124,13 +140,57 @@ def verify_node(
         artifact_path.write_text(result.model_dump_json(indent=2))
         return result
 
+    _model, threshold = jev_settings()
+    jev_answers: dict | None = None
+    try:
+        jev_answers, served_model = judge_extraction(step_text, node, revision_hint)
+    except Exception as e:
+        console.print(
+            f"    [yellow]Jev unavailable ({type(e).__name__}: {e}); "
+            "falling through to the generative critic[/yellow]"
+        )
+        served_model = ""
+
+    if jev_answers is not None and jev_accepts(jev_answers, threshold):
+        scores = score_map(jev_answers)
+        result = CriticOutput(
+            node_id=node.node_id,
+            verdict=CriticVerdict.accept,
+            grounding_quote=node.source_span,
+            issues=[],
+            critic_model=f"openrouter/{served_model}",
+            jev_scores=scores,
+        )
+        noul_floor = min(v for k, v in scores.items() if k != "verdict_accept")
+        console.print(
+            f"    [dim]Jev accept (min noul {noul_floor:.2f}); skipping generative critic[/dim]"
+        )
+        artifact_path.write_text(result.model_dump_json(indent=2))
+        return result
+
+    jev_note = None
+    jev_scores: dict[str, float] = {}
+    if jev_answers is not None:
+        jev_scores = score_map(jev_answers)
+        flags = failed_checks(jev_answers, threshold)
+        jev_note = ", ".join(flags) if flags else "verdict did not clear the accept threshold"
+        console.print(f"    [dim]Jev escalate ({jev_note}); calling generative critic[/dim]")
+
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": _build_critic_prompt(recipe, step_number, node, revision_hint)},
+        {
+            "role": "user",
+            "content": _build_critic_prompt(
+                recipe, step_number, node, revision_hint, jev_note=jev_note
+            ),
+        },
     ]
-    result = call_with_fallback(CRITIC_MODELS, CriticOutput, messages, max_tokens=512)
+    result = call_with_fallback(
+        CRITIC_MODELS, CriticOutput, messages, max_tokens=_CRITIC_MAX_TOKENS
+    )
     result.node_id = node.node_id
     result.critic_model = _CRITIC_MODEL
+    result.jev_scores = jev_scores
 
     artifact_path.write_text(result.model_dump_json(indent=2))
     return result

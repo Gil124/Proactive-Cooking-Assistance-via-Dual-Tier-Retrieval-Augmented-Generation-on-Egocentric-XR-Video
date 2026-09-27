@@ -5,6 +5,135 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [k1-0.2.8] — 2026-09-27
+
+### Added — Gold set review tab
+`k1 viz` has a Gold set tab for the five recipes in `k1/config/gold_review.yaml`.
+Saving a step writes `data/gold/{recipe_id}_stepNN.gold.json` from the form, not from the model output.
+
+---
+
+## [k1-0.2.7] — 2026-09-27
+
+### Added — technique variants that are still scrambled eggs
+Training corpus only. Global dishes that are not a plain scramble stay out of
+the allowlist (see Notes/08 corpus scope).
+
+| recipe_id | variant_label |
+|---|---|
+| `alton_brown` | High-to-low heat |
+| `ina_garten_fluffy` | Extra yolks half-and-half |
+| `epicurious_bain_marie` | Bain-marie custard |
+| `heston_blumenthal` | Brown butter bain-marie |
+| `couple_cooks_goat_cheese` | Goat cheese |
+
+---
+
+## [k1-0.2.6] — 2026-09-27
+
+### Added — eight scrambled-egg recipes
+Training corpus only (`gold: false`). None of these are few-shot examples or gold hold-outs.
+
+| recipe_id | variant_label |
+|---|---|
+| `recipe_tin_eats` | Butter milk medium |
+| `love_and_lemons` | Milk olive-oil |
+| `inspired_taste` | No-dairy low-heat |
+| `woks_of_life` | Butter low-heat |
+| `pingo_doce` | Butter medium-low |
+| `continente` | Home-style |
+| `tudo_gostoso` | Late milk low-heat |
+| `primor` | Whites-first butter milk |
+
+---
+
+## [k1-0.2.5] — 2026-09-27
+
+### Changed — preparations are states, new ingredients stay
+`toast` was fused as its own ingredient beside `bread`. A preparation is now
+an alias of the base food: `toast`, `buttered toast`, and `toasted bread`
+resolve to `bread`; `scrambled_eggs` resolves to `egg`. Names that are not
+aliases are kept, so goat cheese, cream, and herbs remain new entities.
+
+The generator prompt and the critic, including a new Jev Noul
+`entities_are_objects`, say the same thing. `baked_bread` compiles to `solid`
+instead of the unknown-state default `liquid`.
+
+---
+
+## [k1-0.2.3] — 2026-09-26
+
+### Changed — chat models are OpenRouter-only
+Generator and prose critic no longer call Groq or the Gemini API directly.
+Both go through `https://openrouter.ai/api/v1`, same key as the Jev gate.
+Family split is unchanged: Qwen extracts, Gemini writes revision text, Jev
+only classifies.
+
+| Role | k1-0.2.2 pin | k1-0.2.3 pin |
+|---|---|---|
+| Generator | `groq/qwen/qwen3.8-27b` | `openrouter/qwen/qwen3.5-397b-a17b` |
+| Prose critic | `gemini/gemini-3.5-flash` | `openrouter/google/gemini-3.7-flash` |
+| Semantic gate | `typesafe/jev-1.13` | unchanged |
+| Fallback generators | Groq Qwen 3.6, Gemini 3.5 Flash Lite, OpenRouter Gemini 2.5 Flash | `openrouter/qwen/qwen3.6-flash`, `openrouter/qwen/qwen3.5-flash-02-23` |
+| Fallback critics | Gemini 3.5 Flash Lite, OpenRouter Gemini 2.5 Flash, Groq Qwen 3.8 | `openrouter/google/gemini-3.5-flash` |
+
+Qwen slugs use Instructor JSON mode. Tool calling on that family already
+failed on Groq in k1-0.2.1. Gemini slugs still use tool calling.
+Fallbacks stay in the same family as the primary, so a fallback no longer
+lets Qwen grade a Qwen extraction.
+
+Slugs confirmed on the OpenRouter model pages:
+[qwen/qwen3.5-397b-a17b](https://openrouter.ai/qwen/qwen3.5-397b-a17b),
+[google/gemini-3.7-flash](https://openrouter.ai/google/gemini-3.7-flash).
+Not yet verified with a live completion: the OpenRouter key in `k1/.env`
+was over its total limit during k1-0.2.2.
+
+The first live attempt (`or01`) authenticated, then died on
+`food52_fluffiest` step 3 with `IncompleteOutputException`: Qwen 3.5 spends
+reasoning tokens inside `max_tokens`, and 2048 cut the JSON off. Extraction
+cap is now 16384 and the prose critic cap is 8192. A truncated completion
+falls through to the next model instead of aborting the run.
+
+---
+
+## [k1-0.2.2] — 2026-09-26
+
+### Added — Jev semantic gate in front of the generative critic
+The L2 critic was spending a Gemini call on every node that already passed the
+deterministic checks, including the ones a yes/no judgment can accept. Those
+judgments are now a [Jev](https://openrouter.ai/docs/guides/community/jev) request
+(`typesafe/jev-1.13` via `POST https://openrouter.ai/api/alpha/decisions`). Jev
+does not write text, so it only decides whether the extraction is faithful.
+Gemini still writes `revision_instructions` and `grounding_quote` when it is not.
+
+Cascade in `critic/critic.py`, after the existing deterministic pre-checks:
+
+1. Jev is asked four Noul questions in one request — node type, pre-conditions,
+   post-conditions, action faithfulness — plus a Choice of `accept` / `revise` /
+   `reject`. The questions are answered independently, so the code requires them
+   to agree rather than asking the Choice to read the Nouls.
+2. The node is accepted with `critic_model` set to the served Jev id when every
+   Noul and the Choice probability of `accept` are at least `noul_accept_threshold`
+   (0.85 in `config/models.yaml`). The threshold is set high because a false
+   accept never gets a second look, while a false escalate only costs one Gemini
+   call. `grounding_quote` is the `source_span`, which the deterministic check
+   has already shown is a substring of the step.
+3. Otherwise, or if the Decisions API errors, the existing Gemini critic runs.
+   The prompt includes the Jev flags that fell short. Probabilities are stored
+   on `CriticOutput.jev_scores` either way, and are empty when the deterministic
+   checks decided the verdict before Jev ran.
+
+Generator stays Qwen and the prose critic stays Gemini, so the two text models
+remain different families. Jev is a third family and is not on the generator
+fallback list. A Jev outage does not fail the pipeline.
+
+### Tests
+`tests/test_jev_critic.py`: threshold logic, the Decisions API request shape,
+and the three cascade paths (deterministic skip, Jev accept, Jev miss or outage
+falling through to Gemini).
+
+---
+
 ## [k1-0.2.1] — 2026-09-14
 
 ### Fixed — smoke test findings (provider drift since k1-0.2.0 was pinned)

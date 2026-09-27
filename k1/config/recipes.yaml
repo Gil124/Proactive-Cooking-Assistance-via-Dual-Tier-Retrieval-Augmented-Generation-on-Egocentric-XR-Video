@@ -1,5 +1,6 @@
 # K1 Recipe Allowlist — scrambled eggs only
-# Frozen in k1-0.1.0. Do not add non-scrambled-egg dishes.
+# Original 10 frozen in k1-0.1.0. Eight more added in k1-0.2.6.
+# Do not add non-scrambled-egg dishes.
 #
 # Fields:
 #   recipe_id     : unique slug used as artifact directory name
@@ -67,4 +68,73 @@ recipes:
   - recipe_id: food_wine_brown_butter
     url: https://www.foodandwine.com/for-the-best-scrambled-eggs-cook-them-in-brown-butter-7096705
     variant_label: "Brown butter Maillard"
+    gold: false
+
+  # ── Added k1-0.2.6 ───────────────────────────────────────────────────────
+
+  - recipe_id: recipe_tin_eats
+    url: https://www.recipetineats.com/scrambled-eggs/
+    variant_label: "Butter milk medium"
+    gold: false
+
+  - recipe_id: love_and_lemons
+    url: https://www.loveandlemons.com/scrambled-eggs-recipe/
+    variant_label: "Milk olive-oil"
+    gold: false
+
+  - recipe_id: inspired_taste
+    url: https://www.inspiredtaste.net/26600/scrambled-eggs-recipe/
+    variant_label: "No-dairy low-heat"
+    gold: false
+
+  - recipe_id: woks_of_life
+    url: https://thewoksoflife.com/how-to-make-perfect-scrambled-eggs/
+    variant_label: "Butter low-heat"
+    gold: false
+
+  - recipe_id: pingo_doce
+    url: https://www.pingodoce.pt/receitas/ovos-mexidos/
+    variant_label: "Butter medium-low"
+    gold: false
+
+  - recipe_id: continente
+    url: https://feed.continente.pt/receitas/ovos-mexidos
+    variant_label: "Home-style"
+    gold: false
+
+  - recipe_id: tudo_gostoso
+    url: https://www.tudogostoso.com.br/receita/119423-ovos-mexidos-de-cafe-da-manha.html
+    variant_label: "Late milk low-heat"
+    gold: false
+
+  - recipe_id: primor
+    url: https://www.primor.com.pt/receita/ovos-mexidos-perfeitos/
+    variant_label: "Whites-first butter milk"
+    gold: false
+
+  # ── Added k1-0.2.7 (technique variants; still scrambled eggs) ────────────
+
+  - recipe_id: alton_brown
+    url: https://www.foodnetwork.com/recipes/alton-brown/perfect-scrambled-eggs-recipe-2107541
+    variant_label: "High-to-low heat"
+    gold: false
+
+  - recipe_id: ina_garten_fluffy
+    url: https://www.cookist.com/ina-gartens-secret-to-the-fluffiest-scrambled-eggs-youll-ever-taste/
+    variant_label: "Extra yolks half-and-half"
+    gold: false
+
+  - recipe_id: epicurious_bain_marie
+    url: https://www.epicurious.com/recipes/food/views/low-slow-and-custardy-eggs-382500
+    variant_label: "Bain-marie custard"
+    gold: false
+
+  - recipe_id: heston_blumenthal
+    url: https://www.sbs.com.au/food/recipe/heston-blumenthals-scrambled-eggs/ro3se6rz5
+    variant_label: "Brown butter bain-marie"
+    gold: false
+
+  - recipe_id: couple_cooks_goat_cheese
+    url: https://www.acouplecooks.com/soft-scrambled-eggs-with-goat-cheese-and-asparagus/
+    variant_label: "Goat cheese"
     gold: false

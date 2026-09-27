@@ -1,0 +1,42 @@
+{
+  "recipe_id": "epicurious_bain_marie",
+  "title": "Low, Slow, and Custardy Eggs",
+  "source_url": "https://www.epicurious.com/recipes/food/views/low-slow-and-custardy-eggs-382500",
+  "variant_label": "Bain-marie custard",
+  "gold": false,
+  "ingredients": [
+    "2 eggs",
+    "2 tablespoons whole milk or half-and-half",
+    "Kosher or sea salt",
+    "Freshly ground black pepper",
+    "1 teaspoon unsalted butter",
+    "1 slice rustic bread, toasted",
+    "1/4 cup Red Pepper Chutney (page 17)"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "In a small bowl, whisk together the eggs and milk; season with salt and pepper."
+    },
+    {
+      "number": 2,
+      "text": "Assemble a double boiler, with a couple inches of water in the bottom section, over medium heat. (Don’t worry if you don’t have a true double boiler; just set a small saucepan with a couple inches of water in it over medium heat and fit a stainless steel bowl that’s just slightly larger than the saucepan on top, so that it’s airtight. Make sure the bottom of the bowl isn’t touching the water.)"
+    },
+    {
+      "number": 3,
+      "text": "When the water in the bottom section of the double-boiler assembly comes to a boil, decrease the heat until the water is just simmering. Add the butter to the top section and let it melt. Pour in the eggs and cook, stirring constantly and slowly with a heatproof spatula, scraping the bottom and sides of the bowl as you stir, until the eggs thicken and form a single large, very soft curd. This will take as long as 20 to 30 minutes; be patient."
+    },
+    {
+      "number": 4,
+      "text": "When the eggs are very softly set to your liking, lay the toast on to a plate, spoon the eggs on top, top with the chutney, and eat."
+    }
+  ],
+  "temperatures_mentioned": [
+    "medium heat"
+  ],
+  "timings_mentioned": [
+    "constantly",
+    "30 minutes"
+  ]
+}

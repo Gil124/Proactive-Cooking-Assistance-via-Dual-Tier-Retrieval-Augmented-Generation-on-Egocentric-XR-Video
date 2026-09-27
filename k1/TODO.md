@@ -156,6 +156,19 @@ Full findings are in `CHANGELOG.md` under `k1-0.2.1`.
       for scraper gaps on the other 6). All 6 validation gates passed. `graph.json` and
       `graph.cypher` exist at `k1/data/k1/`.
 
+### k1-0.2.3 OpenRouter-only chat pins
+- [x] **Generator and prose critic moved to OpenRouter.** Generator
+      `openrouter/qwen/qwen3.5-397b-a17b` (JSON mode). Prose critic
+      `openrouter/google/gemini-3.7-flash`. Jev gate unchanged. Fallbacks
+      stay on OpenRouter and in the same family. See `CHANGELOG.md`.
+
+### k1-0.2.2 Jev semantic gate
+- [x] **Critic cascade.** Deterministic checks still run first. Jev
+      (`typesafe/jev-1.13`) accepts a node on its own when every semantic Noul
+      and the Choice probability of `accept` clear 0.85. Gemini runs only on a
+      Jev miss or a Jev outage, because the revision loop needs written
+      instructions. See `CHANGELOG.md` under `k1-0.2.2`.
+
 ### Explicitly not done yet
 
 - [ ] 6/10 recipe URLs still fail to scrape (503 / 403 / junk-filtered-to-zero) — see

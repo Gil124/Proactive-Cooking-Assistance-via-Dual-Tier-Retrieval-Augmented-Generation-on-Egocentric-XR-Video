@@ -1,0 +1,42 @@
+{
+  "recipe_id": "love_and_lemons",
+  "title": "How to Make Scrambled Eggs",
+  "source_url": "https://www.loveandlemons.com/scrambled-eggs-recipe/",
+  "variant_label": "Milk olive-oil",
+  "gold": false,
+  "ingredients": [
+    "3  large eggs",
+    "1 teaspoon milk, plant milk, or water",
+    "Extra-virgin olive oil or butter (for the pan)",
+    "Sea salt and freshly ground black pepper",
+    "Chopped fresh chives (optional, for garnish)"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "Crack the eggs into a medium bowl and add the milk or water. Whisk until smooth and combined, with no streaks of egg white remaining."
+    },
+    {
+      "number": 2,
+      "text": "Brush a small nonstick skillet with olive oil, or melt a little butter in a small nonstick skillet. Bring to medium heat."
+    },
+    {
+      "number": 3,
+      "text": "Pour in the eggs, and let them cook for a few seconds without stirring. Pull a rubber spatula across the bottom of the pan to form large, soft curds of scrambled eggs."
+    },
+    {
+      "number": 4,
+      "text": "Continue cooking over medium-low heat, folding and stirring the eggs every few seconds. Scrape the spatula along the bottom and sides of the pan often to form more curds and to prevent any part of the eggs from drying out."
+    },
+    {
+      "number": 5,
+      "text": "Remove the pan from the heat when the eggs are mostly set, but a little liquid egg remains. Season to taste with salt and pepper and garnish with chopped fresh chives, if desired."
+    }
+  ],
+  "temperatures_mentioned": [
+    "low heat",
+    "medium heat"
+  ],
+  "timings_mentioned": []
+}

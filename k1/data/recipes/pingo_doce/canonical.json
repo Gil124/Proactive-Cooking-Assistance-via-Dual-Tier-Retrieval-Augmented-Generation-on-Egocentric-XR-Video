@@ -1,0 +1,42 @@
+{
+  "recipe_id": "pingo_doce",
+  "title": "Ovos mexidos",
+  "source_url": "https://www.pingodoce.pt/receitas/ovos-mexidos/",
+  "variant_label": "Butter medium-low",
+  "gold": false,
+  "ingredients": [
+    "4 unid. ovo",
+    "1 c. de sopa manteiga",
+    "1 c. de chá sal",
+    "1 q.b. pimenta preta",
+    "4 unid. ovo",
+    "1 c. de sopa manteiga",
+    "1 c. de chá sal",
+    "1 q.b. pimenta preta"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "Parta os ovos para uma taça e bata com um garfo até a gema e a clara estarem combinadas."
+    },
+    {
+      "number": 2,
+      "text": "Leve uma frigideira ao lume em temperatura média-baixa, adicione a manteiga e deixe derreter."
+    },
+    {
+      "number": 3,
+      "text": "Adicione os ovos batidos e o sal e mexa suavemente com uma espátula, sem parar."
+    },
+    {
+      "number": 4,
+      "text": "Retire do lume quando atingirem a consistência desejada: húmidos e cremosos ou mais firmes."
+    },
+    {
+      "number": 5,
+      "text": "Sirva os ovos mexidos de imediato com pimenta preta moída na hora."
+    }
+  ],
+  "temperatures_mentioned": [],
+  "timings_mentioned": []
+}

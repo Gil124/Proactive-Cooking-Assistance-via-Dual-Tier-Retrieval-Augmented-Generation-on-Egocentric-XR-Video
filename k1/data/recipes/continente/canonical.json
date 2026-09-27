@@ -1,0 +1,34 @@
+{
+  "recipe_id": "continente",
+  "title": "Ovos mexidos",
+  "source_url": "https://feed.continente.pt/receitas/ovos-mexidos",
+  "variant_label": "Home-style",
+  "gold": false,
+  "ingredients": [
+    "Sal q.b.",
+    "1 c. sopa de natas",
+    "4 ovos",
+    "Azeite q.b."
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "Bata 4 ovos numa tigela."
+    },
+    {
+      "number": 2,
+      "text": "De seguida, junte uma pitada de sal e uma colher de sopa de natas e misture bem."
+    },
+    {
+      "number": 3,
+      "text": "Numa frigideira, coloque um fio de azeite."
+    },
+    {
+      "number": 4,
+      "text": "Junte os ovos batidos e deixe cozinhar em lume brando, envolvendo lentamente."
+    }
+  ],
+  "temperatures_mentioned": [],
+  "timings_mentioned": []
+}

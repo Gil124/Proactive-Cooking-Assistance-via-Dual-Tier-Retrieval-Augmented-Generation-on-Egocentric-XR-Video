@@ -13,12 +13,19 @@ from k1_pipeline.config_loader import get_canonical_entity_map
 
 def resolve_entity(name: str) -> str:
     """
-    Map a raw entity name string to its canonical form.
-    Falls back to normalized lowercased name if no alias match found.
+    Map a raw entity name to its base entity when it is a known preparation.
+
+    "toast" resolves to "bread". A name that is not an alias is kept, so a
+    genuinely new ingredient stays in the graph.
     """
     canon_map = get_canonical_entity_map()
-    key = name.lower().strip()
-    return canon_map.get(key, key)
+    raw = name.lower().strip()
+    spaced = " ".join(raw.replace("_", " ").replace("-", " ").split())
+    if raw in canon_map:
+        return canon_map[raw]
+    if spaced in canon_map:
+        return canon_map[spaced]
+    return raw
 
 
 def resolve_entities_in_conditions(conditions: list) -> list:

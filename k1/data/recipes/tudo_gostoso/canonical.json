@@ -1,0 +1,42 @@
+{
+  "recipe_id": "tudo_gostoso",
+  "title": "Ovos mexidos de café da manhã",
+  "source_url": "https://www.tudogostoso.com.br/receita/119423-ovos-mexidos-de-cafe-da-manha.html",
+  "variant_label": "Late milk low-heat",
+  "gold": false,
+  "ingredients": [
+    "4 ovos",
+    "1 colher (sopa) de manteiga",
+    "100 ml de leite",
+    "sal"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "Passe toda a manteiga no fundo de uma frigideira e coloque os ovos sobre a manteiga."
+    },
+    {
+      "number": 2,
+      "text": "Em seguida, quebre as gemas sem mexer os ovos."
+    },
+    {
+      "number": 3,
+      "text": "S&oacute; depois deste passo, leve a frigideira para o fogo com fogo baixo."
+    },
+    {
+      "number": 4,
+      "text": "A clara vai cozinhar primeiro que a gema."
+    },
+    {
+      "number": 5,
+      "text": "Quando a gema come&ccedil;ar a ficar cozida, acrescente o leite e mexa vigorosamente para misturar a manteiga do fundo da frigideira e o leite."
+    },
+    {
+      "number": 6,
+      "text": "N&atilde;o frite demais, pois o mexido deve ficar &uacute;mido e cremoso."
+    }
+  ],
+  "temperatures_mentioned": [],
+  "timings_mentioned": []
+}

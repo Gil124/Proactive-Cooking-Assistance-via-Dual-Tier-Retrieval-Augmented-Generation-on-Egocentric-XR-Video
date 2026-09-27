@@ -73,6 +73,9 @@ k2_compile_map:
     - cross_linked
     - set
     - cooked_through
+    - toasted
+    - baked
+    - baked_bread
 
   scorched:
     - scorched
@@ -89,7 +92,7 @@ k2_compile_map:
 
 canonical_entities:
   - canonical: egg
-    aliases: [eggs, whole egg, whole eggs, egg mixture, egg mix, beaten egg]
+    aliases: [eggs, whole egg, whole eggs, egg mixture, egg mix, beaten egg, scrambled egg, scrambled eggs]
   - canonical: butter
     aliases: [unsalted butter, salted butter, cold butter, knob of butter]
   - canonical: oil
@@ -106,3 +109,7 @@ canonical_entities:
     aliases: [fork, balloon whisk]
   - canonical: plate
     aliases: [serving plate, dish]
+  # Preparations are the same object as the base food. Names not listed here
+  # stay as new entities (goat cheese, cream, herbs, and so on).
+  - canonical: bread
+    aliases: [toast, buttered toast, lightly buttered toast, toasted bread, pumpernickel, pumpernickel bread]

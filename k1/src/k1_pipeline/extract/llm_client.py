@@ -1,7 +1,10 @@
 """
-LLM client — multi-provider fallback with Instructor constrained decoding.
-Ported and simplified from Cooking-Advisor/src/llm_client.py.
-Temperature is always forced to 0 as per models.yaml.
+LLM client — OpenRouter chat models with Instructor constrained decoding.
+
+Chat pins in models.yaml use the openrouter/ prefix. Qwen slugs use JSON
+mode; other OpenRouter slugs use tool calling. The groq/ and gemini/
+resolvers remain for an old pin, but the current config does not use them.
+Jev is not called from here; see critic/jev.py.
 """
 
 from __future__ import annotations
@@ -32,6 +35,7 @@ CRITIC_MODELS: list[str] = [_cfg["critic"]["model"]] + _cfg.get("fallback_critic
 
 _groq: instructor.Instructor | None = None
 _openrouter: instructor.Instructor | None = None
+_openrouter_json: instructor.Instructor | None = None
 _gemini: instructor.Instructor | None = None
 
 
@@ -46,11 +50,25 @@ def _get_groq() -> instructor.Instructor:
     return _groq
 
 
-def _get_openrouter() -> instructor.Instructor:
-    global _openrouter
+def _openrouter_client(json_mode: bool) -> instructor.Instructor:
+    """Qwen on OpenRouter does not tool-call reliably, so it uses JSON mode."""
+    global _openrouter, _openrouter_json
+    if json_mode:
+        if _openrouter_json is None:
+            _openrouter_json = instructor.from_openai(
+                OpenAI(
+                    api_key=os.environ.get("OPENROUTER_API_KEY", ""),
+                    base_url="https://openrouter.ai/api/v1",
+                ),
+                mode=instructor.Mode.JSON,
+            )
+        return _openrouter_json
     if _openrouter is None:
         _openrouter = instructor.from_openai(
-            OpenAI(api_key=os.environ.get("OPENROUTER_API_KEY", ""), base_url="https://openrouter.ai/api/v1"),
+            OpenAI(
+                api_key=os.environ.get("OPENROUTER_API_KEY", ""),
+                base_url="https://openrouter.ai/api/v1",
+            ),
             mode=instructor.Mode.TOOLS,
         )
     return _openrouter
@@ -78,7 +96,8 @@ def _resolve(full_model: str) -> tuple[instructor.Instructor, str | None]:
     if full_model.startswith("groq/"):
         return _get_groq(), full_model[len("groq/"):]
     if full_model.startswith("openrouter/"):
-        return _get_openrouter(), full_model[len("openrouter/"):]
+        slug = full_model[len("openrouter/"):]
+        return _openrouter_client(slug.startswith("qwen/")), slug
     if full_model.startswith("gemini/"):
         # e.g. "gemini/gemini-3.5-flash" → model name is the part after "gemini/"
         return _get_gemini(), full_model[len("gemini/"):]
@@ -90,7 +109,7 @@ def _resolve(full_model: str) -> tuple[instructor.Instructor, str | None]:
 _RETRYABLE = (
     "RateLimitError", "ServiceUnavailableError", "Timeout",
     "APIConnectionError", "InternalServerError", "OverloadedError",
-    "NotFoundError", "InstructorRetryException",
+    "NotFoundError", "InstructorRetryException", "IncompleteOutputException",
 )
 _RETRYABLE_PHRASES = (
     "rate limit", "ratelimit", "too many requests", "resource_exhausted",

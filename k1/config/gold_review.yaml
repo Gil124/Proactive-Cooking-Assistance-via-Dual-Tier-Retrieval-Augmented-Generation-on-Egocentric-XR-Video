@@ -1,0 +1,16 @@
+# Recipes queued for human gold annotation.
+# They stay gold: false in recipes.yaml until you decide to hold them out.
+# The Gold set tab in `k1 viz` reads this list.
+# Only recipes that ingested cleanly are queued. The others have no source steps yet.
+
+candidates:
+  - recipe_id: epicurious_bain_marie
+    why: "Double boiler, custard texture, long stir."
+  - recipe_id: recipe_tin_eats
+    why: "American soft curds, spatula sweep, milk and butter."
+  - recipe_id: love_and_lemons
+    why: "Milk and olive oil, medium heat."
+  - recipe_id: pingo_doce
+    why: "Portuguese home method, butter, medium-low."
+  - recipe_id: tudo_gostoso
+    why: "Milk added late, low heat."

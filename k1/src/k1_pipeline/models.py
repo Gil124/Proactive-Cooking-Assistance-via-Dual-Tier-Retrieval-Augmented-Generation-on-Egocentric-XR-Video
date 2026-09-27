@@ -145,6 +145,13 @@ class CriticOutput(BaseModel):
         default=None,
         description="Populated only for 'revise' verdict. Specific fix instructions for the generator."
     )
+    jev_scores: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "Jev semantic-check probabilities for this node. Empty when the "
+            "deterministic pre-checks decided the verdict before Jev ran."
+        ),
+    )
 
 
 # ── L3 Fused graph ────────────────────────────────────────────────────────────

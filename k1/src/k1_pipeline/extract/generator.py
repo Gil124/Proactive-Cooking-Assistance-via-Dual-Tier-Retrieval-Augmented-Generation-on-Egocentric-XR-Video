@@ -62,6 +62,12 @@ OR match one of these known bounds:
 3. Do NOT invent temperature values. Only use temperatures from step text or bounds above.
 4. Every Process node must have at least one pre_condition and one post_condition.
 5. confidence is your self-assessed certainty 0.0–1.0.
+6. entity_id is the base ingredient or tool, not the name of its current preparation.
+   Toast, buttered toast, and toasted bread are entity_id "bread" with physics_state
+   "toasted" and k2_label "solid". Scrambled eggs are entity_id "egg".
+   A different food the step actually introduces (goat cheese, cream, herbs) is a
+   new entity and must be kept under its own name. Do not invent entities such as
+   "plated_dish" or "serving".
 """
 
 
@@ -97,7 +103,7 @@ def compile_k2_label(physics_state: str) -> K2Label:
         return K2Label.liquid
     if any(w in low for w in ["coagulat", "gel", "soft", "creamy", "thicken"]):
         return K2Label.coagulating
-    if any(w in low for w in ["solid", "set", "firm", "cooked"]):
+    if any(w in low for w in ["solid", "set", "firm", "cooked", "toast", "baked"]):
         return K2Label.solid
     if any(w in low for w in ["scorch", "burn", "brown", "rubber", "dry", "over"]):
         return K2Label.scorched
@@ -133,6 +139,7 @@ def extract_node(
         GENERATOR_MODELS,
         ExtractedNode,
         messages,
+        max_tokens=int(_MODELS_CFG["extraction"].get("max_tokens", 16384)),
     )
 
     # Patch in provenance fields that LLM can't set

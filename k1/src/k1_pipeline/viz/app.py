@@ -4,7 +4,8 @@ Streamlit application -- JSON-first (does not require Neo4j).
 
 Tabs:
   1. Graph -- interactive Pyvis graph of the fused DAG
-  2. Review -- side-by-side: step text | generator JSON | critic verdict + accept/reject
+  2. Review -- side-by-side: step text | generator JSON | critic verdict
+  3. Gold set -- annotate the review queue into data/gold/*.gold.json
 
 Usage:
   uv run streamlit run src/k1_pipeline/viz/app.py -- --run <run_id>
@@ -15,9 +16,11 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 import streamlit as st
+import yaml
 import streamlit.components.v1 as components
 
 ROOT = Path(__file__).parent.parent.parent.parent  # k1/
@@ -100,7 +103,7 @@ with st.sidebar:
 
 # ── Main tabs ─────────────────────────────────────────────────────────────────
 
-tab_graph, tab_review = st.tabs(["Graph", "Review"])
+tab_graph, tab_review, tab_gold = st.tabs(["Graph", "Review", "Gold set"])
 
 # ── Tab 1: Graph ──────────────────────────────────────────────────────────────
 
@@ -204,7 +207,7 @@ with tab_graph:
 
 with tab_review:
     st.subheader("Step-by-step extraction review")
-    st.caption("Compare source text | generator extraction | critic verdict. Export corrections to gold.")
+    st.caption("Compare source text, the extraction, and the critic. Gold labels are written from the Gold set tab.")
 
     gen_dir = run_dir / "L2" / "gen"
     critic_dir = run_dir / "L2" / "critic"
@@ -261,23 +264,152 @@ with tab_review:
                     if critic_data.get("grounding_quote"):
                         st.caption(f'Quote: "{critic_data["grounding_quote"][:80]}"')
 
-                # Export to gold button
-                if st.button(f"Export to gold ({recipe_id} step {step_n})", key=f"gold_{recipe_id}_{step_n}"):
-                    gold_dir = DATA / "gold"
-                    gold_dir.mkdir(exist_ok=True)
-                    gold_entry = {
-                        "recipe_id": recipe_id,
-                        "step_number": step_n,
-                        "expected": {
-                            "node_type": node_data.get("node_type"),
-                            "action_phrase": node_data.get("action_phrase"),
-                            "pre_conditions": node_data.get("pre_conditions", []),
-                            "post_conditions": node_data.get("post_conditions", []),
-                        },
-                        "annotator": "review_ui_export",
-                        "annotation_date": str(__import__("datetime").date.today()),
-                        "notes": "Exported from Review UI",
-                    }
-                    gold_file = gold_dir / f"{recipe_id}_step{step_n:02d}.gold.json"
-                    gold_file.write_text(json.dumps(gold_entry, indent=2))
-                    st.success(f"Saved to {gold_file}")
+                st.caption("Annotate this step on the Gold set tab. That form is what becomes the gold file.")
+
+# ── Tab 3: Gold set ────────────────────────────────────────────────────────────
+
+def _as_records(table) -> list[dict]:
+    if hasattr(table, "to_dict"):
+        return table.to_dict("records")
+    return list(table or [])
+
+
+def _condition_rows(raw: list[dict] | None) -> list[dict]:
+    rows = []
+    for item in raw or []:
+        entity = str(item.get("entity_id", "")).strip()
+        label = str(item.get("k2_label", "")).strip()
+        if entity and label in ("liquid", "coagulating", "solid", "scorched"):
+            rows.append({"entity_id": entity, "k2_label": label})
+    return rows or [{"entity_id": "", "k2_label": "liquid"}]
+
+
+def _load_gold_step(gold_dir: Path, recipe_id: str, step_n: int) -> dict | None:
+    path = gold_dir / f"{recipe_id}_step{step_n:02d}.gold.json"
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return None
+
+
+with tab_gold:
+    st.subheader("Gold set")
+    st.caption(
+        "Read the source step, correct the fields, then save. "
+        "A saved file is your annotation. The model suggestion is only a starting point."
+    )
+
+    review_path = ROOT / "config" / "gold_review.yaml"
+    review_cfg = yaml.safe_load(review_path.read_text()) if review_path.exists() else {}
+    candidates = review_cfg.get("candidates", [])
+    gold_dir = DATA / "gold"
+    recipes_dir = DATA / "recipes"
+    gen_dir = run_dir / "L2" / "gen"
+
+    if not candidates:
+        st.info("No recipes in config/gold_review.yaml.")
+    else:
+        done = 0
+        total = 0
+        for candidate in candidates:
+            canon_path = recipes_dir / candidate["recipe_id"] / "canonical.json"
+            if not canon_path.exists():
+                continue
+            recipe = json.loads(canon_path.read_text())
+            for step in recipe.get("steps", []):
+                total += 1
+                if (gold_dir / f"{candidate['recipe_id']}_step{step['number']:02d}.gold.json").exists():
+                    done += 1
+        st.progress(done / total if total else 0.0, text=f"{done}/{total} queued steps annotated")
+
+        for candidate in candidates:
+            recipe_id = candidate["recipe_id"]
+            canon_path = recipes_dir / recipe_id / "canonical.json"
+            with st.expander(f"{recipe_id} — {candidate.get('why', '')}", expanded=False):
+                if not canon_path.exists():
+                    st.warning("Not ingested yet. The source steps will appear here after ingest.")
+                    continue
+                recipe = json.loads(canon_path.read_text())
+                st.markdown(f"[{recipe.get('source_url', recipe_id)}]({recipe.get('source_url', '')})")
+                for step in recipe.get("steps", []):
+                    step_n = step["number"]
+                    saved = _load_gold_step(gold_dir, recipe_id, step_n)
+                    gen_path = gen_dir / f"{recipe_id}_step{step_n:02d}.gen.json"
+                    suggestion = json.loads(gen_path.read_text()) if gen_path.exists() else None
+                    seed = (saved or {}).get("expected") or suggestion or {}
+                    status = "saved" if saved else "open"
+                    st.markdown(f"**Step {step_n}** · {status}")
+                    st.info(step.get("text", ""))
+                    if suggestion and not saved:
+                        st.caption(
+                            f"Model suggestion: {suggestion.get('node_type', '')} — "
+                            f"{suggestion.get('action_phrase', '')}"
+                        )
+
+                    node_type = st.selectbox(
+                        "Node type",
+                        ["Process", "Transfer", "Plate"],
+                        index=["Process", "Transfer", "Plate"].index(seed.get("node_type", "Process"))
+                        if seed.get("node_type") in ("Process", "Transfer", "Plate") else 0,
+                        key=f"nt_{recipe_id}_{step_n}",
+                    )
+                    action = st.text_input(
+                        "Action phrase",
+                        value=seed.get("action_phrase", ""),
+                        key=f"ap_{recipe_id}_{step_n}",
+                    )
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        st.markdown("Before")
+                        pre = st.data_editor(
+                            _condition_rows(seed.get("pre_conditions")),
+                            num_rows="dynamic",
+                            key=f"pre_{recipe_id}_{step_n}",
+                            column_config={
+                                "k2_label": st.column_config.SelectboxColumn(
+                                    options=["liquid", "coagulating", "solid", "scorched"]
+                                )
+                            },
+                        )
+                    with c2:
+                        st.markdown("After")
+                        post = st.data_editor(
+                            _condition_rows(seed.get("post_conditions")),
+                            num_rows="dynamic",
+                            key=f"post_{recipe_id}_{step_n}",
+                            column_config={
+                                "k2_label": st.column_config.SelectboxColumn(
+                                    options=["liquid", "coagulating", "solid", "scorched"]
+                                )
+                            },
+                        )
+                    safety = st.checkbox(
+                        "Heat can coagulate or scorch",
+                        value=bool(seed.get("has_safety_bound", False)),
+                        key=f"sb_{recipe_id}_{step_n}",
+                    )
+                    notes = st.text_input("Notes", value=(saved or {}).get("notes", ""), key=f"notes_{recipe_id}_{step_n}")
+                    if st.button(f"Save step {step_n}", key=f"save_{recipe_id}_{step_n}"):
+                        entry = {
+                            "recipe_id": recipe_id,
+                            "step_number": step_n,
+                            "expected": {
+                                "node_type": node_type,
+                                "action_phrase": action.strip(),
+                                "pre_conditions": _condition_rows(_as_records(pre)),
+                                "post_conditions": _condition_rows(_as_records(post)),
+                                "has_safety_bound": safety,
+                            },
+                            "annotator": "gil.arroteia",
+                            "annotation_date": str(date.today()),
+                            "notes": notes.strip(),
+                        }
+                        if not entry["expected"]["action_phrase"]:
+                            st.error("Action phrase is required.")
+                        else:
+                            gold_dir.mkdir(exist_ok=True)
+                            out = gold_dir / f"{recipe_id}_step{step_n:02d}.gold.json"
+                            out.write_text(json.dumps(entry, indent=2))
+                            st.success(f"Saved {out.name}")

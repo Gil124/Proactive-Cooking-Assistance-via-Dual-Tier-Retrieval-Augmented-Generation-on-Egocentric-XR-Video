@@ -123,14 +123,16 @@ Critic output (`data/artifacts/runs/{run_id}/L2/critic/{recipe_id}_{step_n}.json
   "verdict": "accept|revise|reject",
   "grounding_quote": "substring of source step",
   "issues": ["optional list of issues"],
-  "critic_model": "openrouter/google/gemini-2.0-flash-lite"
+  "critic_model": "openrouter/typesafe/jev-1.13 or openrouter/google/gemini-3.7-flash",
+  "jev_scores": {"node_type_matches": 0.95, "verdict_accept": 0.91}
 }
 ```
 
-Rules enforced by critic:
-- Any temperature value in the extraction must be a substring of the recipe text OR be in `physics_bounds.yaml`. Invented temperatures → `reject`.
-- `source_span` must be a substring of the step text. If not → `revise`.
-- `k2_label` must be one of the four valid labels. If not → `reject`.
+The critic runs in order. Later stages are skipped once a verdict is decided.
+
+1. **Deterministic pre-checks** (no model). Invented temperatures → `reject`. `source_span` not a substring of the step text → `revise`. Invalid `k2_label` → `revise`.
+2. **Jev semantic gate** (`typesafe/jev-1.13` on the OpenRouter Decisions API). One request asks four Noul questions (node type, pre-conditions, post-conditions, action faithfulness) and a Choice of `accept` / `revise` / `reject`. The node is accepted, and the generative critic is not called, only when every Noul and the Choice probability of `accept` are at least `noul_accept_threshold` in `models.yaml` (0.85).
+3. **Generative critic** (`openrouter/google/gemini-3.7-flash`). Runs only when Jev does not accept, or when Jev is unavailable. This pass writes `revision_instructions` and `grounding_quote`, which the revision loop needs. Jev does not generate that text. The generator is `openrouter/qwen/qwen3.5-397b-a17b`, a different family.
 
 ### L2 extract contract — temperature field
 

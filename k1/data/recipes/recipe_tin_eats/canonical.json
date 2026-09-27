@@ -1,0 +1,59 @@
+{
+  "recipe_id": "recipe_tin_eats",
+  "title": "Scrambled eggs - soft and creamy, just as they should be!",
+  "source_url": "https://www.recipetineats.com/scrambled-eggs/",
+  "variant_label": "Butter milk medium",
+  "gold": false,
+  "ingredients": [
+    "4  eggs",
+    "2 tbsp milk (, any fat % (optional, Note 1))",
+    "1/4 tsp salt",
+    "2  grinds black pepper",
+    "1 tbsp / 15g  butter ((or margarine or oil))",
+    "4 slices bread (, toasted &amp; slathered with butter)"
+  ],
+  "tools": [],
+  "steps": [
+    {
+      "number": 1,
+      "text": "Use a non stick skillet or well seasoned cast iron pan (about 25cm / 10\") and a rubber spatular (or flat edge wooden spoon)."
+    },
+    {
+      "number": 2,
+      "text": "Whisk together eggs, milk, salt and pepper."
+    },
+    {
+      "number": 3,
+      "text": "Melt butter over medium heat (Note 1), then pour egg in."
+    },
+    {
+      "number": 4,
+      "text": "Wait 5 seconds, then start leisurely pushing the rubber spatula back and forth in long strokes, and all around the skillet edges, to push the set egg out of the way and let raw egg run onto the skillet to cook. After 30 seconds or so, start adding some folding action too."
+    },
+    {
+      "number": 5,
+      "text": "Cook for 60 seconds in total until you have a pile of soft, custardy scrambled egg folds (\"curds\") and no raw egg leaking on the edges of the pile."
+    },
+    {
+      "number": 6,
+      "text": "Take it off the stove when it's still a bit undercooked for your taste."
+    },
+    {
+      "number": 7,
+      "text": "Gently push /fold the eggs for another 10 seconds - it will finish cooking with residual pan heat - then slide onto hot toasted crusty bread slathered with butter."
+    },
+    {
+      "number": 8,
+      "text": "Sprinkle with extra pepper then devour immediately! For a touch of garnish, look no further than an 80's style sprig of curly parsley. 👌🏻"
+    }
+  ],
+  "temperatures_mentioned": [
+    "medium heat"
+  ],
+  "timings_mentioned": [
+    "5 seconds",
+    "10 seconds",
+    "30 seconds",
+    "60 seconds"
+  ]
+}
