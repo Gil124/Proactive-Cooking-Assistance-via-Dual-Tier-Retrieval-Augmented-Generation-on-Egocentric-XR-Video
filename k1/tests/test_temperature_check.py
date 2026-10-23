@@ -57,7 +57,9 @@ def test_unit_bearing_matched():
 def test_no_match_on_json_dump():
     """Sanity check: scanning a JSON dump of a node doesn't produce false positives."""
     node = _process_node()
-    json_text = node.model_dump_json()
+    # node_id is a random UUID; a group such as "-445c-" reads as "445 C", so it
+    # made this test fail at random. The pipeline never scans IDs.
+    json_text = node.model_dump_json(exclude={"node_id"})
     # The JSON contains "confidence":0.95 and step_number:1 etc.
     temps = extract_temperatures(json_text)
     # Only unit-bearing values count — there are none in a typical node dump

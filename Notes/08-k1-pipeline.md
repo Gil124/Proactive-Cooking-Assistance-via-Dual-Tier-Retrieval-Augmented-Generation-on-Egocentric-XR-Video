@@ -203,6 +203,8 @@ K1 returns:
 - The `HAS_SAFETY_BOUND` edges on that step (temperature thresholds)
 - The next node ID(s) in the DAG
 
+Implemented in `k1/src/k1_pipeline/query.py` (`K1Query.step(branch, node_id)`), over `k1/data/k1/graph.final.json`.
+
 Fusion **does not** query ImpactVariable, OutcomeVariable, or community summaries.
 Do not add those node types to the runtime graph.
 

@@ -28,9 +28,10 @@ inventory:
     - egg
     - salt
     - pepper
-    - oregano
     - butter
     - oil
+    # oregano removed 2026-10-23: no source recipe uses it (Notes/10-recipe-variation.md B.6).
+    # definition_version not bumped: no reviewed step names oregano, so no review changes.
   utensils:
     - pan
     - bowl
@@ -69,7 +70,12 @@ known_out_of_inventory:
   - sprouts
   - sprout
   - asparagus
-  # herbs and garnishes other than oregano
+  # herbs and garnishes
+  - oregano
+  - orégano
+  - orégão
+  - orégãos
+  - oregãos
   - chives
   - chive
   - parsley

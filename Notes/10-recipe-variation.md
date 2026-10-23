@@ -76,7 +76,7 @@ Execution parameters are not independent. Heat level and duration are coupled: a
 | Dish | One serving of scrambled eggs |
 | *s₀* | Standardised laboratory station: eggs in shell, all inventory items at hand, pan cold, heat source off |
 | *G* | Egg in state `coagulating` or `solid`, transferred to the plate. `scorched` is never in *G* |
-| *I_ing* | Eggs, salt, pepper, oregano, butter, olive oil |
+| *I_ing* | Eggs, salt, pepper, butter, olive oil (oregano removed 2026-10-23, see B.6) |
 | *I_ut* | Pan, bowl, wooden spatula or spoon, hand whisk, fork, plate, heat source |
 | *B* | Egg coagulation onset (≈62 °C), full coagulation (≈70 °C), Maillard browning onset, butter smoke point, syneresis risk |
 
@@ -122,7 +122,7 @@ All decisions below were made by the author on 2026-10-11.
 
 | Decision | Choice | Reason |
 | --- | --- | --- |
-| Ingredients on the station | Eggs, salt, pepper, oregano, butter, olive oil | Author's choice. No milk or cream. |
+| Ingredients on the station | Eggs, salt, pepper, butter, olive oil | Author's choice. No milk or cream. Oregano was on the station until 2026-10-23 (B.6). |
 | Utensils on the station | Pan, bowl, wooden spatula or spoon, hand whisk, fork, plate, heat source | Author's choice. |
 | Goal state | Eggs on the plate | Carry-over cooking can scorch eggs left in the pan. |
 | Composed variations | Allowed | Novices will not follow one source exactly; branch selection in Fusion already assumes steps can be mixed. |
@@ -159,8 +159,9 @@ first and last are still open.
 | `love_and_lemons`, `the_kitchn_soft_creamy`, `continente`, `serious_eats` | Keep, trim milk/cream/water and garnish | Core path fits |
 | `tudo_gostoso` | Keep, trim late milk | In-pan cold-start technique is a structural variation |
 | `pingo_doce` | Keep as is | Fully inside the inventory |
+| `gordon_ramsay`, `bon_appetit`, `martha_stewart`, `simply_recipes_creme_fraiche`, `food_wine_brown_butter`, `inspired_taste`, `woks_of_life`, `primor`, `alton_brown`, `ina_garten_fluffy` | Exclude (author decision, 2026-10-23) | Not a variation of the dish under this definition. Never ingested |
 
-Recipes not yet ingested need the same check once they scrape.
+Every allowlisted recipe now has an outcome. A recipe added later needs the same check.
 
 ## B.5 Goal completion (k1-0.4.1)
 
@@ -173,7 +174,7 @@ presented as something a source says. In the reviewed graph of run `scope02` thi
 
 ## B.6 Open points
 
-- **Oregano has no source.** None of the 11 ingested recipes uses it. Either model a generic optional-herb seasoning step that chive and parsley steps map onto, or remove oregano from the station.
+- **Oregano has no source.** *Resolved 2026-10-23:* removed from the station. None of the ingested recipes used it. It is now a `known_out_of_inventory` term in `config/dish.yaml`, like the other herbs. `definition_version` was not bumped, because no reviewed step names oregano.
 - **Granularity of step equivalence.** At the four-label `K2` level, "beat eggs" and "add salt" are both `egg: liquid → liquid` and would collide. Equivalence has to be decided on the fine-grained `physics_state` plus the set of entities involved, not on `k2_label` alone.
 - **Heat is a level, not a temperature.** Sources say "low", "medium-low", "lume brando". The parameter in `K1` should be a hob level mapped to the lab's induction hob.
 - **Bowl or measuring jug.** The jug in `jamie_oliver` is aliased to `bowl` in `ontology.yaml`; confirm.

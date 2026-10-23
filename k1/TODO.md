@@ -7,24 +7,48 @@ Status legend: `[ ]` open · `[~]` partially done · `[x]` done and verified
 
 ---
 
-## D. Review and measurement (k1-0.4.0) — what is left for the author
+## D. Closing K1 (k1-0.4.2)
 
-Tooling is in place (`Notes/09-k1-evaluation.md`). These steps need a person.
+Review and measurement are done: 42/42 steps reviewed (14 from scratch), `k1 eval` tables
+in `CHANGELOG.md` under k1-0.4.0, `graph.final.json` built and passing all 7 gates.
 
-- [ ] **Confirm the `from_scratch` recipes** in `config/gold_review.yaml` (currently
-      `jamie_oliver` and `the_kitchn_soft_creamy`) before annotating anything.
-- [ ] **Pick the frozen run** and do not change the pipeline after it.
-- [ ] **Review every step** in the Gold set tab of `k1 viz --run <run_id>`.
-- [ ] **Re-review the 15 files from 2026-09-28.** They predate the dish definition and are
-      marked out of date. The four `epicurious_bain_marie` files belong to an excluded recipe
-      and will never be counted; delete them or keep them as a record.
-- [ ] **Run `k1 finalize` then `k1 eval`** and copy the tables into `CHANGELOG.md`.
-- [ ] **Oregano** is on the station but no source uses it (`Notes/10-recipe-variation.md` B.5).
+- [x] **`from_scratch` recipes confirmed** (`jamie_oliver`, `the_kitchn_soft_creamy`).
+- [x] **Frozen run picked:** `scope02`.
+- [x] **Every step reviewed** in the Gold set tab.
+- [x] **2026-09-28 files resolved.** The 4 `epicurious_bain_marie` files (excluded recipe)
+      and the 3 `PLACEHOLDER_*.md` files moved to `data/gold/archive/`.
+- [x] **`k1 finalize` and `k1 eval` run**, tables copied into `CHANGELOG.md`.
+- [x] **Cypher for the reviewed graph.** `k1 finalize` and `k1 store --final` write
+      `data/k1/graph.final.cypher`. `k1 store --run` still writes `graph.cypher` from the
+      pipeline graph. `--clear` removes a previous K1 graph before loading.
+- [x] **Fusion query interface.** `k1_pipeline/query.py` (`K1Query.step(branch, node_id)`
+      returns post-conditions, safety bounds and next node IDs). `tests/test_query.py`
+      runs it against `graph.final.json`: every branch walks from one entry node to a
+      Plate node at the goal state.
+- [x] **Live Neo4j load of the reviewed graph** (2026-10-23, Neo4j 5.26 in Docker on the
+      Mac mini): `k1 store --final --apply-schema --clear` gives 55 nodes, 302
+      relationships, 6 constraints, matching `graph.final.json`. Next steps and safety
+      bounds read from Neo4j agree with `K1Query` on every branch step. The first load
+      lost one node and one constraint to a statement-splitting bug, now fixed.
+- [ ] **Commit and tag** the closed K1 (`k1-1.0`). Author step.
+- [x] **Never-ingested recipes.** The 10 allowlisted recipes that never ingested are marked
+      `excluded` in `config/recipes.yaml`: not a variation of the dish (author decision,
+      2026-10-23). Stale `gold: true` flags removed. Recorded in `Notes/10` B.4.
+- [x] **Safety bounds on heat-off steps.** Only `pingo_doce` step 3 was wrong: a lost
+      edit left the on-heat stirring step without heat/`heat_source`. Fixed; the
+      remove-from-heat steps follow the residual-heat rule and are correct. Graph rebuilt
+      (307 edges), Neo4j reloaded, eval rerun (CHANGELOG k1-0.4.2).
+- [x] **Oregano** removed from the station (`config/dish.yaml`, `Notes/10` B.6).
+
+### Known limitations (fix or state in the dissertation)
+
 - [ ] **Transition-based node merging** is not implemented. Nodes still merge on the action
-      string, so recipes share few nodes and composed variations are limited.
-- [ ] **Heat and duration as coupled parameter tuples** are not stored on nodes yet.
-
----
+      string, so the 7 branches are 7 linear recipes with few shared nodes. Runtime branch
+      selection therefore means picking a recipe.
+- [ ] **Heat and duration as coupled parameter tuples** are not stored on nodes, so low-heat
+      and high-heat branches cannot be told apart from the graph.
+- [ ] **Timing is sparse and unreviewed.** 11 of 39 nodes have `timing_constraints`,
+      carried over from the pipeline without review (k1-0.4.1).
 
 ## E. To test once API keys are in place
 
@@ -70,23 +94,12 @@ Full findings are in `CHANGELOG.md` under `k1-0.2.1`.
       (Gate 2) passed cleanly on the real 16-node/121-edge graph. No excessive edge removal
       observed at this size.
 
-### New items found during the smoke test (k1-0.2.1)
+### Items found during the smoke test (k1-0.2.1) — status at k1-0.4.2
 
-- [ ] **6/10 recipe URLs fail to scrape.** `gordon_ramsay` (503, likely transient — retry),
-      `bon_appetit` (0 steps after junk filtering — needs a per-site selector or manual HTML
-      fallback), `martha_stewart` / `the_kitchn_soft_creamy` / `simply_recipes_creme_fraiche` /
-      `food_wine_brown_butter` (403 Forbidden — bot-blocked, consider a different User-Agent,
-      a headless browser, or manually saved HTML as a last resort).
-- [ ] **Gold annotation still not done.** `k1 eval` reports `Gold recipes evaluated: 0`.
-      `serious_eats` did ingest and extract successfully in this run, so at minimum that one
-      could be annotated next; `gordon_ramsay` and `bon_appetit` need the scraper fix first.
-- [ ] **Live Neo4j ingestion untested.** `k1 store --apply-schema` was not exercised against
-      a live database this run (`--no-neo4j` was used deliberately to keep the smoke test
-      fast). Worth doing once the corpus is bigger.
-- [ ] **Streamlit viz untested against real data.** `k1 viz --run smoke01` has not been
-      launched yet.
-
----
+- [~] **Recipe URLs that fail to scrape.** Superseded by the never-ingested list in §D.
+- [x] **Gold annotation.** Done in k1-0.4.0 (42/42 steps).
+- [x] **Live Neo4j ingestion.** Done, see §D.
+- [x] **Streamlit viz against real data.** Used for the whole review.
 
 ## F. Open questions for the advisors
 
@@ -188,23 +201,17 @@ Full findings are in `CHANGELOG.md` under `k1-0.2.1`.
       Jev miss or a Jev outage, because the revision loop needs written
       instructions. See `CHANGELOG.md` under `k1-0.2.2`.
 
-### Explicitly not done yet
-
-- [ ] 6/10 recipe URLs still fail to scrape (503 / 403 / junk-filtered-to-zero) — see
-      Section E "New items found during the smoke test".
-- [ ] Gold files are still placeholders; no recipe has been annotated, so `gold_comparison`
-      reports 0 recipes evaluated even though the pipeline itself now runs cleanly.
-- [ ] The Streamlit app has never been launched against real data.
-- [ ] Neo4j ingestion (including the new `--apply-schema` path) has never been run against a
-      live database.
+### k1-0.4.2 closing pass
+- [x] **Reviewed graph exported to Cypher** (`graph.final.cypher`, `k1 store --final`,
+      `--clear`).
+- [x] **`query.py` Fusion interface** and `tests/test_query.py`. **120/120 tests pass.**
+- [x] **Neo4j loader bug fixed** (`store/writer.py` `cypher_statements`).
+- [x] **Stale gold files archived** to `data/gold/archive/`.
 
 ---
 
 ## Suggested order of work
 
-1. Fix the 6 failing scraper URLs (503 retry, junk-filter selector, 403 bot-blocking).
-2. Annotate the three gold recipes (Section 1 of `Notes/09-k1-evaluation.md`) — at least
-   `serious_eats`, which already ingests and extracts cleanly.
-3. Re-run `k1 run` on the full corpus, then `k1 eval`, and paste the summary into
-   `CHANGELOG.md` under a new version entry.
-4. Launch `k1 viz --run <id>` and `k1 store --apply-schema` against a live Neo4j instance.
+1. Commit and tag `k1-1.0`. From then on K1 changes only through a new version entry.
+2. Hand over to K2: the label set K2 must produce is every `(entity, k2_label)` used in
+   `graph.final.json` conditions (egg, butter, oil, salt, pepper) plus `scorched`.

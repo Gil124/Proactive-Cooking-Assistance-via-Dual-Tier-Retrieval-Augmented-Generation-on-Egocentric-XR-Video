@@ -54,6 +54,7 @@ Protocol: [`../Notes/09-k1-evaluation.md`](../Notes/09-k1-evaluation.md).
 | `data/artifacts/runs/<run_id>/L3/scope_report.json` | Every entity trimmed and step dropped by the scope rule |
 | `data/artifacts/runs/<run_id>/eval/correction.json`, `correction_steps.csv` | Pipeline vs review, machine-readable |
 | `data/k1/graph.cypher` | Neo4j ingest script (generated from graph.json) |
+| `data/k1/graph.final.cypher` | Neo4j ingest script for the reviewed graph (`k1 finalize` or `k1 store --final`) |
 | `data/artifacts/runs/<run_id>/eval/report.md` | Per-stage evaluation metrics |
 
 ## Flags

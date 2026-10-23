@@ -5,6 +5,74 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [k1-0.4.2] — 2026-10-23
+
+### Added — K1 handover to Fusion
+- **`k1_pipeline/query.py`.** The runtime interface from `Notes/08-k1-pipeline.md`
+  ("What Fusion will query"). `K1Query.step(branch, node_id)` returns the step's
+  post-conditions, its `HAS_SAFETY_BOUND` bounds and the next node ID(s) on that branch, in
+  one call. Reads `graph.final.json` by default. `tests/test_query.py` (10 cases): every one
+  of the 7 branches walks from a single entry node to a Plate node with eggs `coagulating`
+  or `solid`, and node bounds agree with the edges.
+- **Cypher for the reviewed graph.** `k1 finalize` and the new `k1 store --final` write
+  `data/k1/graph.final.cypher` (gitignored, regenerated). Before this, the only Cypher
+  script came from the unreviewed pipeline graph. `--clear` deletes a previous K1 graph
+  (K1 labels only) before loading, because MERGE never removes old nodes.
+
+### Fixed
+- **Neo4j loader skipped the first statement of every script.** `ingest_neo4j` dropped any
+  chunk starting with `//`, and the first statement sits under the file's comment header.
+  The first node (`whisk eggs`) with its 11 edges and the `Process` uniqueness constraint
+  were never loaded, with no warning. `cypher_statements` now strips comment lines one by
+  one. Regression test in `tests/test_query.py`. **120/120 tests pass.**
+
+- **Lost gold edit in `pingo_doce` step 3.** Its note records two rule-based changes from
+  2026-10-12 (heat ticked, `heat_source` added), but the saved fields had neither, so the
+  main on-heat stirring step had no safety bounds. Set to match the note; not timed.
+  `pingo_doce` step 4 keeps heat ticked under the residual-heat rule (see
+  `the_kitchn_soft_creamy` 6); its stale "unticked" note now says so. The other
+  remove-from-heat steps already follow that rule.
+- **Flaky `test_no_match_on_json_dump`.** It scanned a node's random UUID, and a group such as
+  `-445c-` reads as "445 C". The test now leaves `node_id` out. The pipeline only scans
+  free-text fields and was not affected.
+
+### Changed — numbers after the gold fix (`k1 eval --run scope02`, 2026-10-23)
+Reviewed graph: 39 nodes, **307** edges (+4 `HAS_SAFETY_BOUND`, +1 `USES_TOOL`), all 7 gates
+passed; Neo4j reloaded (55 nodes, 307 relationships). The review figures in k1-0.4.0 move
+as follows, all from the one corrected step. Everything else in that table is unchanged.
+
+| Metric (all reviewed) | k1-0.4.0 | now |
+|---|---|---|
+| `tools` correct | 69.2% | 66.7% |
+| `has_safety_bound` correct | 74.4% | 71.8% |
+| Total edits / per step | 77 / 1.83 | 79 / 1.88 |
+
+The rule-based post-review changes in the k1-0.4.0 caveat become 27 changes to 19 files.
+
+### Changed — oregano off the station
+Removed from the `config/dish.yaml` inventory and added to `known_out_of_inventory` with the
+other herbs. No ingested recipe used it, and the final graph is identical apart from the
+gold fix above. `definition_version` not bumped: no reviewed step names oregano.
+
+### Verified — live Neo4j load (2026-10-23)
+Neo4j 5.26 in Docker: `k1 store --final --apply-schema --clear` loads 55 nodes (39 steps,
+5 ingredients, 6 tools, 5 safety bounds), 302 relationships (307 after the gold fix) and
+6 constraints, all matching `graph.final.json`. Next steps and safety bounds read from Neo4j agree with
+`K1Query` on every branch step.
+
+### Changed
+- **10 never-ingested recipes excluded** in `recipes.yaml` (`gordon_ramsay`, `bon_appetit`,
+  `martha_stewart`, `simply_recipes_creme_fraiche`, `food_wine_brown_butter`,
+  `inspired_taste`, `woks_of_life`, `primor`, `alton_brown`, `ina_garten_fluffy`): not a
+  variation of the dish, by author decision. None had ingested, so the graph and the eval
+  are unchanged. Every allowlisted recipe is now either in the corpus or excluded with a
+  reason. Stale `gold: true` flags on `gordon_ramsay` and `bon_appetit` removed.
+- `PLACEHOLDER_*.md` and the 4 `epicurious_bain_marie` gold files moved to
+  `k1/data/gold/archive/`. Nothing reads that folder.
+- `k1/TODO.md` §D rewritten as the K1 closing checklist.
+
+---
+
 ## [k1-0.4.1] — 2026-10-12
 
 ### Added — every recipe ends at the goal

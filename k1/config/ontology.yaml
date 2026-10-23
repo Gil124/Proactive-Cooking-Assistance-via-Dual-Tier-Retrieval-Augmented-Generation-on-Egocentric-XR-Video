@@ -93,6 +93,8 @@ k2_compile_map:
 canonical_entities:
   # k1-0.3.0: Portuguese names, parts of the egg, and the remaining station
   # inventory (pepper, oregano, heat_source) added. See config/dish.yaml.
+  # Oregano left the inventory on 2026-10-23; its aliases stay so a mention
+  # resolves to `oregano` and the scope rule removes it.
   - canonical: egg
     aliases: [eggs, whole egg, whole eggs, large egg, large eggs, egg mixture, egg mix,
               beaten egg, beaten eggs, scrambled egg, scrambled eggs,

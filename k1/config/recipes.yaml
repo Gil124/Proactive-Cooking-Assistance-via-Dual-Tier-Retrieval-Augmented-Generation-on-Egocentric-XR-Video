@@ -27,14 +27,14 @@ recipes:
   - recipe_id: gordon_ramsay
     url: https://www.gordonramsayrestaurants.com/recipes/scrambled-eggs/
     variant_label: "French low-heat"
-    gold: true
-    notes: "Gold recipe 2. Annotate before first eval run."
+    gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: bon_appetit
     url: https://www.bonappetit.com/test-kitchen/how-to/article/best-scrambled-eggs
     variant_label: "Medium-low butter"
-    gold: true
-    notes: "Gold recipe 3. Annotate before first eval run."
+    gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   # ── Training corpus (used for extraction + graph construction) ───────────
 
@@ -48,6 +48,7 @@ recipes:
     variant_label: "Low-heat pull"
     gold: false
     notes: "Step 3 contains SEO tail — junk filter required."
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: food_network_goat_cheese
     url: https://foodnetwork.co.uk/recipes/slow-cooked-scrambled-eggs-goat-cheese
@@ -70,11 +71,13 @@ recipes:
     url: https://www.simplyrecipes.com/scrambled-eggs-upgrade-creme-fraiche-11877075
     variant_label: "Creme fraiche"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: food_wine_brown_butter
     url: https://www.foodandwine.com/for-the-best-scrambled-eggs-cook-them-in-brown-butter-7096705
     variant_label: "Brown butter Maillard"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   # ── Added k1-0.2.6 ───────────────────────────────────────────────────────
 
@@ -92,11 +95,13 @@ recipes:
     url: https://www.inspiredtaste.net/26600/scrambled-eggs-recipe/
     variant_label: "No-dairy low-heat"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: woks_of_life
     url: https://thewoksoflife.com/how-to-make-perfect-scrambled-eggs/
     variant_label: "Butter low-heat"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: pingo_doce
     url: https://www.pingodoce.pt/receitas/ovos-mexidos/
@@ -117,6 +122,7 @@ recipes:
     url: https://www.primor.com.pt/receita/ovos-mexidos-perfeitos/
     variant_label: "Whites-first butter milk"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   # ── Added k1-0.2.7 (technique variants; still scrambled eggs) ────────────
 
@@ -124,11 +130,13 @@ recipes:
     url: https://www.foodnetwork.com/recipes/alton-brown/perfect-scrambled-eggs-recipe-2107541
     variant_label: "High-to-low heat"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: ina_garten_fluffy
     url: https://www.cookist.com/ina-gartens-secret-to-the-fluffiest-scrambled-eggs-youll-ever-taste/
     variant_label: "Extra yolks half-and-half"
     gold: false
+    excluded: "Not a variation of the dish (config/dish.yaml, Notes/10-recipe-variation.md). Author decision, 2026-10-23; never ingested."
 
   - recipe_id: epicurious_bain_marie
     url: https://www.epicurious.com/recipes/food/views/low-slow-and-custardy-eggs-382500

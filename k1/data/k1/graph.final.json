@@ -1334,9 +1334,43 @@
         "salt"
       ],
       "tools": [
-        "spatula"
+        "spatula",
+        "heat_source"
       ],
-      "safety_bounds": [],
+      "safety_bounds": [
+        {
+          "bound_id": "coagulation_onset",
+          "label": "Egg coagulation onset",
+          "temperature_c": 62.0,
+          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
+          "k2_transition": "liquid → coagulating",
+          "severity": "suggestion"
+        },
+        {
+          "bound_id": "coagulation_full",
+          "label": "Full egg coagulation",
+          "temperature_c": 70.0,
+          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
+          "k2_transition": "coagulating → solid",
+          "severity": "alert"
+        },
+        {
+          "bound_id": "maillard_onset",
+          "label": "Maillard browning onset",
+          "temperature_c": 140.0,
+          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
+          "k2_transition": "solid → scorched",
+          "severity": "alert"
+        },
+        {
+          "bound_id": "syneresis_risk",
+          "label": "Syneresis (weeping) risk",
+          "temperature_c": null,
+          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
+          "k2_transition": "solid → scorched",
+          "severity": "alert"
+        }
+      ],
       "source_recipe_ids": [
         "pingo_doce"
       ],
@@ -4042,6 +4076,58 @@
       }
     },
     {
+      "from_node_id": "b4af8dc6b3222956",
+      "to_node_id": "bound_coagulation_onset",
+      "edge_type": "HAS_SAFETY_BOUND",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {
+        "bound_id": "coagulation_onset",
+        "temperature_c": 62.0,
+        "severity": "suggestion",
+        "k2_transition": "liquid → coagulating"
+      }
+    },
+    {
+      "from_node_id": "b4af8dc6b3222956",
+      "to_node_id": "bound_coagulation_full",
+      "edge_type": "HAS_SAFETY_BOUND",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {
+        "bound_id": "coagulation_full",
+        "temperature_c": 70.0,
+        "severity": "alert",
+        "k2_transition": "coagulating → solid"
+      }
+    },
+    {
+      "from_node_id": "b4af8dc6b3222956",
+      "to_node_id": "bound_maillard_onset",
+      "edge_type": "HAS_SAFETY_BOUND",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {
+        "bound_id": "maillard_onset",
+        "temperature_c": 140.0,
+        "severity": "alert",
+        "k2_transition": "solid → scorched"
+      }
+    },
+    {
+      "from_node_id": "b4af8dc6b3222956",
+      "to_node_id": "bound_syneresis_risk",
+      "edge_type": "HAS_SAFETY_BOUND",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {
+        "bound_id": "syneresis_risk",
+        "temperature_c": null,
+        "severity": "alert",
+        "k2_transition": "solid → scorched"
+      }
+    },
+    {
       "from_node_id": "c695e87b0d0d8a88",
       "to_node_id": "bound_coagulation_onset",
       "edge_type": "HAS_SAFETY_BOUND",
@@ -5111,6 +5197,14 @@
     },
     {
       "from_node_id": "tool_spatula",
+      "to_node_id": "b4af8dc6b3222956",
+      "edge_type": "USES_TOOL",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "tool_heat_source",
       "to_node_id": "b4af8dc6b3222956",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,

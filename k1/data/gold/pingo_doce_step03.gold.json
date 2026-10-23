@@ -21,14 +21,15 @@
       }
     ],
     "tools": [
-      "spatula"
+      "spatula",
+      "heat_source"
     ],
-    "has_safety_bound": false,
+    "has_safety_bound": true,
     "in_scope": true
   },
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: heat_source added to tools (step is on the heat).",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: heat_source added to tools (step is on the heat). Applied on 2026-10-23: the two changes above were recorded here but missing from the saved fields (heat unticked, no heat_source); set to match this note. Not timed.",
   "mode": "corrected",
   "seconds_spent": 57.0,
   "seeded_from_run": "scope02",

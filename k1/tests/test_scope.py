@@ -44,7 +44,7 @@ def _node(**overrides) -> ExtractedNode:
 
 
 def test_inventory_matches_the_agreed_station():
-    assert INGREDIENTS == {"egg", "salt", "pepper", "oregano", "butter", "oil"}
+    assert INGREDIENTS == {"egg", "salt", "pepper", "butter", "oil"}
     assert UTENSILS == {"pan", "bowl", "spatula", "whisk", "plate", "heat_source"}
 
 

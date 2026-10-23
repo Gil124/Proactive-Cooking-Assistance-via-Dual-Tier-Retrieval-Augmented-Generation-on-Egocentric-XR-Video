@@ -9,7 +9,7 @@ Usage:
   k1 critic   -- L2: critic verification
   k1 fuse     -- L3: entity resolution + DAG building
   k1 validate -- L4: deterministic gate checks
-  k1 store    -- L4: write graph.json + graph.cypher
+  k1 store    -- L4: write graph.json + graph.cypher (--final: load the reviewed graph)
   k1 eval     -- compare to the reviewed steps, write report
   k1 finalize -- build the final graph from the reviewed steps
   k1 viz      -- launch Streamlit visualizer
@@ -237,40 +237,60 @@ def validate(run_id):
 
 
 @cli.command()
-@click.option("--run", "run_id", required=True)
+@click.option("--run", "run_id", default=None, help="Pipeline run to store (not with --final)")
+@click.option(
+    "--final", is_flag=True, default=False,
+    help="Load the reviewed graph (data/k1/graph.final.json) instead of a run",
+)
 @click.option("--no-neo4j", is_flag=True, default=False)
 @click.option("--apply-schema", is_flag=True, default=False, help="Apply graph_schema.cypher constraints before ingestion")
-def store(run_id, no_neo4j, apply_schema):
+@click.option(
+    "--clear", is_flag=True, default=False,
+    help="Delete the previous K1 graph from Neo4j before ingestion",
+)
+def store(run_id, final, no_neo4j, apply_schema, clear):
     """L4: Write graph.json, graph.cypher, optionally ingest into Neo4j."""
     from k1_pipeline.models import K1Graph
     from k1_pipeline.store.writer import ingest_neo4j, write_cypher, write_json
 
-    run_dir = RUNS_DIR / run_id
-    fused_path = run_dir / "L3" / "fused_dag.json"
-    if not fused_path.exists():
-        console.print("[red]fused_dag.json not found. Run 'k1 validate' first.[/red]")
+    if final == (run_id is not None):
+        console.print("[red]Pass either --run <id> or --final.[/red]")
         sys.exit(1)
 
-    graph = K1Graph.model_validate_json(fused_path.read_text())
-    K1_OUT.mkdir(parents=True, exist_ok=True)
-
     console.print("[bold]L4: Store[/bold]")
-    json_path = write_json(graph, K1_OUT)
-    console.print(f"  JSON  -> {json_path}")
+    K1_OUT.mkdir(parents=True, exist_ok=True)
+    if final:
+        final_path = K1_OUT / "graph.final.json"
+        if not final_path.exists():
+            console.print("[red]graph.final.json not found. Run 'k1 finalize' first.[/red]")
+            sys.exit(1)
+        graph = K1Graph.model_validate_json(final_path.read_text())
+        cypher_text, cypher_path = write_cypher(graph, K1_OUT, "graph.final.cypher")
+        console.print(f"  Cypher -> {cypher_path}")
+    else:
+        run_dir = RUNS_DIR / run_id
+        fused_path = run_dir / "L3" / "fused_dag.json"
+        if not fused_path.exists():
+            console.print("[red]fused_dag.json not found. Run 'k1 validate' first.[/red]")
+            sys.exit(1)
 
-    cypher_text, cypher_path = write_cypher(graph, K1_OUT)
-    console.print(f"  Cypher -> {cypher_path}")
+        graph = K1Graph.model_validate_json(fused_path.read_text())
+        json_path = write_json(graph, K1_OUT)
+        console.print(f"  JSON  -> {json_path}")
 
-    # Also copy to run artifacts
-    (run_dir / "L4").mkdir(parents=True, exist_ok=True)
-    (run_dir / "L4" / "graph.json").write_text(fused_path.read_text())
+        cypher_text, cypher_path = write_cypher(graph, K1_OUT)
+        console.print(f"  Cypher -> {cypher_path}")
+
+        # Also copy to run artifacts
+        (run_dir / "L4").mkdir(parents=True, exist_ok=True)
+        (run_dir / "L4" / "graph.json").write_text(fused_path.read_text())
 
     if not no_neo4j:
         import os
         if os.environ.get("NEO4J_URI"):
-            console.print("  Ingesting into Neo4j...")
+            console.print(f"  Ingesting {graph.version} into Neo4j...")
             schema_path = ROOT / "config" / "graph_schema.cypher" if apply_schema else None
-            ingest_neo4j(graph, cypher_text=cypher_text, schema_path=schema_path)
+            ingest_neo4j(graph, cypher_text=cypher_text, schema_path=schema_path, clear=clear)
         else:
             console.print("  [yellow]NEO4J_URI not set — skipping live ingestion.[/yellow]")
 
@@ -315,6 +335,7 @@ def finalize(run_id, allow_unreviewed):
     from k1_pipeline.models import CriticOutput as CO, CriticVerdict, ExtractedNode, NodeType
     from k1_pipeline.physics import is_thermal_action
     from k1_pipeline.scope import complete_to_goal, filter_recipe_pairs
+    from k1_pipeline.store.writer import write_cypher
     from k1_pipeline.validate.gates import run_validation
 
     run_dir = RUNS_DIR / run_id
@@ -418,7 +439,9 @@ def finalize(run_id, allow_unreviewed):
     auto_src = run_dir / "L3" / "fused_dag.json"
     if auto_src.exists():
         (K1_OUT / "graph.auto.json").write_text(auto_src.read_text())
+    _, cypher_path = write_cypher(graph, K1_OUT, "graph.final.cypher")
     console.print(f"  Final (reviewed) -> {final_path}")
+    console.print(f"  Final Cypher     -> {cypher_path}")
     console.print(f"  Auto (pipeline)  -> {K1_OUT / 'graph.auto.json'}")
     if unreviewed:
         console.print(f"  [yellow]{len(unreviewed)} steps came from the pipeline unreviewed.[/yellow]")

@@ -25,7 +25,7 @@
   },
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat unticked to match the other remove-from-heat steps.",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat unticked to match the other remove-from-heat steps. Superseded on 2026-10-12 by the residual-heat rule (see the_kitchn_soft_creamy 6): heat is ticked on a remove-from-heat step when the egg state still changes, as it does here (liquid -> solid). Heat stays ticked.",
   "mode": "corrected",
   "seconds_spent": 90.0,
   "seeded_from_run": "scope02",
