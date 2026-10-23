@@ -24,6 +24,12 @@ Use this spelling and casing in code, comments, and papers unless a library API 
 | SES | State–Event–State: `S_{t-1} --E_t--> S_t` [18] |
 | KAG | Knowledge Augmented Generation: `T_semantic = T_fact ⊕ T_concept` [33] |
 | MCC | Multi-level Confidence Computing (MultiRAG) [35] |
+| Recipe variation | A partially ordered set of parameterised steps that uses only the station inventory, goes from the start state to a goal state, and crosses no safety bound. Full definition in [`10-recipe-variation.md`](10-recipe-variation.md) |
+| Structural variation | Variations that differ in which steps occur or in their order. Alternative branches in `K1` |
+| Parametric variation | Variations with the same steps and order but different execution parameters (heat level, duration, agitation) |
+| Nominal difference | Different wording, language, or interchangeable utensil for the same step. Not a variation |
+| Attested / composed variation | Described in full by one source recipe / obtained by combining steps from several sources |
+| Deviation | An execution that is not a prefix of any valid variation. The condition under which the assistant may intervene |
 
 ## Architecture symbols
 

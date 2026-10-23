@@ -20,6 +20,7 @@ They exist so people and coding agents can work from the plan without reopening 
 | Cited papers with links | [`07-bibliography.md`](07-bibliography.md) |
 | K1 pipeline design spec (agents, ontology, module contracts) | [`08-k1-pipeline.md`](08-k1-pipeline.md) |
 | K1 evaluation protocol (gold set, metrics, bias controls) | [`09-k1-evaluation.md`](09-k1-evaluation.md) |
+| What counts as a recipe variation (thesis-ready definition, inventory, goal state) | [`10-recipe-variation.md`](10-recipe-variation.md) |
 | Notation and terms | [`glossary.md`](glossary.md) |
 
 **Coding agents should start with `00-agent-briefing.md`, then `04-architecture.md`.** Do not invent a dialogue interface, a cloud-every-frame topology, or a multi-recipe scope. Those are out of spec.

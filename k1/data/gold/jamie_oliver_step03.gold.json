@@ -1,0 +1,33 @@
+{
+  "recipe_id": "jamie_oliver",
+  "step_number": 3,
+  "expected": {
+    "node_type": "Transfer",
+    "action_phrase": "pan at low heat and add butter",
+    "pre_conditions": [
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      }
+    ],
+    "tools": [
+      "pan",
+      "heat_source"
+    ],
+    "has_safety_bound": true,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "heat_source added to tools on 2026-10-12 after review, at the annotator's request: the step says \"over a low heat\". Not timed. Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: \"medium heat\" corrected to \"low heat\" (source: \"over a low heat\").",
+  "mode": "from_scratch",
+  "seconds_spent": 70.9,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

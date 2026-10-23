@@ -1,0 +1,23 @@
+{
+  "recipe_id": "recipe_tin_eats",
+  "step_number": 1,
+  "expected": {
+    "node_type": "Transfer",
+    "action_phrase": "select pan and spatula",
+    "pre_conditions": [],
+    "post_conditions": [],
+    "tools": [
+      "pan",
+      "spatula"
+    ],
+    "has_safety_bound": false,
+    "in_scope": false
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "",
+  "mode": "corrected",
+  "seconds_spent": 11.7,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

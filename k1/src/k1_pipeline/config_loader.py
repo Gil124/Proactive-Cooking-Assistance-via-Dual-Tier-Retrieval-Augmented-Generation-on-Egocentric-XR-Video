@@ -23,6 +23,15 @@ def load_recipes() -> list[dict]:
     return _load("recipes.yaml")["recipes"]
 
 
+def get_excluded_recipes() -> dict[str, str]:
+    """Returns {recipe_id: reason} for recipes marked `excluded` in recipes.yaml."""
+    return {r["recipe_id"]: str(r["excluded"]) for r in load_recipes() if r.get("excluded")}
+
+
+def load_dish() -> dict:
+    return _load("dish.yaml")
+
+
 def load_ontology() -> dict:
     return _load("ontology.yaml")
 

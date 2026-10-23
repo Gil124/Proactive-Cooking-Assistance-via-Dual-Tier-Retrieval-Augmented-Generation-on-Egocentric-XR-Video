@@ -1,0 +1,40 @@
+{
+  "recipe_id": "tudo_gostoso",
+  "step_number": 1,
+  "expected": {
+    "node_type": "Transfer",
+    "action_phrase": "spread butter in pan and add eggs",
+    "pre_conditions": [
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "pan"
+    ],
+    "has_safety_bound": false,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "",
+  "mode": "corrected",
+  "seconds_spent": 24.8,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

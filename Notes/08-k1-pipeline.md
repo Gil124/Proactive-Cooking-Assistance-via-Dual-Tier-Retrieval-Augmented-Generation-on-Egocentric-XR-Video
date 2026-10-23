@@ -169,6 +169,28 @@ After all NEXT and REQUIRES edges are added, `_break_cycles` runs:
 4. **Gate 4 thermal rule (k1-0.2.0):** Thermality is re-derived from `physics.is_thermal_action(node.action_phrase)` — it is **not** inferred from the presence of `safety_bounds`. A thermal `Process` that is missing `safety_bounds` OR is missing a `HAS_SAFETY_BOUND` edge **fails** this gate.
 5. Every `k2_label ∈ {liquid, coagulating, solid, scorched}`.
 6. Every `source_span` is a substring of the recipe step text from `canonical.json`.
+7. **Gate 7 scope rule (k1-0.3.0):** every entity is in the station inventory, no `action_phrase` names a known out-of-inventory item, and no node comes from an excluded recipe.
+
+## Scope enforcement (k1-0.3.0)
+
+The dish specification is `k1/config/dish.yaml`: the station inventory (ingredients and
+utensils), the goal state, and a list of known out-of-inventory terms. Aliases, including
+Portuguese names and interchangeable utensils, are in `ontology.yaml`. The shared code is
+`k1_pipeline/scope.py`.
+
+| Where | What happens |
+|---|---|
+| `recipes.yaml` | A recipe with an `excluded:` reason is skipped by ingest, extract, critic, fuse, and gold comparison. |
+| L2 generator | The prompt carries the inventory. The model extracts only the inventory part of a step and sets `in_scope: false` when nothing in the step uses it. |
+| L2 critic (deterministic) | `action_phrase` naming an out-of-inventory item → `revise`. `in_scope: false` on a step that names no known out-of-inventory item → `revise`. An `in_scope: false` step skips Jev and the generative critic. |
+| L2 Jev and generative critic | Both are told the inventory, so a left-out item is not treated as an unfaithful extraction. |
+| L3 fuse | `scope.filter_recipe_pairs` runs before the DAG is built. Entities outside the inventory are removed from conditions, ingredients, and tools. A step is dropped when it is marked out of scope, its action still names an out-of-inventory item, nothing is left, or a `Process` has no state change left. Every removal is written to `L3/scope_report.json`. |
+| L3 fuse and `k1 finalize` (goal) | `scope.complete_to_goal` runs after the scope filter. A recipe with no `Plate` step gets one closing `Plate` step, "transfer eggs to plate", in the egg state its last step left. It has no source span and its extractor is `rule/goal_completion`. A recipe whose eggs never reach `coagulating` or `solid` is reported instead. Written to `L3/goal_completion.json`. |
+| L4 Gate 7 | Fails if any entity is outside the inventory, any `action_phrase` names a known out-of-inventory term, or any node comes from an excluded recipe. |
+
+Entities are checked against an allowlist. Free text can only be checked against the known
+terms plus the entities the node itself listed, so a new source can introduce a term the
+action-phrase check does not know. Add it to `known_out_of_inventory` when that happens.
 
 ## What Fusion will query
 
@@ -185,6 +207,10 @@ Fusion **does not** query ImpactVariable, OutcomeVariable, or community summarie
 Do not add those node types to the runtime graph.
 
 ## Corpus scope
+
+What counts as a variation, the station inventory, and the goal state are defined in
+[`10-recipe-variation.md`](10-recipe-variation.md). The pipeline enforces the closed inventory
+from k1-0.3.0; see "Scope enforcement" below.
 
 **Allowed:** scrambled-egg recipes in `k1/config/recipes.yaml`.
 **Excluded:** Menemen, Egg Bhurji, Chinese tomato-egg stir-fry, Huevos a la Mexicana, any non-scrambled dish.

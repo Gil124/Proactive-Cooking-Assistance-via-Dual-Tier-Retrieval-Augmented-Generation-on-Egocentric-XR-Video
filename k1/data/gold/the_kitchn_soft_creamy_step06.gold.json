@@ -1,0 +1,33 @@
+{
+  "recipe_id": "the_kitchn_soft_creamy",
+  "step_number": 6,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "remove eggs from heat",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "coagulating"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "solid"
+      }
+    ],
+    "tools": [
+      "pan",
+      "heat_source"
+    ],
+    "has_safety_bound": true,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "heat_source added to tools on 2026-10-12 after review, at the annotator's request: the step says \"Remove the eggs from heat\". Not timed. Changed on 2026-10-12 after review, not timed: heat ticked, because the step is now a Process in which residual heat takes the eggs from coagulating to solid (same as pingo_doce 4).",
+  "mode": "from_scratch",
+  "seconds_spent": 166.1,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

@@ -24,6 +24,7 @@ from k1_pipeline.critic.jev import failed_checks, jev_accepts, jev_settings, jud
 from k1_pipeline.extract.llm_client import CRITIC_MODELS, call_with_fallback
 from k1_pipeline.models import CanonicalRecipe, CriticOutput, CriticVerdict, ExtractedNode, K2Label
 from k1_pipeline.physics import find_invented_temperatures
+from k1_pipeline.scope import action_scope_issues, out_of_inventory_mentions, scope_prompt_block
 
 console = Console()
 
@@ -31,7 +32,7 @@ _MODELS_CFG = load_models()
 _CRITIC_MODEL = _MODELS_CFG["critic"]["model"]
 _CRITIC_MAX_TOKENS = int(_MODELS_CFG["critic"].get("max_tokens", 8192))
 
-_SYSTEM_PROMPT = """\
+_SYSTEM_PROMPT = f"""\
 You are a strict knowledge graph critic for cooking recipes.
 You verify that an extracted node is correctly grounded in its source text.
 
@@ -51,6 +52,10 @@ Rules:
    (toast for bread, scrambled eggs for egg) -> revise: use the base food as
    entity_id and put the form in physics_state. A genuinely different ingredient
    is allowed and must not be renamed onto the canonical list.
+7. Scope. {scope_prompt_block()}
+   The extraction is meant to leave out everything outside that inventory, so a
+   missing out-of-inventory item (milk, toast, a garnish) is correct and is not
+   a reason to revise. An action_phrase that names such an item -> revise.
 """
 
 
@@ -97,6 +102,15 @@ def _deterministic_check(node: ExtractedNode, step_text: str) -> list[str]:
     for t in invented:
         issues.append(f"Invented temperature {t} C (not in step text or physics_bounds)")
 
+    # Scope: the action must not name anything outside the station inventory.
+    named = action_scope_issues(node)
+    if named:
+        issues.append(
+            "action_phrase names items outside the station inventory "
+            f"({', '.join(named)}). Describe only the part of the step that uses "
+            "inventory items, or set in_scope to false if nothing remains"
+        )
+
     return issues
 
 
@@ -119,6 +133,26 @@ def verify_node(
 
     step = next(s for s in recipe.steps if s.number == step_number)
     step_text = step.text
+
+    if not node.in_scope:
+        # An out-of-scope step is dropped at fusion. The only thing to verify is
+        # that the step really names something outside the inventory.
+        named = out_of_inventory_mentions(step_text)
+        result = CriticOutput(
+            node_id=node.node_id,
+            verdict=CriticVerdict.accept if named else CriticVerdict.revise,
+            grounding_quote=step_text[:80],
+            issues=[] if named else [
+                "in_scope is false but the step text names no known out-of-inventory item"
+            ],
+            critic_model="deterministic",
+            revision_instructions=None if named else (
+                "The step names nothing outside the station inventory. "
+                "Set in_scope to true and extract it."
+            ),
+        )
+        artifact_path.write_text(result.model_dump_json(indent=2))
+        return result
 
     issues = _deterministic_check(node, step_text)
     if issues:

@@ -73,6 +73,17 @@ def test_invalid_node_type_fails():
         GoldNode.model_validate(bad)
 
 
+def test_tools_default_empty_and_round_trip():
+    """Tools are optional. A saved list of tool names survives a reload."""
+    gold = GoldNode.model_validate(PROTOCOL_EXAMPLE)
+    assert gold.expected.tools == []
+
+    with_tools = json.loads(json.dumps(PROTOCOL_EXAMPLE))
+    with_tools["expected"]["tools"] = ["whisk", "bowl"]
+    reloaded = GoldNode.model_validate(with_tools)
+    assert reloaded.expected.tools == ["whisk", "bowl"]
+
+
 def test_notes_optional():
     """notes field must be optional (default empty string)."""
     no_notes = {k: v for k, v in PROTOCOL_EXAMPLE.items() if k != "notes"}

@@ -7,6 +7,25 @@ Status legend: `[ ]` open · `[~]` partially done · `[x]` done and verified
 
 ---
 
+## D. Review and measurement (k1-0.4.0) — what is left for the author
+
+Tooling is in place (`Notes/09-k1-evaluation.md`). These steps need a person.
+
+- [ ] **Confirm the `from_scratch` recipes** in `config/gold_review.yaml` (currently
+      `jamie_oliver` and `the_kitchn_soft_creamy`) before annotating anything.
+- [ ] **Pick the frozen run** and do not change the pipeline after it.
+- [ ] **Review every step** in the Gold set tab of `k1 viz --run <run_id>`.
+- [ ] **Re-review the 15 files from 2026-09-28.** They predate the dish definition and are
+      marked out of date. The four `epicurious_bain_marie` files belong to an excluded recipe
+      and will never be counted; delete them or keep them as a record.
+- [ ] **Run `k1 finalize` then `k1 eval`** and copy the tables into `CHANGELOG.md`.
+- [ ] **Oregano** is on the station but no source uses it (`Notes/10-recipe-variation.md` B.5).
+- [ ] **Transition-based node merging** is not implemented. Nodes still merge on the action
+      string, so recipes share few nodes and composed variations are limited.
+- [ ] **Heat and duration as coupled parameter tuples** are not stored on nodes yet.
+
+---
+
 ## E. To test once API keys are in place
 
 Updated after the first live smoke test (`smoke01`, k1-0.2.1). Items below are re-annotated

@@ -1,27 +1,37 @@
-# Gold Annotation Protocol — K1 v1
+# Review Protocol — K1 reviewed steps
 
-## Overview
+Full protocol and metrics: [`Notes/09-k1-evaluation.md`](../../../Notes/09-k1-evaluation.md).
+What belongs to the dish: [`Notes/10-recipe-variation.md`](../../../Notes/10-recipe-variation.md).
 
-Annotate exactly **three** scrambled-egg recipes:
-1. Serious Eats — Fluffy Scrambled Eggs (`serious_eats`)
-2. Gordon Ramsay — Scrambled Eggs (`gordon_ramsay`)
-3. Bon Appétit — Best Scrambled Eggs (`bon_appetit`)
+## What to review
 
-These recipes must **never** be used as few-shot examples in extraction prompts.
+Every step of every ingested recipe that is not `excluded` in `k1/config/recipes.yaml`.
+A reviewed step is both the gold label and the corrected step the final graph is built from.
 
-## How to annotate
+## How to review
 
-1. Open the recipe URL listed in `k1/config/recipes.yaml`.
-2. Read each step.
-3. Fill in one JSON file per step following the schema below.
-4. Save as `{recipe_id}_step{NN:02d}.gold.json` in this directory.
-5. Do not modify gold files after annotation. Corrections go into a new `v2` folder.
+1. Run `uv run k1 viz --run <run_id>` and open the **Gold set** tab.
+2. The tab opens on the first step that still needs review. Read the source step.
+3. Decide whether the step belongs to the dish. Untick the box for serving with other
+   foods, garnishes, or anything outside the station inventory.
+4. Correct the fields, then press **Save and go to the next step**.
 
-## Step annotation schema
+Do not write the files by hand: the tab records the mode, the time spent, the run, and the
+definition version, and the metrics need all four.
+
+Recipes listed under `from_scratch` in `k1/config/gold_review.yaml` start from a blank form
+with the pipeline output hidden. Do not open them on the Graph tab before saving.
+
+A file saved under an older `definition_version` is shown as outdated and is not counted
+until you save it again.
+
+## File schema
+
+`{recipe_id}_step{NN}.gold.json`:
 
 ```json
 {
-  "recipe_id": "serious_eats",
+  "recipe_id": "pingo_doce",
   "step_number": 1,
   "expected": {
     "node_type": "Process | Transfer | Plate",
@@ -32,35 +42,40 @@ These recipes must **never** be used as few-shot examples in extraction prompts.
     "post_conditions": [
       {"entity_id": "egg", "k2_label": "liquid | coagulating | solid | scorched"}
     ],
-    "has_safety_bound": true
+    "tools": ["whisk", "bowl"],
+    "has_safety_bound": true,
+    "in_scope": true
   },
   "annotator": "gil.arroteia",
   "annotation_date": "YYYY-MM-DD",
-  "notes": "Optional annotation notes"
+  "notes": "",
+  "mode": "corrected | from_scratch",
+  "seconds_spent": 41.5,
+  "seeded_from_run": "run id",
+  "definition_version": "2026-10-11"
 }
 ```
 
 ## Rules
 
-- `node_type`: Process = state-changing action; Transfer = move/add/remove; Plate = serve.
+- `in_scope`: false when nothing in the step uses the eggs or the station inventory. The
+  other fields are then ignored.
+- `node_type`: Process = state-changing action; Transfer = move/add/remove; Plate = eggs onto the plate.
 - `k2_label`: use only `liquid`, `coagulating`, `solid`, `scorched`.
 - `has_safety_bound`: true if the step involves heat that could cause coagulation/scorching.
 - `action_phrase`: a short 2–5 word verb phrase, e.g. "whisk eggs", "melt butter over heat".
+  Name only inventory items.
 - `pre_conditions`: what state the entity is in BEFORE this step.
 - `post_conditions`: what state the entity should be in AFTER this step.
+- `tools`: implements the step names. One name per row. A step that happens on the heat
+  (`has_safety_bound` true) always lists `heat_source`, even when the text does not name it. Tools have no k2 state, so they do
+  not go in Before or After. Leave the list empty when the step names no tool.
 
-## Entity alias reminder
+## Entity names
 
-Use canonical names: `egg`, `butter`, `oil`, `salt`, `pan`, `spatula`, `bowl`, `whisk`, `plate`.
+Use the inventory names. Aliases and Portuguese names are resolved on save.
 
-## Gold synonym table for entity resolution
+- Ingredients: `egg`, `salt`, `pepper`, `oregano`, `butter`, `oil`.
+- Utensils: `pan`, `bowl`, `spatula`, `whisk`, `plate`, `heat_source`.
 
-Save as `entity_aliases.yaml` (create this file):
-
-```yaml
-aliases:
-  - canonical: egg
-    aliases: [eggs, whole eggs, egg mixture, beaten egg]
-  - canonical: butter
-    aliases: [unsalted butter, cold butter, knob of butter]
-```
+`entity_aliases.yaml` in this folder is the synonym table used for the alias-accuracy metric.

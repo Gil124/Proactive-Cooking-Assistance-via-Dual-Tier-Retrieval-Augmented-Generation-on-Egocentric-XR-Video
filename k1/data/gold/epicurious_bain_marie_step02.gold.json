@@ -1,0 +1,36 @@
+{
+  "recipe_id": "epicurious_bain_marie",
+  "step_number": 2,
+  "expected": {
+    "node_type": "Transfer",
+    "action_phrase": "assemble double boiler",
+    "pre_conditions": [
+      {
+        "entity_id": "water",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "saucepan",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "bowl",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "water",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "bowl",
+        "k2_label": "scorched"
+      }
+    ],
+    "has_safety_bound": false
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-09-28",
+  "notes": ""
+}

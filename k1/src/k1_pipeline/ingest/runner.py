@@ -65,6 +65,10 @@ def run_ingest(
         variant_label = entry.get("variant_label", "")
         gold = entry.get("gold", False)
 
+        if entry.get("excluded"):
+            table.add_row(recipe_id, "-", "-", "✓" if gold else "", "[dim]excluded (out of scope)[/dim]")
+            continue
+
         dest = recipes_dir / recipe_id
         dest.mkdir(parents=True, exist_ok=True)
 

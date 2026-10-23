@@ -1,0 +1,44 @@
+{
+  "recipe_id": "epicurious_bain_marie",
+  "step_number": 4,
+  "expected": {
+    "node_type": "Plate",
+    "action_phrase": "plate and serve",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "coagulating"
+      },
+      {
+        "entity_id": "bread",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "plate",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "chutney",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "coagulating"
+      },
+      {
+        "entity_id": "bread",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "plate",
+        "k2_label": "solid"
+      }
+    ],
+    "has_safety_bound": false
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-09-28",
+  "notes": ""
+}

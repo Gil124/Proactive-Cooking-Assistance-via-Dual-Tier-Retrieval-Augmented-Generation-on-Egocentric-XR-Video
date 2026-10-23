@@ -1,0 +1,89 @@
+# Dish specification D = (s0, G, I, B) — added in k1-0.3.0
+# Definition and rationale: Notes/10-recipe-variation.md
+# Do not modify without updating that note and CHANGELOG.md.
+#
+# Names below are canonical entity names. Aliases (other wording, Portuguese,
+# interchangeable utensils) live in ontology.yaml `canonical_entities`.
+# Safety bounds B are in physics_bounds.yaml.
+
+dish: scrambled_eggs
+
+# Bump this whenever the inventory, the goal, or the definition changes.
+# A gold file saved under another value is treated as out of date and is
+# left out of every metric until it is reviewed again.
+definition_version: "2026-10-11"
+servings: 1
+
+start_state: >
+  Standardised laboratory station: eggs in shell, all inventory items at hand,
+  pan cold, heat source off.
+
+goal:
+  entity: egg
+  k2_labels: [coagulating, solid]
+  location: plate
+
+inventory:
+  ingredients:
+    - egg
+    - salt
+    - pepper
+    - oregano
+    - butter
+    - oil
+  utensils:
+    - pan
+    - bowl
+    - spatula      # wooden spatula or wooden spoon
+    - whisk        # hand whisk or fork
+    - plate
+    - heat_source
+
+# The inventory is an allowlist: any entity not listed above is removed from a
+# node. Free text (action_phrase) cannot be checked against an allowlist, so
+# the terms below are what the scope check looks for there. Matching is on
+# whole words, case-insensitive. Add a term when a new source brings one in.
+known_out_of_inventory:
+  # dairy and liquids
+  - milk
+  - cream
+  - crème fraîche
+  - creme fraiche
+  - half-and-half
+  - leite
+  - natas
+  - nata
+  - water
+  - água
+  # cheese
+  - cheese
+  - queijo
+  # bread and accompaniments
+  - bread
+  - toast
+  - toasted
+  - pão
+  - torrada
+  - torradas
+  - chutney
+  - sprouts
+  - sprout
+  - asparagus
+  # herbs and garnishes other than oregano
+  - chives
+  - chive
+  - parsley
+  - scallion
+  - scallions
+  - herbs
+  - garnish
+  - cebolinho
+  - salsa
+  # equipment not on the station
+  - double boiler
+  - bain-marie
+  - bain marie
+  - banho-maria
+  - griddle
+  - coals
+  - charcoal

@@ -59,6 +59,7 @@ def _openrouter_client(json_mode: bool) -> instructor.Instructor:
                 OpenAI(
                     api_key=os.environ.get("OPENROUTER_API_KEY", ""),
                     base_url="https://openrouter.ai/api/v1",
+                    timeout=180.0,
                 ),
                 mode=instructor.Mode.JSON,
             )
@@ -68,6 +69,7 @@ def _openrouter_client(json_mode: bool) -> instructor.Instructor:
             OpenAI(
                 api_key=os.environ.get("OPENROUTER_API_KEY", ""),
                 base_url="https://openrouter.ai/api/v1",
+                timeout=180.0,
             ),
             mode=instructor.Mode.TOOLS,
         )

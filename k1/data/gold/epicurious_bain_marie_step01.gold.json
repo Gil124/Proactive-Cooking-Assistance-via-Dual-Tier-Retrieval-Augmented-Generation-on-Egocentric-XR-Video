@@ -1,0 +1,31 @@
+{
+  "recipe_id": "epicurious_bain_marie",
+  "step_number": 1,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "whisk together eggs and milk",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "milk",
+        "k2_label": "liquid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "bowl"
+    ],
+    "has_safety_bound": false
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-09-28",
+  "notes": ""
+}

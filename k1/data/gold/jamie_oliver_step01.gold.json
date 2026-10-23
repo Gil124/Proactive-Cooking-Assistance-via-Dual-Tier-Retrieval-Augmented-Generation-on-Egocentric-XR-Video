@@ -1,0 +1,32 @@
+{
+  "recipe_id": "jamie_oliver",
+  "step_number": 1,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "crack the eggs into a bowl",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "bowl"
+    ],
+    "has_safety_bound": false,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "",
+  "mode": "from_scratch",
+  "seconds_spent": 43.6,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

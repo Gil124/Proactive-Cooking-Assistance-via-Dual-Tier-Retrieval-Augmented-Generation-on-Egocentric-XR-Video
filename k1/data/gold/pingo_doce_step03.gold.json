@@ -1,0 +1,36 @@
+{
+  "recipe_id": "pingo_doce",
+  "step_number": 3,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "add beaten eggs and salt and stir gently with a spatula without stopping",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "salt",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "spatula"
+    ],
+    "has_safety_bound": false,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: heat_source added to tools (step is on the heat).",
+  "mode": "corrected",
+  "seconds_spent": 57.0,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

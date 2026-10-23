@@ -17,6 +17,9 @@ from pathlib import Path
 
 import yaml
 
+from k1_pipeline.config_loader import get_excluded_recipes
+from k1_pipeline.eval.correction import correction_metrics, render_section, write_outputs
+from k1_pipeline.gold import DEFINITION_VERSION
 from k1_pipeline.models import GoldNode, K1Graph, K2Label, NodeType
 
 
@@ -189,7 +192,7 @@ def l4_metrics(l4_dir: Path) -> dict:
     if not report_path.exists():
         return {"validation": "not run"}
     text = report_path.read_text()
-    passed = "All 6 validation gates passed" in text
+    passed = "validation gates passed" in text
     errors = [line for line in text.splitlines() if "FAIL" in line]
     return {
         "all_gates_passed": passed,
@@ -239,10 +242,20 @@ def gold_comparison(gen_dir: Path, l3_dir: Path, gold_dir: Path) -> dict:
     k2_correct = k2_total = 0
     safety_present = safety_expected = 0
 
+    excluded = get_excluded_recipes()
+
     for gf in gold_files:
         gold = GoldNode.model_validate_json(gf.read_text())
         recipe_id = gold.recipe_id
         step_n = gold.step_number
+
+        # Recipes outside the dish specification are never extracted.
+        if recipe_id in excluded:
+            continue
+        # Files saved under an older definition, and steps reviewed as outside
+        # the dish, have no node to compare. eval/correction.py scores those.
+        if gold.definition_version != DEFINITION_VERSION or not gold.expected.in_scope:
+            continue
 
         # L2 gen artifact for node_type and k2 labels
         gen_file = gen_dir / f"{recipe_id}_step{step_n:02d}.gen.json"
@@ -294,7 +307,7 @@ def write_report(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: Path) 
     l2 = l2_metrics(run_dir / "L2" / "gen", run_dir / "L2" / "critic", recipes_dir)
     l3 = l3_metrics(run_dir / "L3", gold_dir)
     l4 = l4_metrics(run_dir / "L4")
-    gold = gold_comparison(run_dir / "L2" / "gen", run_dir / "L3", gold_dir)
+    review = correction_metrics(run_id, run_dir, recipes_dir, gold_dir)
 
     alias_line = (
         f"| Alias accuracy | {l3.get('alias_accuracy_pct', 'N/A')}% "
@@ -339,20 +352,11 @@ def write_report(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: Path) 
 
 {chr(10).join(f'- {e}' for e in l4.get('gate_errors', []))}
 
-## Gold Comparison (vs frozen gold labels)
-| Metric | Value |
-|---|---|
-| Gold recipes evaluated | {gold.get('gold_recipes_evaluated', 0)} |
-| Node-type precision | {gold.get('node_type_precision', 'N/A')} |
-| Node-type recall | {gold.get('node_type_recall', 'N/A')} |
-| K2 label accuracy | {gold.get('k2_label_accuracy_pct', 'N/A')}% |
-| Safety-bound coverage | {gold.get('safety_bound_coverage_pct', 'N/A')}% |
-
-{gold.get('error', '')}
-"""
+{render_section(review)}"""
 
     report_dir = run_dir / "eval"
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / "report.md"
     report_path.write_text(report)
+    write_outputs(review, report_dir)
     return report

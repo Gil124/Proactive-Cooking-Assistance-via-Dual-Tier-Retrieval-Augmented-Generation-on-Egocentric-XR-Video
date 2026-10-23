@@ -91,24 +91,40 @@ k2_compile_map:
 # ── Canonical entities (for entity resolution) ───────────────────────────────
 
 canonical_entities:
+  # k1-0.3.0: Portuguese names, parts of the egg, and the remaining station
+  # inventory (pepper, oregano, heat_source) added. See config/dish.yaml.
   - canonical: egg
-    aliases: [eggs, whole egg, whole eggs, egg mixture, egg mix, beaten egg, scrambled egg, scrambled eggs]
+    aliases: [eggs, whole egg, whole eggs, large egg, large eggs, egg mixture, egg mix,
+              beaten egg, beaten eggs, scrambled egg, scrambled eggs,
+              egg white, egg whites, egg yolk, egg yolks, yolk, yolks,
+              ovo, ovos, ovos batidos, ovos mexidos, gema, gemas, clara, claras]
   - canonical: butter
-    aliases: [unsalted butter, salted butter, cold butter, knob of butter]
+    aliases: [unsalted butter, salted butter, cold butter, knob of butter, manteiga]
   - canonical: oil
-    aliases: [olive oil, cooking oil, vegetable oil, neutral oil]
+    aliases: [olive oil, extra virgin olive oil, cooking oil, vegetable oil, neutral oil, azeite, óleo]
   - canonical: salt
-    aliases: [fine salt, sea salt, kosher salt, table salt]
+    aliases: [fine salt, sea salt, kosher salt, table salt, sal]
+  - canonical: pepper
+    aliases: [black pepper, white pepper, ground pepper, ground black pepper,
+              freshly ground black pepper, pimenta, pimenta preta]
+  - canonical: oregano
+    aliases: [dried oregano, orégano, orégão, orégãos, oregãos]
   - canonical: pan
-    aliases: [non-stick pan, frying pan, skillet, saucepan, non-stick skillet]
+    aliases: [non-stick pan, nonstick pan, frying pan, skillet, saucepan, medium saucepan,
+              non-stick skillet, nonstick skillet, saute pan, omelette pan, cast iron pan,
+              frigideira]
   - canonical: spatula
-    aliases: [rubber spatula, silicone spatula, heatproof spatula, wooden spoon]
+    aliases: [rubber spatula, silicone spatula, heatproof spatula, wooden spatula,
+              wooden spoon, spoon, espátula, colher de pau]
   - canonical: bowl
-    aliases: [mixing bowl, small bowl]
+    aliases: [mixing bowl, small bowl, medium bowl, jug, measuring jug, tigela, taça]
   - canonical: whisk
-    aliases: [fork, balloon whisk]
+    aliases: [fork, balloon whisk, hand whisk, garfo, batedor, vara de arames]
   - canonical: plate
-    aliases: [serving plate, dish]
+    aliases: [serving plate, dish, prato]
+  - canonical: heat_source
+    aliases: [heat source, heat, stove, stovetop, hob, induction hob, burner, cooktop,
+              fogo, lume, fogão]
   # Preparations are the same object as the base food. Names not listed here
   # stay as new entities (goat cheese, cream, herbs, and so on).
   - canonical: bread

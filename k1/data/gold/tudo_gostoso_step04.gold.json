@@ -1,0 +1,40 @@
+{
+  "recipe_id": "tudo_gostoso",
+  "step_number": 4,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "cook egg white",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "coagulating"
+      },
+      {
+        "entity_id": "butter",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "heat_source"
+    ],
+    "has_safety_bound": true,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat_source added to tools (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: butter solid -> liquid added (the butter spread in step 1 melts once the pan is on the heat; step 5 starts with it liquid).",
+  "mode": "corrected",
+  "seconds_spent": 11.2,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

@@ -1,0 +1,40 @@
+{
+  "recipe_id": "the_kitchn_soft_creamy",
+  "step_number": 3,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "whisk salt and pepper in eggs",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "salt",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "pepper",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "whisk"
+    ],
+    "has_safety_bound": false,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: typo in action phrase corrected (\"whisk sal and pepper in eggs\" -> \"whisk salt and pepper in eggs\").",
+  "mode": "from_scratch",
+  "seconds_spent": 64.3,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

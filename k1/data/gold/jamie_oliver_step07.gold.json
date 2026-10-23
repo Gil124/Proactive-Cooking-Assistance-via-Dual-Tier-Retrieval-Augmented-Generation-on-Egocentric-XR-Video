@@ -1,0 +1,20 @@
+{
+  "recipe_id": "jamie_oliver",
+  "step_number": 7,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "",
+    "pre_conditions": [],
+    "post_conditions": [],
+    "tools": [],
+    "has_safety_bound": false,
+    "in_scope": false
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "",
+  "mode": "from_scratch",
+  "seconds_spent": 20.7,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

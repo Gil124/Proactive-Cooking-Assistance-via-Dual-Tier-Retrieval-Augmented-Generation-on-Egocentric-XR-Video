@@ -10,7 +10,8 @@ Usage:
   k1 fuse     -- L3: entity resolution + DAG building
   k1 validate -- L4: deterministic gate checks
   k1 store    -- L4: write graph.json + graph.cypher
-  k1 eval     -- compare to gold, write report
+  k1 eval     -- compare to the reviewed steps, write report
+  k1 finalize -- build the final graph from the reviewed steps
   k1 viz      -- launch Streamlit visualizer
   k1 review   -- alias for viz
 """
@@ -42,11 +43,16 @@ def _new_run_id() -> str:
 
 
 def _load_canonical_recipes(recipes_dir: Path) -> dict:
+    from k1_pipeline.config_loader import get_excluded_recipes
     from k1_pipeline.models import CanonicalRecipe
+    excluded = get_excluded_recipes()
     result = {}
     for path in sorted(recipes_dir.glob("*/canonical.json")):
         try:
             recipe = CanonicalRecipe.model_validate_json(path.read_text())
+            if recipe.recipe_id in excluded:
+                # Not a variation of the dish (config/dish.yaml); skipped by every stage.
+                continue
             result[recipe.recipe_id] = recipe
         except Exception as e:
             console.print(f"[yellow]Warning: could not load {path}: {e}[/yellow]")
@@ -147,6 +153,7 @@ def fuse(run_id):
     """L3: Resolve entities and build the fused multi-path DAG."""
     from k1_pipeline.fuse.dag_builder import build_k1_graph
     from k1_pipeline.models import CriticOutput as CO, ExtractedNode
+    from k1_pipeline.scope import complete_to_goal, filter_recipe_pairs
 
     run_dir = RUNS_DIR / run_id
     gen_dir = run_dir / "L2" / "gen"
@@ -177,6 +184,28 @@ def fuse(run_id):
                     pairs.append((node, critic_out))
         all_pairs.append((pairs, recipe.recipe_id))
 
+    # Trim every node to the station inventory and drop steps outside the dish.
+    all_pairs = filter_recipe_pairs(all_pairs, run_dir / "L3")
+    scope_report = json.loads((run_dir / "L3" / "scope_report.json").read_text())
+    console.print(
+        f"  Scope: {scope_report['steps_dropped']} steps dropped, "
+        f"{scope_report['steps_trimmed']} trimmed -> L3/scope_report.json"
+    )
+
+    # Every path must end at the goal: add a closing Plate step where a source has none.
+    all_pairs = complete_to_goal(all_pairs, run_dir / "L3")
+    goal_report = json.loads((run_dir / "L3" / "goal_completion.json").read_text())
+    if goal_report["plate_step_added"]:
+        console.print(
+            "  Goal: closing Plate step added by rule to "
+            + ", ".join(r["recipe_id"] for r in goal_report["plate_step_added"])
+        )
+    for r in goal_report["goal_not_reached"]:
+        console.print(
+            f"  [yellow]Goal not reached: {r['recipe_id']} ends with eggs "
+            f"{r['last_state']}; no Plate step added.[/yellow]"
+        )
+
     graph = build_k1_graph(all_pairs, run_dir)
     console.print(f"  [green]Fused DAG:[/green] {len(graph.nodes)} nodes, {len(graph.edges)} edges")
 
@@ -200,7 +229,7 @@ def validate(run_id):
     console.print("[bold]L4: Validate[/bold]")
     passed = run_validation(graph, recipes, run_dir)
     if passed:
-        console.print("  [green]All 6 gates passed.[/green]")
+        console.print("  [green]All 7 gates passed.[/green]")
     else:
         report = (run_dir / "L4" / "validation_report.txt").read_text()
         console.print(f"[red]{report}[/red]")
@@ -271,6 +300,129 @@ def eval_(run_id, check_gold):
     report_path = run_dir / "eval" / "report.md"
     console.print(f"  Report -> {report_path}")
     console.print(report[:2000])  # preview first 2 KB
+
+
+@cli.command()
+@click.option("--run", "run_id", required=True, help="Run the steps were reviewed against")
+@click.option(
+    "--allow-unreviewed", is_flag=True, default=False,
+    help="Use the pipeline output for steps that have no current review",
+)
+def finalize(run_id, allow_unreviewed):
+    """Build the final K1 graph from the reviewed steps in data/gold/."""
+    from k1_pipeline.fuse.dag_builder import build_k1_graph
+    from k1_pipeline.gold import gold_to_pair, is_current, load_gold
+    from k1_pipeline.models import CriticOutput as CO, CriticVerdict, ExtractedNode, NodeType
+    from k1_pipeline.physics import is_thermal_action
+    from k1_pipeline.scope import complete_to_goal, filter_recipe_pairs
+    from k1_pipeline.validate.gates import run_validation
+
+    run_dir = RUNS_DIR / run_id
+    final_dir = run_dir / "final"
+    gold_dir = DATA / "gold"
+    gen_dir = run_dir / "L2" / "gen"
+    recipes = _load_canonical_recipes(DATA / "recipes")
+
+    console.print("[bold]Finalize: reviewed steps -> final graph[/bold]")
+    all_pairs: list[tuple[list, str]] = []
+    unreviewed: list[str] = []
+    problems: list[str] = []
+    safety: dict[tuple[str, int], bool] = {}
+    for recipe in recipes.values():
+        pairs = []
+        for step in recipe.steps:
+            label = f"{recipe.recipe_id} step {step.number}"
+            gold = load_gold(gold_dir, recipe.recipe_id, step.number)
+            if is_current(gold):
+                if not gold.expected.in_scope:
+                    continue
+                try:
+                    pairs.append(gold_to_pair(gold, recipe, run_dir))
+                except Exception as e:
+                    problems.append(f"{label}: {e}")
+                # The reviewer's heat decision decides the safety bounds.
+                safety[(recipe.recipe_id, step.number)] = gold.expected.has_safety_bound
+                if (
+                    gold.expected.node_type == NodeType.Process
+                    and is_thermal_action(gold.expected.action_phrase)
+                    and not gold.expected.has_safety_bound
+                ):
+                    problems.append(
+                        f"{label}: '{gold.expected.action_phrase}' is a heating action "
+                        "but 'Heat can coagulate or scorch' is not ticked"
+                    )
+                continue
+            unreviewed.append(label)
+            gen_file = gen_dir / f"{recipe.recipe_id}_step{step.number:02d}.gen.json"
+            if allow_unreviewed and gen_file.exists():
+                node = ExtractedNode.model_validate_json(gen_file.read_text())
+                pairs.append((node, CO(verdict=CriticVerdict.accept, grounding_quote=node.source_span)))
+        all_pairs.append((pairs, recipe.recipe_id))
+
+    if problems:
+        console.print("[red]Reviewed steps that cannot become nodes:[/red]")
+        for p in problems:
+            console.print(f"  {p}")
+        sys.exit(1)
+    if unreviewed and not allow_unreviewed:
+        console.print(f"[red]{len(unreviewed)} steps have no current review:[/red]")
+        for label in unreviewed:
+            console.print(f"  {label}")
+        console.print("Review them in `k1 viz`, or pass --allow-unreviewed.")
+        sys.exit(1)
+
+    all_pairs = filter_recipe_pairs(all_pairs, final_dir / "L3")
+    scope_report = json.loads((final_dir / "L3" / "scope_report.json").read_text())
+    # A reviewed step should already fit the inventory. If the scope rule still
+    # removes one, the review and config/dish.yaml disagree: stop and say where.
+    dropped = [r for r in scope_report["records"] if r["dropped"]]
+    if dropped and not allow_unreviewed:
+        console.print("[red]Reviewed steps the scope rule would drop:[/red]")
+        for r in dropped:
+            console.print(f"  {r['recipe_id']} step {r['step_number']}: {r['reason']}")
+        sys.exit(1)
+    trimmed = [r for r in scope_report["records"] if not r["dropped"]]
+    if trimmed:
+        console.print(
+            f"  [yellow]{len(trimmed)} steps had out-of-inventory entities removed "
+            "-> final/L3/scope_report.json[/yellow]"
+        )
+
+    # Every path must end at the goal: add a closing Plate step where a source has none.
+    all_pairs = complete_to_goal(all_pairs, final_dir / "L3")
+    goal_report = json.loads((final_dir / "L3" / "goal_completion.json").read_text())
+    if goal_report["plate_step_added"]:
+        console.print(
+            "  Goal: closing Plate step added by rule to "
+            + ", ".join(r["recipe_id"] for r in goal_report["plate_step_added"])
+        )
+    for r in goal_report["goal_not_reached"]:
+        console.print(
+            f"  [yellow]Goal not reached: {r['recipe_id']} ends with eggs "
+            f"{r['last_state']}; no Plate step added.[/yellow]"
+        )
+
+    graph = build_k1_graph(all_pairs, final_dir, safety_overrides=safety)
+    graph.version = f"k1-final/{run_id}"
+    (final_dir / "L3" / "fused_dag.json").write_text(graph.model_dump_json(indent=2))
+    console.print(f"  [green]Final DAG:[/green] {len(graph.nodes)} nodes, {len(graph.edges)} edges")
+
+    if not run_validation(graph, recipes, final_dir):
+        console.print(f"[red]{(final_dir / 'L4' / 'validation_report.txt').read_text()}[/red]")
+        sys.exit(1)
+    console.print("  [green]All 7 gates passed.[/green]")
+
+    K1_OUT.mkdir(parents=True, exist_ok=True)
+    final_path = K1_OUT / "graph.final.json"
+    final_path.write_text(graph.model_dump_json(indent=2))
+    auto_src = run_dir / "L3" / "fused_dag.json"
+    if auto_src.exists():
+        (K1_OUT / "graph.auto.json").write_text(auto_src.read_text())
+    console.print(f"  Final (reviewed) -> {final_path}")
+    console.print(f"  Auto (pipeline)  -> {K1_OUT / 'graph.auto.json'}")
+    if unreviewed:
+        console.print(f"  [yellow]{len(unreviewed)} steps came from the pipeline unreviewed.[/yellow]")
+    console.print(f"  Compare them: k1 eval --run {run_id}")
 
 
 @cli.command()

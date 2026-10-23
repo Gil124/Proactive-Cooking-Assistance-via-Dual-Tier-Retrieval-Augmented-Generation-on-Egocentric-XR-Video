@@ -5,6 +5,142 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [k1-0.4.1] — 2026-10-12
+
+### Added — every recipe ends at the goal
+A recipe with no `Plate` step gets one closing "transfer eggs to plate" step by rule
+(`scope.complete_to_goal`), in fusion and in `k1 finalize`. It keeps the egg state of the
+last step, has no source span, and names `rule/goal_completion` as its extractor. A recipe
+that never reaches a goal state is reported in `L3/goal_completion.json`, not plated.
+In the reviewed `scope02` graph four recipes needed it (`continente`, `jamie_oliver`,
+`love_and_lemons`, `tudo_gostoso`); they share one node. Reviewed graph: 39 nodes, 290 edges.
+The frozen `scope02` pipeline graph was not rebuilt, so it does not have this node.
+
+### Fixed
+- **Timing lost in the reviewed graph.** The review form has no timing field, so
+  `k1 finalize` now carries the pipeline's `timing_constraints` over, unreviewed.
+
+---
+
+## [k1-0.4.0] — 2026-10-11
+
+### Added — review workflow that measures itself
+K1 construction is not a thesis contribution, so the evaluation asks one question: was
+building K1 with the pipeline and correcting it by hand worth it? Protocol in
+`Notes/09-k1-evaluation.md`.
+
+- A reviewed step (`data/gold/*.gold.json`) is now both the gold label and the corrected
+  step the final graph is built from. New fields: `expected.in_scope`, `mode`,
+  `seconds_spent`, `seeded_from_run`, `definition_version`.
+- **Gold set tab** rewritten: one step at a time, every in-scope recipe queued, a keep/drop
+  checkbox, active time recorded with an idle cap. Recipes under `from_scratch` in
+  `config/gold_review.yaml` start blank with the pipeline output hidden, here and on the
+  Review tab.
+- **`k1 finalize --run <id>`** builds `data/k1/graph.final.json` from the reviewed steps,
+  keeps the pipeline graph as `graph.auto.json`, and runs the gates on the final graph.
+- **`k1 eval`** now reports accuracy (keep/drop agreement, per-field accuracy, condition
+  P/R/F1), correction effort (edits per step and by field), time (per mode, with the saving
+  against annotating by hand), and a pipeline-vs-reviewed graph comparison. Also written as
+  `eval/correction.json` and `eval/correction_steps.csv`.
+
+### Changed
+- `config/gold_review.yaml` no longer lists candidates. It names the `from_scratch` recipes
+  (`jamie_oliver`, `the_kitchn_soft_creamy`) and the idle cap.
+- Gold files saved under another `definition_version` are out of date: kept on disk, shown
+  as such, and left out of every metric. The 15 files from 2026-09-28 are in this state.
+- The old "Gold Comparison" table is replaced by the "Human review" section of the report.
+
+### Fixed
+- **HTML entities in step text.** JSON-LD text kept `&#x27;` and `&oacute;`, so a quote the
+  model wrote with a real apostrophe failed the substring check. Decoded at ingest; the
+  three affected `canonical.json` files were decoded in place (step numbers unchanged).
+- **Typographic quotes in `source_span`.** A span that differs from the step only by curly
+  versus straight quotes or dashes is replaced by the verbatim slice
+  (`generator.ground_span`). This had failed Gate 6 on `jamie_oliver` step 5.
+
+### Changed — `serious_eats` excluded after review (2026-10-12)
+The scraper returned the whole recipe as a single step, twice, so no step-level label can
+be right or wrong for it. It is excluded in `recipes.yaml` and reported as an ingest
+failure (1 of the 8 recipes that ingested), not scored as an extraction error. The frozen
+`scope02` pipeline graph still contains its one node. Review queue: 7 recipes, 42 steps.
+
+### Review of run `scope02` (2026-10-12)
+42 of 42 steps reviewed by the author; 14 from scratch, 28 corrected. Full tables in
+`k1/data/artifacts/runs/scope02/eval/report.md`.
+
+| Metric | All reviewed | From scratch only |
+|---|---|---|
+| Keep/drop decision agrees | 97.6% | 100.0% |
+| `node_type` correct | 84.6% | 84.6% |
+| `pre_conditions` F1 | 0.724 | 0.722 |
+| `post_conditions` F1 | 0.644 | 0.500 |
+| Steps needing no change, ignoring wording | 35.7% | 28.6% |
+
+77 edits, 1.83 per step. Mean time per step: 45.4 s corrected (median 36.9 s) against
+75.2 s from scratch (median 69.6 s), a 40% saving. Times include a second pass in which
+the author fixed inconsistencies found in a review of the gold set. Reviewed graph:
+39 nodes, 302 edges, all 7 gates passed, written to `k1/data/k1/graph.final.json`.
+
+Caveats. 25 rule-based changes were applied to 18 gold files after the timed review, at
+the author's request, and are noted in each file: heat ticked on on-heat steps,
+`heat_source` listed on those steps, one wording fix. They are in the edit counts
+(`tools`, `has_safety_bound`) but not in the times. `finalize` now takes safety bounds from
+the reviewer's heat tick instead of the action wording. The "identical nodes" figure is
+sensitive to wording because node ids hash the action phrase.
+
+### Run `scope02` (k1-0.3.0 + k1-0.4.0, frozen for review)
+8 recipes, 44 steps. 37 nodes, 237 edges, 4 nodes shared by more than one recipe. All 7
+gates passed. Ingredient nodes: egg, salt, oil, pepper, butter. Tool nodes: bowl, whisk,
+pan, heat_source, spatula, plate. One step dropped by the scope rule, one rejected by the
+critic. Span groundedness 100%, no invented temperatures. Critic first pass: 54.5% accept,
+43.2% revise, 2.3% reject. Before the scope rule the same pipeline gave 53 nodes from 11
+recipes with 25 ingredient and 27 tool names. No steps reviewed yet.
+
+---
+
+## [k1-0.3.0] — 2026-10-11
+
+### Added — the graph only holds what is a recipe variation
+Definition in `Notes/10-recipe-variation.md`. Enforcement described in
+`Notes/08-k1-pipeline.md` ("Scope enforcement").
+
+- **`config/dish.yaml`**: the dish specification. Ingredients: egg, salt, pepper, oregano,
+  butter, oil. Utensils: pan, bowl, spatula, whisk, plate, heat_source. Goal: eggs
+  coagulating or solid, on the plate.
+- **`k1_pipeline/scope.py`**: entities are checked against the inventory after alias
+  resolution; `action_phrase` is scanned for known out-of-inventory terms.
+- **Generator** is told the inventory, extracts only the inventory part of a step, and sets
+  the new `in_scope` flag to false when nothing remains.
+- **Critic**: an `action_phrase` naming an out-of-inventory item is a deterministic `revise`.
+  Jev and the generative critic are told that left-out items are intended.
+- **Fuse** trims and drops before building the DAG and writes `L3/scope_report.json`.
+- **Gate 7** fails the graph on any out-of-inventory entity or term, or any node from an
+  excluded recipe.
+
+### Changed
+- **Five recipes excluded** with an `excluded:` reason in `recipes.yaml`:
+  `epicurious_bain_marie`, `heston_blumenthal` (double boiler), `food_network_goat_cheese`
+  (charcoal griddle, 16 eggs), `couple_cooks_goat_cheese`, `food52_fluffiest` (defined by
+  out-of-inventory ingredients). Every stage skips them.
+- **`ontology.yaml` aliases extended**: Portuguese names, parts of the egg, `pepper`,
+  `oregano`, `heat_source`, and `jug` as `bowl`.
+
+---
+
+## [k1-0.2.10] — 2026-09-28
+
+### Added — tools on a gold step
+The Gold set tab has a Tools table. Saved names go in `expected.tools`. They are not given a k2 state.
+
+---
+
+## [k1-0.2.9] — 2026-09-28
+
+### Fixed — chat calls time out
+OpenRouter chat clients now give up after 180 seconds. A laptop sleep had left one critic call waiting on a dead connection.
+
+---
+
 ## [k1-0.2.8] — 2026-09-27
 
 ### Added — Gold set review tab

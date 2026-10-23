@@ -1,0 +1,36 @@
+{
+  "recipe_id": "recipe_tin_eats",
+  "step_number": 8,
+  "expected": {
+    "node_type": "Plate",
+    "action_phrase": "sprinkle eggs with pepper",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "pepper",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "solid"
+      }
+    ],
+    "tools": [
+      "plate"
+    ],
+    "has_safety_bound": false,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "",
+  "mode": "corrected",
+  "seconds_spent": 36.3,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

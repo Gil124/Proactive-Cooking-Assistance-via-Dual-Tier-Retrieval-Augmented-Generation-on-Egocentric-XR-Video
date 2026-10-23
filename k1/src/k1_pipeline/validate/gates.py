@@ -1,6 +1,6 @@
 """
 L4 Validate -- Deterministic gates
-All six gates must pass before the graph is written to store.
+All seven gates must pass before the graph is written to store.
 
 Gates:
   1. Pydantic schema valid (implicit -- graph was already Pydantic-constructed)
@@ -9,6 +9,8 @@ Gates:
   4. Every thermal Process has >= 1 HAS_SAFETY_BOUND edge
   5. Every k2_label in {liquid, coagulating, solid, scorched}
   6. Every source_span is a substring of its recipe's step text
+  7. Scope: every entity is in the station inventory, no action_phrase names an
+     out-of-inventory item, and no node comes from an excluded recipe
 """
 
 from __future__ import annotations
@@ -18,7 +20,9 @@ from pathlib import Path
 import networkx as nx
 
 from k1_pipeline.models import K1Graph, K2Label, NodeType
+from k1_pipeline.config_loader import get_excluded_recipes
 from k1_pipeline.physics import is_thermal_action
+from k1_pipeline.scope import INGREDIENTS, INVENTORY, UTENSILS, out_of_inventory_mentions
 
 
 def validate(graph: K1Graph, canonical_recipes: dict[str, "CanonicalRecipe"]) -> list[str]:  # noqa: F821
@@ -94,6 +98,37 @@ def validate(graph: K1Graph, canonical_recipes: dict[str, "CanonicalRecipe"]) ->
                     f"recipe '{recipe_id}' step {step_idx}: '{span[:60]}'"
                 )
 
+    # Gate 7: scope (config/dish.yaml, Notes/10-recipe-variation.md)
+    excluded = get_excluded_recipes()
+    for node in graph.nodes:
+        outside = (
+            {c.entity_id for c in node.pre_conditions + node.post_conditions} - INVENTORY
+            | set(node.ingredients) - INGREDIENTS
+            | set(node.tools) - UTENSILS
+        )
+        if outside:
+            errors.append(
+                f"Gate 7 FAIL: Node '{node.node_id}' (action='{node.action_phrase}') "
+                f"uses entities outside the inventory: {sorted(outside)}"
+            )
+        named = out_of_inventory_mentions(node.action_phrase)
+        if named:
+            errors.append(
+                f"Gate 7 FAIL: Node '{node.node_id}' action_phrase "
+                f"'{node.action_phrase}' names out-of-inventory items: {named}"
+            )
+        from_excluded = sorted(set(node.source_recipe_ids) & set(excluded))
+        if from_excluded:
+            errors.append(
+                f"Gate 7 FAIL: Node '{node.node_id}' comes from excluded recipes: {from_excluded}"
+            )
+    for entry in graph.ingredient_nodes:
+        if entry["name"] not in INGREDIENTS:
+            errors.append(f"Gate 7 FAIL: Ingredient node '{entry['name']}' is not in the inventory")
+    for entry in graph.tool_nodes:
+        if entry["name"] not in UTENSILS:
+            errors.append(f"Gate 7 FAIL: Tool node '{entry['name']}' is not in the inventory")
+
     return errors
 
 
@@ -113,5 +148,5 @@ def run_validation(
         report_path.write_text("\n".join(errors))
         return False
     else:
-        report_path.write_text("All 6 validation gates passed.\n")
+        report_path.write_text("All 7 validation gates passed.\n")
         return True

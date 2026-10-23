@@ -9,6 +9,7 @@ Strategy:
 
 from __future__ import annotations
 
+import html as html_lib
 import json
 import re
 from typing import Optional
@@ -113,11 +114,13 @@ def _parse_instructions(instructions) -> list[str]:
 
 
 def _schema_org_to_canonical(data: dict, recipe_id: str, source_url: str, variant_label: str, gold: bool) -> CanonicalRecipe:
-    title = data.get("name", "Unknown Recipe")
+    # JSON-LD text often carries HTML entities (&#x27;, &oacute;). Decode them so
+    # a verbatim source_span can match what the model reads and writes.
+    title = html_lib.unescape(data.get("name", "Unknown Recipe"))
     raw_ingredients = data.get("recipeIngredient", [])
-    ingredients = [str(i).strip() for i in raw_ingredients if str(i).strip()]
+    ingredients = [html_lib.unescape(str(i)).strip() for i in raw_ingredients if str(i).strip()]
 
-    raw_steps = _parse_instructions(data.get("recipeInstructions", []))
+    raw_steps = [html_lib.unescape(s) for s in _parse_instructions(data.get("recipeInstructions", []))]
     recipe_steps = [RecipeStep(number=i + 1, text=s) for i, s in enumerate(raw_steps) if s]
     recipe_steps, dropped = _filter_steps(recipe_steps)
 

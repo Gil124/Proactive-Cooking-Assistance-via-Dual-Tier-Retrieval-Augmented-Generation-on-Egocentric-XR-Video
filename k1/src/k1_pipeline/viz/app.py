@@ -16,11 +16,9 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import date
 from pathlib import Path
 
 import streamlit as st
-import yaml
 import streamlit.components.v1 as components
 
 ROOT = Path(__file__).parent.parent.parent.parent  # k1/
@@ -219,11 +217,20 @@ with tab_review:
         # Load canonical recipes for source text
         recipes_dir = DATA / "recipes"
         recipe_cache: dict[str, dict] = {}
+        from k1_pipeline.gold import mode_for as _mode_for, step_status as _step_status
+        hidden_blind = 0
 
         for gen_file in gen_files:
             node_data = json.loads(gen_file.read_text())
             recipe_id = node_data.get("recipe_id", "unknown")
             step_n = node_data.get("step_number", 0)
+            if (
+                _mode_for(recipe_id) == "from_scratch"
+                and _step_status(DATA / "gold", recipe_id, step_n) != "done"
+            ):
+                # Shown only after you have annotated it from scratch.
+                hidden_blind += 1
+                continue
             critic_file = critic_dir / gen_file.name.replace(".gen.json", ".critic.json")
             critic_data = json.loads(critic_file.read_text()) if critic_file.exists() else {}
 
@@ -266,12 +273,32 @@ with tab_review:
 
                 st.caption("Annotate this step on the Gold set tab. That form is what becomes the gold file.")
 
+        if hidden_blind:
+            st.caption(
+                f"{hidden_blind} steps are hidden: their recipes are annotated from scratch "
+                "and appear here once reviewed."
+            )
+
 # ── Tab 3: Gold set ────────────────────────────────────────────────────────────
 
 def _as_records(table) -> list[dict]:
     if hasattr(table, "to_dict"):
         return table.to_dict("records")
     return list(table or [])
+
+
+def _tool_rows(raw) -> list[dict]:
+    names: list[str] = []
+    for item in raw or []:
+        if isinstance(item, str):
+            name = item.strip()
+        elif isinstance(item, dict):
+            name = str(item.get("tool", "")).strip()
+        else:
+            name = ""
+        if name:
+            names.append(name)
+    return [{"tool": name} for name in names] or [{"tool": ""}]
 
 
 def _condition_rows(raw: list[dict] | None) -> list[dict]:
@@ -284,132 +311,188 @@ def _condition_rows(raw: list[dict] | None) -> list[dict]:
     return rows or [{"entity_id": "", "k2_label": "liquid"}]
 
 
-def _load_gold_step(gold_dir: Path, recipe_id: str, step_n: int) -> dict | None:
-    path = gold_dir / f"{recipe_id}_step{step_n:02d}.gold.json"
-    if not path.exists():
-        return None
-    try:
-        return json.loads(path.read_text())
-    except json.JSONDecodeError:
-        return None
-
-
 with tab_gold:
+    from k1_pipeline.gold import (
+        MODE_FROM_SCRATCH,
+        WorkTimer,
+        auto_step,
+        idle_cap_seconds,
+        is_current,
+        load_gold,
+        load_queue,
+        mode_for,
+        save_gold,
+        step_status,
+    )
+    from k1_pipeline.scope import INGREDIENTS, UTENSILS
+
     st.subheader("Gold set")
     st.caption(
-        "Read the source step, correct the fields, then save. "
-        "A saved file is your annotation. The model suggestion is only a starting point."
+        "One step at a time. A saved step is the gold label the pipeline is scored against "
+        "and the corrected step the final graph is built from. Time on each step is recorded."
     )
 
-    review_path = ROOT / "config" / "gold_review.yaml"
-    review_cfg = yaml.safe_load(review_path.read_text()) if review_path.exists() else {}
-    candidates = review_cfg.get("candidates", [])
     gold_dir = DATA / "gold"
-    recipes_dir = DATA / "recipes"
-    gen_dir = run_dir / "L2" / "gen"
+    queue = load_queue(DATA / "recipes")
 
-    if not candidates:
-        st.info("No recipes in config/gold_review.yaml.")
+    if not queue:
+        st.info("No ingested recipes in scope. Run `k1 ingest` first.")
     else:
-        done = 0
-        total = 0
-        for candidate in candidates:
-            canon_path = recipes_dir / candidate["recipe_id"] / "canonical.json"
-            if not canon_path.exists():
-                continue
-            recipe = json.loads(canon_path.read_text())
-            for step in recipe.get("steps", []):
-                total += 1
-                if (gold_dir / f"{candidate['recipe_id']}_step{step['number']:02d}.gold.json").exists():
-                    done += 1
-        st.progress(done / total if total else 0.0, text=f"{done}/{total} queued steps annotated")
+        statuses = {
+            r.recipe_id: [step_status(gold_dir, r.recipe_id, s.number) for s in r.steps]
+            for r in queue
+        }
+        done = sum(v.count("done") for v in statuses.values())
+        total = sum(len(v) for v in statuses.values())
+        outdated = sum(v.count("outdated") for v in statuses.values())
+        st.progress(done / total if total else 0.0, text=f"{done}/{total} steps reviewed")
+        if outdated:
+            st.warning(
+                f"{outdated} steps were annotated under an older definition. "
+                "They are not counted until you review them again."
+            )
 
-        for candidate in candidates:
-            recipe_id = candidate["recipe_id"]
-            canon_path = recipes_dir / recipe_id / "canonical.json"
-            with st.expander(f"{recipe_id} — {candidate.get('why', '')}", expanded=False):
-                if not canon_path.exists():
-                    st.warning("Not ingested yet. The source steps will appear here after ingest.")
-                    continue
-                recipe = json.loads(canon_path.read_text())
-                st.markdown(f"[{recipe.get('source_url', recipe_id)}]({recipe.get('source_url', '')})")
-                for step in recipe.get("steps", []):
-                    step_n = step["number"]
-                    saved = _load_gold_step(gold_dir, recipe_id, step_n)
-                    gen_path = gen_dir / f"{recipe_id}_step{step_n:02d}.gen.json"
-                    suggestion = json.loads(gen_path.read_text()) if gen_path.exists() else None
-                    seed = (saved or {}).get("expected") or suggestion or {}
-                    status = "saved" if saved else "open"
-                    st.markdown(f"**Step {step_n}** · {status}")
-                    st.info(step.get("text", ""))
-                    if suggestion and not saved:
-                        st.caption(
-                            f"Model suggestion: {suggestion.get('node_type', '')} — "
-                            f"{suggestion.get('action_phrase', '')}"
-                        )
+        def _recipe_label(recipe) -> str:
+            v = statuses[recipe.recipe_id]
+            return f"{recipe.recipe_id} · {mode_for(recipe.recipe_id)} · {v.count('done')}/{len(v)}"
 
-                    node_type = st.selectbox(
-                        "Node type",
-                        ["Process", "Transfer", "Plate"],
-                        index=["Process", "Transfer", "Plate"].index(seed.get("node_type", "Process"))
-                        if seed.get("node_type") in ("Process", "Transfer", "Plate") else 0,
-                        key=f"nt_{recipe_id}_{step_n}",
+        # Open on the first recipe and step that still need review.
+        first_open_recipe = next(
+            (i for i, r in enumerate(queue) if statuses[r.recipe_id].count("done") < len(r.steps)), 0
+        )
+        recipe = st.selectbox("Recipe", queue, index=first_open_recipe, format_func=_recipe_label)
+        recipe_id = recipe.recipe_id
+        step_states = statuses[recipe_id]
+        first_open_step = next((i for i, v in enumerate(step_states) if v != "done"), 0)
+        step = st.selectbox(
+            "Step",
+            recipe.steps,
+            index=first_open_step,
+            format_func=lambda s: f"Step {s.number} · {step_states[recipe.steps.index(s)]}",
+        )
+        step_n = step.number
+        mode = mode_for(recipe_id)
+
+        elapsed = WorkTimer.tick(
+            st.session_state.setdefault("gold_timer", {}),
+            f"{recipe_id}:{step_n}",
+            idle_cap_seconds(),
+        )
+
+        st.markdown(f"[{recipe.source_url}]({recipe.source_url})")
+        st.info(step.text)
+
+        saved = load_gold(gold_dir, recipe_id, step_n)
+        current = is_current(saved)
+        auto = auto_step(run_dir, recipe_id, step_n)
+
+        if mode == MODE_FROM_SCRATCH:
+            st.caption(
+                "From scratch: the form starts blank and the pipeline output is hidden. "
+                "Do not look at this recipe on the Graph or Review tabs before saving."
+            )
+        elif auto["status"] == "kept":
+            st.caption(f"Pipeline (run `{run_id}`): kept this step. The form starts from its output.")
+        elif auto["status"] == "dropped":
+            st.caption(f"Pipeline (run `{run_id}`): dropped this step — {auto['reason']}.")
+        else:
+            st.caption(f"Pipeline (run `{run_id}`): {auto['reason']}.")
+
+        if saved is not None and not current:
+            with st.expander("Earlier annotation (older definition, not counted)"):
+                st.json(saved.expected.model_dump(mode="json"))
+
+        if current:
+            seed = saved.expected.model_dump(mode="json")
+        elif mode != MODE_FROM_SCRATCH and auto["expected"]:
+            seed = auto["expected"]
+        else:
+            seed = {"in_scope": True}
+
+        k = f"{recipe_id}_{step_n}"
+        in_scope = st.checkbox(
+            "This step belongs to the dish (uses the station inventory)",
+            value=bool(seed.get("in_scope", True)),
+            key=f"scope_{k}",
+            help="Untick for serving with other foods, garnishes, or anything outside the inventory.",
+        )
+        st.caption(
+            f"Inventory — ingredients: {', '.join(sorted(INGREDIENTS))}. "
+            f"Utensils: {', '.join(sorted(UTENSILS))}."
+        )
+
+        node_types = ["Process", "Transfer", "Plate"]
+        node_type = st.selectbox(
+            "Node type",
+            node_types,
+            index=node_types.index(seed["node_type"]) if seed.get("node_type") in node_types else 0,
+            key=f"nt_{k}",
+            disabled=not in_scope,
+        )
+        action = st.text_input(
+            "Action phrase", value=seed.get("action_phrase", ""), key=f"ap_{k}", disabled=not in_scope
+        )
+        label_column = {
+            "k2_label": st.column_config.SelectboxColumn(
+                options=["liquid", "coagulating", "solid", "scorched"]
+            )
+        }
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("Before")
+            pre = st.data_editor(
+                _condition_rows(seed.get("pre_conditions")),
+                num_rows="dynamic", key=f"pre_{k}", column_config=label_column, disabled=not in_scope,
+            )
+        with c2:
+            st.markdown("After")
+            post = st.data_editor(
+                _condition_rows(seed.get("post_conditions")),
+                num_rows="dynamic", key=f"post_{k}", column_config=label_column, disabled=not in_scope,
+            )
+        st.markdown("Tools")
+        st.caption("Implements named in this step. Leave the row empty when the step names none. Tools have no state.")
+        tools = st.data_editor(
+            _tool_rows(seed.get("tools")), num_rows="dynamic", key=f"tools_{k}", disabled=not in_scope
+        )
+        safety = st.checkbox(
+            "Heat can coagulate or scorch",
+            value=bool(seed.get("has_safety_bound", False)),
+            key=f"sb_{k}",
+            disabled=not in_scope,
+        )
+        notes = st.text_input("Notes", value=saved.notes if current else "", key=f"notes_{k}")
+
+        carried = (saved.seconds_spent or 0.0) if current else 0.0
+        st.caption(f"Time on this step: {int(carried + elapsed)} s")
+
+        if st.button("Save and go to the next step", key=f"save_{k}", type="primary"):
+            if in_scope and not action.strip():
+                st.error("Action phrase is required for a step that belongs to the dish.")
+            else:
+                try:
+                    out = save_gold(
+                        gold_dir,
+                        recipe_id=recipe_id,
+                        step_n=step_n,
+                        expected={
+                            "node_type": node_type,
+                            "action_phrase": action,
+                            "pre_conditions": _as_records(pre),
+                            "post_conditions": _as_records(post),
+                            "tools": [str(r.get("tool", "")) for r in _as_records(tools)],
+                            "has_safety_bound": safety and in_scope,
+                            "in_scope": in_scope,
+                        },
+                        mode=mode,
+                        seconds_spent=elapsed,
+                        seeded_from_run=run_id,
+                        annotator="gil.arroteia",
+                        notes=notes,
                     )
-                    action = st.text_input(
-                        "Action phrase",
-                        value=seed.get("action_phrase", ""),
-                        key=f"ap_{recipe_id}_{step_n}",
-                    )
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.markdown("Before")
-                        pre = st.data_editor(
-                            _condition_rows(seed.get("pre_conditions")),
-                            num_rows="dynamic",
-                            key=f"pre_{recipe_id}_{step_n}",
-                            column_config={
-                                "k2_label": st.column_config.SelectboxColumn(
-                                    options=["liquid", "coagulating", "solid", "scorched"]
-                                )
-                            },
-                        )
-                    with c2:
-                        st.markdown("After")
-                        post = st.data_editor(
-                            _condition_rows(seed.get("post_conditions")),
-                            num_rows="dynamic",
-                            key=f"post_{recipe_id}_{step_n}",
-                            column_config={
-                                "k2_label": st.column_config.SelectboxColumn(
-                                    options=["liquid", "coagulating", "solid", "scorched"]
-                                )
-                            },
-                        )
-                    safety = st.checkbox(
-                        "Heat can coagulate or scorch",
-                        value=bool(seed.get("has_safety_bound", False)),
-                        key=f"sb_{recipe_id}_{step_n}",
-                    )
-                    notes = st.text_input("Notes", value=(saved or {}).get("notes", ""), key=f"notes_{recipe_id}_{step_n}")
-                    if st.button(f"Save step {step_n}", key=f"save_{recipe_id}_{step_n}"):
-                        entry = {
-                            "recipe_id": recipe_id,
-                            "step_number": step_n,
-                            "expected": {
-                                "node_type": node_type,
-                                "action_phrase": action.strip(),
-                                "pre_conditions": _condition_rows(_as_records(pre)),
-                                "post_conditions": _condition_rows(_as_records(post)),
-                                "has_safety_bound": safety,
-                            },
-                            "annotator": "gil.arroteia",
-                            "annotation_date": str(date.today()),
-                            "notes": notes.strip(),
-                        }
-                        if not entry["expected"]["action_phrase"]:
-                            st.error("Action phrase is required.")
-                        else:
-                            gold_dir.mkdir(exist_ok=True)
-                            out = gold_dir / f"{recipe_id}_step{step_n:02d}.gold.json"
-                            out.write_text(json.dumps(entry, indent=2))
-                            st.success(f"Saved {out.name}")
+                except Exception as e:
+                    st.error(f"Could not save: {e}")
+                else:
+                    WorkTimer.reset(st.session_state["gold_timer"])
+                    st.toast(f"Saved {out.name}")
+                    st.rerun()

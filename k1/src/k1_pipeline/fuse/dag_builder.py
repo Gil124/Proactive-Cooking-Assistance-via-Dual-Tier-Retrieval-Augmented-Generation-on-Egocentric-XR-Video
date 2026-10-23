@@ -57,8 +57,11 @@ def _fingerprint(node: ExtractedNode) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
-def _safety_bounds_for_node(node: ExtractedNode) -> list[SafetyBound]:
-    if not is_thermal_action(node.action_phrase):
+def _safety_bounds_for_node(node: ExtractedNode, thermal: bool | None = None) -> list[SafetyBound]:
+    """`thermal` is a reviewer's decision; None derives it from the action wording."""
+    if thermal is None:
+        thermal = is_thermal_action(node.action_phrase)
+    if not thermal:
         return []
     relevant_entities = {c.entity_id for c in node.pre_conditions + node.post_conditions}
     bounds = []
@@ -142,6 +145,7 @@ def _break_cycles(
 def build_k1_graph(
     verified_nodes: list[tuple[list[tuple[ExtractedNode, CriticOutput]], str]],
     run_dir: Path,
+    safety_overrides: dict[tuple[str, int], bool] | None = None,
 ) -> K1Graph:
     """
     Build the fused K1Graph from all verified (node, critic) pairs across all recipes.
@@ -150,7 +154,11 @@ def build_k1_graph(
         verified_nodes: list of (recipe_pairs, recipe_id) where recipe_pairs is
                         list of (ExtractedNode, CriticOutput).
         run_dir: artifacts directory for L3 output.
+        safety_overrides: {(recipe_id, step_number): has_safety_bound} from human
+                        review (`k1 finalize`). Steps not listed are decided by
+                        the action wording, as in a pipeline run.
     """
+    safety_overrides = safety_overrides or {}
     l3_dir = run_dir / "L3"
     l3_dir.mkdir(parents=True, exist_ok=True)
 
@@ -169,6 +177,7 @@ def build_k1_graph(
 
     for node, critic, recipe_id in all_nodes:
         fp = _fingerprint(node)
+        thermal = safety_overrides.get((recipe_id, node.step_number))
         if fp not in fingerprint_map:
             k1_node = K1Node(
                 node_id=fp,
@@ -180,7 +189,7 @@ def build_k1_graph(
                 timing_constraints=node.timing_constraints,
                 ingredients=list(dict.fromkeys(node.ingredients)),
                 tools=list(dict.fromkeys(node.tools)),
-                safety_bounds=_safety_bounds_for_node(node),
+                safety_bounds=_safety_bounds_for_node(node, thermal),
                 source_recipe_ids=[recipe_id],
                 source_step_indices=[node.step_number],
                 source_spans=[node.source_span],
@@ -193,6 +202,8 @@ def build_k1_graph(
         else:
             # Merge provenance: always append to ALL lists, one entry per observation
             existing = fingerprint_map[fp]
+            if not existing.safety_bounds:
+                existing.safety_bounds = _safety_bounds_for_node(node, thermal)
             existing.source_recipe_ids.append(recipe_id)
             existing.source_step_indices.append(node.step_number)
             existing.source_spans.append(node.source_span)

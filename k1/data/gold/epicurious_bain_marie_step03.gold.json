@@ -1,0 +1,28 @@
+{
+  "recipe_id": "epicurious_bain_marie",
+  "step_number": 3,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "cook eggs until soft curd forms",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "coagulating"
+      }
+    ],
+    "has_safety_bound": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-09-28",
+  "notes": ""
+}

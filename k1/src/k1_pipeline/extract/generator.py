@@ -15,6 +15,7 @@ from rich.console import Console
 from k1_pipeline.config_loader import get_k2_compile_map, load_models, load_physics_bounds
 from k1_pipeline.extract.llm_client import GENERATOR_MODELS, call_with_fallback
 from k1_pipeline.models import CanonicalRecipe, ExtractedNode, K2Label, NodeType, StateCondition
+from k1_pipeline.scope import scope_prompt_block
 
 console = Console()
 
@@ -56,6 +57,9 @@ If you cite a temperature, it must appear verbatim in the step text
 OR match one of these known bounds:
 {_PHYSICS_CONTEXT}
 
+== SCOPE (closed inventory) ==
+{scope_prompt_block()}
+
 == RULES ==
 1. source_span MUST be a verbatim substring of the step text.
 2. k2_label MUST be one of: liquid, coagulating, solid, scorched.
@@ -68,6 +72,17 @@ OR match one of these known bounds:
    A different food the step actually introduces (goat cheese, cream, herbs) is a
    new entity and must be kept under its own name. Do not invent entities such as
    "plated_dish" or "serving".
+7. Extract only the part of the step that uses the station inventory. Name
+   entities, ingredients, and tools in English with the inventory names above.
+   Leave every other item out of action_phrase, pre_conditions, post_conditions,
+   ingredients, and tools. "Whisk together the eggs, milk, salt and pepper"
+   becomes action_phrase "whisk eggs with salt and pepper". "Lay the toast on a
+   plate, spoon the eggs on top, top with the chutney" becomes "spoon eggs onto
+   plate". Where you can, choose a source_span that covers only the kept part.
+8. If nothing in the step uses the eggs or the station inventory (serving with
+   bread, adding a garnish or a sauce), set in_scope to false. Still give
+   node_type, a short action_phrase, and source_span; conditions may be empty.
+   Otherwise in_scope is true.
 """
 
 
@@ -89,6 +104,32 @@ def _build_prompt(
     if revision_hint:
         prompt += f"\n\nCritic revision note (fix these issues): {revision_hint}"
     return prompt
+
+
+# Typographic characters a model tends to rewrite. Each maps to one character,
+# so a position in the normalised text is the same position in the original.
+_SPAN_NORMALISE = str.maketrans({
+    "\u2019": "'", "\u2018": "'", "\u02bc": "'",
+    "\u201c": '"', "\u201d": '"',
+    "\u00a0": " ", "\u2013": "-", "\u2014": "-",
+})
+
+
+def ground_span(span: str, step_text: str) -> str:
+    """
+    Return the verbatim substring of `step_text` that `span` stands for.
+
+    A model often writes a straight apostrophe where the source has a curly one,
+    which breaks the substring check without changing the quote. When the two
+    match after normalising those characters, the original slice is returned.
+    Anything else is returned unchanged and left for the critic to flag.
+    """
+    if span in step_text:
+        return span
+    start = step_text.translate(_SPAN_NORMALISE).find(span.translate(_SPAN_NORMALISE))
+    if start < 0:
+        return span
+    return step_text[start:start + len(span)]
 
 
 def compile_k2_label(physics_state: str) -> K2Label:
@@ -146,6 +187,8 @@ def extract_node(
     node.recipe_id = recipe.recipe_id
     node.step_number = step_number
     node.extractor_model = _GENERATOR_MODEL
+    step_text = next(s.text for s in recipe.steps if s.number == step_number)
+    node.source_span = ground_span(node.source_span, step_text)
 
     # Re-compile k2_labels via compile map (LLM may have used free text)
     node.pre_conditions = [

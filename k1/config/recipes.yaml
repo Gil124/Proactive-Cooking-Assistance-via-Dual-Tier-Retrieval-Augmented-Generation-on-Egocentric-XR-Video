@@ -7,6 +7,9 @@
 #   url           : source URL
 #   variant_label : short descriptor for branch labelling in the DAG
 #   gold          : true = held-out gold recipe (do NOT use as prompt example)
+#   excluded      : reason this recipe is left out: it is not a variation of the dish
+#                   (config/dish.yaml, Notes/10-recipe-variation.md), or it did not ingest
+#                   as usable steps. Excluded recipes are skipped by every stage.
 #   notes         : optional
 
 recipes:
@@ -18,6 +21,7 @@ recipes:
     url: https://www.seriouseats.com/fluffy-scrambled-eggs-recipe
     variant_label: "Whipped high-heat"
     gold: true
+    excluded: "Ingest failure: the scraper returned the whole recipe as one step, twice. One node cannot represent it."
     notes: "Gold recipe 1. Annotate before first eval run."
 
   - recipe_id: gordon_ramsay
@@ -49,6 +53,7 @@ recipes:
     url: https://foodnetwork.co.uk/recipes/slow-cooked-scrambled-eggs-goat-cheese
     variant_label: "Slow-cooked"
     gold: false
+    excluded: "Charcoal griddle, 16 eggs, goat cheese: start state and inventory do not match the dish specification."
 
   - recipe_id: the_kitchn_soft_creamy
     url: https://www.thekitchn.com/how-to-make-soft-creamy-scrambled-eggs-113371
@@ -59,6 +64,7 @@ recipes:
     url: https://food52.com/recipes/56468-the-fluffiest-scrambled-egg
     variant_label: "Fluffy aerated"
     gold: false
+    excluded: "Defined by goat cheese and soy cream; little remains inside the inventory."
 
   - recipe_id: simply_recipes_creme_fraiche
     url: https://www.simplyrecipes.com/scrambled-eggs-upgrade-creme-fraiche-11877075
@@ -128,13 +134,16 @@ recipes:
     url: https://www.epicurious.com/recipes/food/views/low-slow-and-custardy-eggs-382500
     variant_label: "Bain-marie custard"
     gold: false
+    excluded: "Goal-reaching path needs a double boiler, which is not on the station."
 
   - recipe_id: heston_blumenthal
     url: https://www.sbs.com.au/food/recipe/heston-blumenthals-scrambled-eggs/ro3se6rz5
     variant_label: "Brown butter bain-marie"
     gold: false
+    excluded: "Goal-reaching path needs a bain-marie, which is not on the station."
 
   - recipe_id: couple_cooks_goat_cheese
     url: https://www.acouplecooks.com/soft-scrambled-eggs-with-goat-cheese-and-asparagus/
     variant_label: "Goat cheese"
     gold: false
+    excluded: "Defined by goat cheese and asparagus, which are not on the station."

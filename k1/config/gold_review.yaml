@@ -1,16 +1,21 @@
-# Recipes queued for human gold annotation.
-# They stay gold: false in recipes.yaml until you decide to hold them out.
-# The Gold set tab in `k1 viz` reads this list.
-# Only recipes that ingested cleanly are queued. The others have no source steps yet.
+# Human review of the K1 steps (Gold set tab in `k1 viz`).
+# Protocol: Notes/09-k1-evaluation.md
+#
+# Every ingested recipe that is not `excluded` in recipes.yaml is in the queue.
+# A reviewed step is both the gold label the pipeline is scored against and the
+# corrected step the final graph is built from.
+#
+# Recipes listed under `from_scratch` are annotated on a blank form with the
+# pipeline output hidden. They give the time-per-step baseline for building K1
+# by hand, and an accuracy measure that the pipeline output did not anchor.
+# All other recipes start from the pipeline output ("corrected").
+#
+# Decide this list before annotating. Moving a recipe after its steps are saved
+# does not change the mode recorded in those files.
 
-candidates:
-  - recipe_id: epicurious_bain_marie
-    why: "Double boiler, custard texture, long stir."
-  - recipe_id: recipe_tin_eats
-    why: "American soft curds, spatula sweep, milk and butter."
-  - recipe_id: love_and_lemons
-    why: "Milk and olive oil, medium heat."
-  - recipe_id: pingo_doce
-    why: "Portuguese home method, butter, medium-low."
-  - recipe_id: tudo_gostoso
-    why: "Milk added late, low heat."
+from_scratch:
+  - jamie_oliver
+  - the_kitchn_soft_creamy
+
+# Gaps between two interactions longer than this are not counted as work time.
+idle_cap_seconds: 120

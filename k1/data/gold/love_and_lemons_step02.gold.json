@@ -1,0 +1,41 @@
+{
+  "recipe_id": "love_and_lemons",
+  "step_number": 2,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "heat pan with oil or butter",
+    "pre_conditions": [
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "oil",
+        "k2_label": "liquid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "butter",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "oil",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "pan",
+      "heat_source"
+    ],
+    "has_safety_bound": true,
+    "in_scope": true
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat).",
+  "mode": "corrected",
+  "seconds_spent": 38.6,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

@@ -1,0 +1,41 @@
+{
+  "recipe_id": "serious_eats",
+  "step_number": 1,
+  "expected": {
+    "node_type": "Process",
+    "action_phrase": "melt butter and cook eggs",
+    "pre_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "liquid"
+      },
+      {
+        "entity_id": "butter",
+        "k2_label": "solid"
+      }
+    ],
+    "post_conditions": [
+      {
+        "entity_id": "egg",
+        "k2_label": "solid"
+      },
+      {
+        "entity_id": "butter",
+        "k2_label": "liquid"
+      }
+    ],
+    "tools": [
+      "pan",
+      "spatula"
+    ],
+    "has_safety_bound": false,
+    "in_scope": false
+  },
+  "annotator": "gil.arroteia",
+  "annotation_date": "2026-10-12",
+  "notes": "",
+  "mode": "corrected",
+  "seconds_spent": 18.8,
+  "seeded_from_run": "scope02",
+  "definition_version": "2026-10-11"
+}

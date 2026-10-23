@@ -97,6 +97,13 @@ class ExtractedNode(BaseModel):
     source_span: str = Field(
         description="Verbatim substring of the step text that grounds this extraction."
     )
+    in_scope: bool = Field(
+        default=True,
+        description=(
+            "False when the step is entirely about items outside the station inventory "
+            "(serving with toast, a garnish, a sauce). Such a step is not added to the graph."
+        ),
+    )
     # Explicit temperature field: LLM sets this ONLY when the step text states a temperature.
     # temperature_c is checked directly for invented-temperature detection.
     # Never inferred from digit patterns in the JSON dump.
@@ -113,7 +120,7 @@ class ExtractedNode(BaseModel):
 
     @model_validator(mode="after")
     def check_process_conditions(self) -> "ExtractedNode":
-        if self.node_type == NodeType.Process:
+        if self.in_scope and self.node_type == NodeType.Process:
             if not self.pre_conditions:
                 raise ValueError("Process nodes must have at least one pre_condition.")
             if not self.post_conditions:
@@ -222,7 +229,18 @@ class GoldExpected(BaseModel):
     action_phrase: str
     pre_conditions: list[GoldCondition] = Field(default_factory=list)
     post_conditions: list[GoldCondition] = Field(default_factory=list)
+    tools: list[str] = Field(
+        default_factory=list,
+        description="Implements named in the step. Tools have no k2 state.",
+    )
     has_safety_bound: bool = False
+    in_scope: bool = Field(
+        default=True,
+        description=(
+            "False when the step is outside the dish (config/dish.yaml) and must "
+            "not become a graph node. The other fields are then ignored."
+        ),
+    )
 
 
 class GoldNode(BaseModel):
@@ -236,3 +254,18 @@ class GoldNode(BaseModel):
     annotator: str
     annotation_date: str
     notes: str = ""
+    # How the annotation was made. Written by the Gold set tab; absent on files
+    # saved before k1-0.4.0, which are treated as out of date.
+    mode: Optional[str] = Field(
+        default=None,
+        description="'corrected' = started from the pipeline output; 'from_scratch' = blank form, output hidden.",
+    )
+    seconds_spent: Optional[float] = Field(
+        default=None, description="Active time on this step, summed over saves."
+    )
+    seeded_from_run: Optional[str] = Field(
+        default=None, description="Run whose extraction was shown (corrected) or hidden (from_scratch)."
+    )
+    definition_version: Optional[str] = Field(
+        default=None, description="dish.yaml definition_version when the file was saved."
+    )

@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 from k1_pipeline.config_loader import load_models
 from k1_pipeline.models import ExtractedNode
+from k1_pipeline.scope import scope_prompt_block
 
 load_dotenv()
 
@@ -109,7 +110,10 @@ def semantic_questions() -> dict:
             "type": "noul",
             "instructions": "The action_phrase names only an action the step text states.",
             "criteria": {
-                "true": "The action_phrase is a fair short name for an action written in the step.",
+                "true": (
+                    "The action_phrase is a fair short name for an action written in the step. "
+                    "Leaving out an item that the scope excludes is still faithful."
+                ),
                 "false": "The action_phrase adds an action, ingredient, or tool the step does not state.",
             },
         },
@@ -137,6 +141,10 @@ def extraction_state(
     revision_hint: str | None = None,
 ) -> dict:
     state: dict = {
+        "scope": (
+            scope_prompt_block()
+            + " The extraction leaves out items outside that inventory on purpose."
+        ),
         "step_text": step_text,
         "extraction": {
             "node_type": node.node_type.value,
