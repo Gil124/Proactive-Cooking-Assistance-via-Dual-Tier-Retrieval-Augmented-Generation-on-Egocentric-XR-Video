@@ -20,9 +20,23 @@ from pathlib import Path
 from rich.console import Console
 
 from k1_pipeline.config_loader import load_models
-from k1_pipeline.critic.jev import failed_checks, jev_accepts, jev_settings, judge_extraction, score_map
+from k1_pipeline.critic.jev import (
+    ATOMIC_NOTE,
+    failed_checks,
+    jev_accepts,
+    jev_settings,
+    judge_extraction,
+    score_map,
+)
 from k1_pipeline.extract.llm_client import CRITIC_MODELS, call_with_fallback
-from k1_pipeline.models import CanonicalRecipe, CriticOutput, CriticVerdict, ExtractedNode, K2Label
+from k1_pipeline.models import (
+    CanonicalRecipe,
+    CriticOutput,
+    CriticVerdict,
+    ExtractedNode,
+    K2Label,
+    artifact_stem,
+)
 from k1_pipeline.physics import find_invented_temperatures
 from k1_pipeline.scope import action_scope_issues, out_of_inventory_mentions, scope_prompt_block
 
@@ -71,6 +85,7 @@ def _build_critic_prompt(
     prompt = (
         f"Step text: \"{step.text}\"\n\n"
         f"Extracted node:\n{node_json}\n\n"
+        f"{ATOMIC_NOTE}\n\n"
         "Verify the extraction against the step text. "
         "grounding_quote must be a verbatim substring of the step text above."
     )
@@ -123,7 +138,8 @@ def verify_node(
     suffix: str = "critic",
 ) -> CriticOutput:
     artifact_dir.mkdir(parents=True, exist_ok=True)
-    artifact_path = artifact_dir / f"{recipe.recipe_id}_step{step_number:02d}.{suffix}.json"
+    stem = artifact_stem(recipe.recipe_id, step_number, node.sub_step)
+    artifact_path = artifact_dir / f"{stem}.{suffix}.json"
 
     if artifact_path.exists() and suffix == "critic":
         try:
@@ -239,51 +255,60 @@ def verify_recipe(
     Verify all extracted nodes. Returns (node, critic) pairs for accepted/revised nodes only.
     Rejected nodes are excluded with a warning.
 
-    Revision loop (capped at one round):
-    - On 'revise', pass revision_instructions back to the generator as revision_hint.
-    - Re-run the critic on the revised node (persisted as *.critic.r2.json).
-    - Accept or reject the revised node without further revision.
+    Revision loop (capped at one round), per recipe step:
+    - If any action of the step gets 'revise', the whole step is extracted again
+      with every action's revision_instructions as revision_hint.
+    - Re-run the critic on each revised action (persisted as *.critic.r2.json).
+    - Accept or reject the revised actions without further revision.
     """
-    from k1_pipeline.extract.generator import extract_node  # lazy to avoid circular
+    from k1_pipeline.extract.generator import clear_step, extract_step  # lazy to avoid circular
 
     critic_dir = run_dir / "L2" / "critic"
     gen_dir = run_dir / "L2" / "gen"
     results: list[tuple[ExtractedNode, CriticOutput]] = []
 
+    # A step's actions are revised together: the generator splits the step, so
+    # fixing one action can change how many there are.
+    steps: dict[int, list[ExtractedNode]] = {}
     for node in nodes:
-        sn = node.step_number
-        console.print(f"  [dim]Critic {recipe.recipe_id} step {sn}[/dim]")
-        critic_out = verify_node(recipe, sn, node, critic_dir)
+        steps.setdefault(node.step_number, []).append(node)
 
-        if critic_out.verdict == CriticVerdict.accept:
-            results.append((node, critic_out))
+    for sn, step_nodes in steps.items():
+        verdicts = []
+        for node in step_nodes:
+            console.print(f"  [dim]Critic {recipe.recipe_id} step {sn}.{node.sub_step}[/dim]")
+            verdicts.append(verify_node(recipe, sn, node, critic_dir))
 
-        elif critic_out.verdict == CriticVerdict.revise:
-            hint = critic_out.revision_instructions or "; ".join(critic_out.issues)
-            console.print(f"    [yellow]REVISE step {sn}:[/yellow] {hint}")
+        for node, out in zip(step_nodes, verdicts):
+            if out.verdict == CriticVerdict.reject:
+                console.print(f"    [red]REJECT step {sn}.{node.sub_step}:[/red] {'; '.join(out.issues)}")
 
-            # Delete cached gen artifact so generator re-runs
-            cached = gen_dir / f"{recipe.recipe_id}_step{sn:02d}.gen.json"
-            if cached.exists():
-                cached.unlink()
+        to_revise = [(n, o) for n, o in zip(step_nodes, verdicts) if o.verdict == CriticVerdict.revise]
+        if not to_revise:
+            results.extend((n, o) for n, o in zip(step_nodes, verdicts) if o.verdict == CriticVerdict.accept)
+            continue
 
-            # Re-generate with the revision hint threaded in
-            revised_node = extract_node(recipe, sn, gen_dir, revision_hint=hint)
+        hint = " | ".join(
+            f"action {n.sub_step} ({n.action_phrase}): "
+            + (o.revision_instructions or "; ".join(o.issues))
+            for n, o in to_revise
+        )
+        console.print(f"    [yellow]REVISE step {sn}:[/yellow] {hint}")
 
-            # Second critic pass (persisted separately so first pass is preserved)
+        # Delete cached gen artifacts so the generator re-runs the whole step
+        clear_step(gen_dir, recipe.recipe_id, sn)
+        revised = extract_step(recipe, sn, gen_dir, revision_hint=hint)
+
+        # Second critic pass (persisted separately so first pass is preserved)
+        for revised_node in revised:
             critic_r2 = verify_node(
                 recipe, sn, revised_node, critic_dir,
                 revision_hint=hint, suffix="critic.r2",
             )
-            console.print(
-                f"    [dim]R2 verdict: {critic_r2.verdict.value}[/dim]"
-            )
+            console.print(f"    [dim]R2 verdict {sn}.{revised_node.sub_step}: {critic_r2.verdict.value}[/dim]")
             if critic_r2.verdict != CriticVerdict.reject:
                 results.append((revised_node, critic_r2))
             else:
-                console.print(f"    [red]REJECT after revision step {sn}[/red]")
-
-        else:
-            console.print(f"    [red]REJECT step {sn}:[/red] {'; '.join(critic_out.issues)}")
+                console.print(f"    [red]REJECT after revision step {sn}.{revised_node.sub_step}[/red]")
 
     return results

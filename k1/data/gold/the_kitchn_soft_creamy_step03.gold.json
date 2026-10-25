@@ -30,9 +30,12 @@
     "has_safety_bound": false,
     "in_scope": true
   },
+  "sub_steps": [],
+  "split_checked": true,
+  "split_seconds_spent": 0.0,
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: typo in action phrase corrected (\"whisk sal and pepper in eggs\" -> \"whisk salt and pepper in eggs\").",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: typo in action phrase corrected (\"whisk sal and pepper in eggs\" -> \"whisk salt and pepper in eggs\"). Checked for splitting on 2026-10-25 at the annotator's request, not timed: kept as one action.",
   "mode": "from_scratch",
   "seconds_spent": 64.3,
   "seeded_from_run": "scope02",

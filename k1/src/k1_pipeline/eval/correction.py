@@ -8,6 +8,10 @@ counting (Notes/09-k1-evaluation.md):
   2. Correction effort: how much did the reviewer have to change?
   3. Time: how long did correcting take, against annotating from scratch?
 
+Step-level scores compare the pipeline's first action of a step with the
+reviewed step (`expected`). Splitting into atomic actions is scored apart:
+how many actions the pipeline gave a step against how many the reviewer kept.
+
 Only gold files saved under the current definition_version are counted.
 Writes eval/correction.json and eval/correction_steps.csv next to report.md.
 """
@@ -85,6 +89,37 @@ def compare_step(auto: dict, gold_expected: dict) -> dict:
         row["unchanged"] = True
         row["unchanged_ignoring_wording"] = True
     return row
+
+
+def compare_split(auto: dict, gold) -> dict:
+    """Number of actions the pipeline and the reviewer give one step (0 when left out)."""
+    gold_actions = (
+        sum(1 for a in gold.graph_steps() if a.in_scope) if gold.expected.in_scope else 0
+    )
+    auto_actions = len(auto.get("sub_steps", []))
+    return {
+        "gold_actions": gold_actions,
+        "auto_actions": auto_actions,
+        "split_checked": gold.split_checked,
+        "split_seconds_spent": gold.split_seconds_spent,
+        "split_agrees": gold_actions == auto_actions,
+    }
+
+
+def split_metrics(rows: list[dict]) -> dict:
+    both = [r for r in rows if r["gold_actions"] and r["auto_actions"]]
+    secs = [r["split_seconds_spent"] for r in rows if r["split_seconds_spent"] is not None]
+    return {
+        "steps_checked": sum(1 for r in rows if r["split_checked"]),
+        "steps_split_by_reviewer": sum(1 for r in rows if r["gold_actions"] > 1),
+        "steps_split_by_pipeline": sum(1 for r in rows if r["auto_actions"] > 1),
+        "actions_reviewer": sum(r["gold_actions"] for r in rows),
+        "actions_pipeline": sum(r["auto_actions"] for r in rows),
+        "steps_kept_by_both": len(both),
+        "action_count_agrees_pct": _pct(sum(1 for r in both if r["split_agrees"]), len(both)),
+        "split_minutes": round(sum(secs) / 60, 1) if secs else None,
+        "mean_split_seconds_per_checked_step": round(statistics.mean(secs), 1) if secs else None,
+    }
 
 
 def _pct(part: int, whole: int) -> float | None:
@@ -169,6 +204,7 @@ def correction_metrics(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: 
                 "auto_reason": auto["reason"],
             }
             row.update(compare_step(auto, gold.expected.model_dump(mode="json")))
+            row.update(compare_split(auto, gold))
             rows.append(row)
 
     corrected = [r for r in rows if r["mode"] == MODE_CORRECTED]
@@ -216,6 +252,7 @@ def correction_metrics(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: 
             "edits_by_field": edits_by_field,
         },
         "time": {"corrected": t_corr, "from_scratch": t_scratch, "saving": saving},
+        "splitting": split_metrics(rows),
         "graph": graph_diff(run_dir),
         "steps": rows,
     }
@@ -224,7 +261,10 @@ def correction_metrics(run_id: str, run_dir: Path, recipes_dir: Path, gold_dir: 
 def graph_diff(run_dir: Path) -> dict | None:
     """Pipeline graph versus the reviewed graph, once `k1 finalize` has been run."""
     auto_path = run_dir / "L3" / "fused_dag.json"
-    final_path = run_dir / "final" / "L3" / "fused_dag.json"
+    # The graph the assistant uses: merges applied when there are any.
+    final_path = run_dir / "final" / "L3" / "merged_dag.json"
+    if not final_path.exists():
+        final_path = run_dir / "final" / "L3" / "fused_dag.json"
     if not (auto_path.exists() and final_path.exists()):
         return None
     auto = json.loads(auto_path.read_text())
@@ -322,6 +362,21 @@ def render_section(m: dict) -> str:
             f"about {s['by_hand_estimate_minutes_all_steps']} min by hand against "
             f"{s['corrected_estimate_minutes_all_steps']} min correcting.",
         ]
+    sp = m["splitting"]
+    lines += [
+        "",
+        "### Splitting into atomic steps",
+        "| Metric | Pipeline | Reviewed |",
+        "|---|---|---|",
+        f"| Steps split into several actions | {sp['steps_split_by_pipeline']} | {sp['steps_split_by_reviewer']} |",
+        f"| Actions (graph nodes before merging) | {sp['actions_pipeline']} | {sp['actions_reviewer']} |",
+        "",
+        f"Steps checked for splitting: {sp['steps_checked']}. Same number of actions on "
+        f"{_v(sp['action_count_agrees_pct'], '%')} of the {sp['steps_kept_by_both']} steps both keep. "
+        f"Time on splitting: {_v(sp['split_minutes'])} min "
+        f"({_v(sp['mean_split_seconds_per_checked_step'])} s per checked step), "
+        "not included in the step times above.",
+    ]
     g = m["graph"]
     lines += ["", "### Graph (pipeline vs reviewed)"]
     if g is None:
@@ -347,7 +402,8 @@ def write_outputs(m: dict, eval_dir: Path) -> None:
     columns = [
         "recipe_id", "step_number", "mode", "seconds_spent", "auto_status", "auto_reason",
         "gold_in_scope", "scope_agrees", "fields_changed", "unchanged",
-        "unchanged_ignoring_wording",
+        "unchanged_ignoring_wording", "auto_actions", "gold_actions", "split_checked",
+        "split_seconds_spent",
     ]
     with open(eval_dir / "correction_steps.csv", "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=columns, extrasaction="ignore")

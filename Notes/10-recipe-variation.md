@@ -52,6 +52,15 @@ A difference that is neither structural nor parametric is a **nominal difference
 
 **Deviation.** An execution that starts from *s₀* but is not a prefix of any valid variation is a **deviation**. A deviation is the condition under which the assistant may intervene.
 
+**Justified variation.** Every order constraint and every point at which valid variations differ carries a reason, of one of two kinds.
+
+- A **physical reason** justifies an order constraint *σᵢ ≺ σⱼ*: doing *σⱼ* first is impossible, or makes the execution leave every valid variation (the eggs cannot cook before they are in the pan). Physical reasons are what *≺* contains. Departing from one is a deviation.
+- A **preference reason** justifies an alternative at a **variation point**, a place where valid variations differ. It states the outcome the alternative serves (stirring often gives smaller curds, stirring rarely gives larger ones) or a convenience (melting the butter while the eggs are beaten). Taking any alternative at a variation point is not a deviation.
+
+A variation point is a set of alternatives *P = {α₁, …, αₖ}*, *k ≥ 2*. Each alternative is a choice of steps, an order between steps that *≺* leaves unordered, or a parameter tuple *θ*. Each has a reason *r(αᵢ)*. Reasons are grounded in the same way as steps: a reason is quoted from a source, or, for a physical reason only, taken from curated domain knowledge. Where no source states why an alternative is taken, the reason is recorded as *unattested* rather than supplied.
+
+Physical reasons decide when the assistant may intervene. Preference reasons never trigger an intervention. They explain why a variation exists, they let the assistant infer from the cook's earlier choices which outcome the cook is aiming for, and they supply the wording of a suggestion.
+
 ## A.4 The three kinds of difference
 
 | Kind | What differs | Example (scrambled eggs) | Representation in `K1` |
@@ -76,7 +85,7 @@ Execution parameters are not independent. Heat level and duration are coupled: a
 | Dish | One serving of scrambled eggs |
 | *s₀* | Standardised laboratory station: eggs in shell, all inventory items at hand, pan cold, heat source off |
 | *G* | Egg in state `coagulating` or `solid`, transferred to the plate. `scorched` is never in *G* |
-| *I_ing* | Eggs, salt, pepper, butter, olive oil (oregano removed 2026-10-23, see B.6) |
+| *I_ing* | Eggs, salt, pepper, butter, olive oil (oregano removed 2026-10-23, see B.7) |
 | *I_ut* | Pan, bowl, wooden spatula or spoon, hand whisk, fork, plate, heat source |
 | *B* | Egg coagulation onset (≈62 °C), full coagulation (≈70 °C), Maillard browning onset, butter smoke point, syneresis risk |
 
@@ -110,6 +119,19 @@ but differ in the execution parameters $\theta$ of at least one step.
 Differences in wording or between functionally equivalent utensils are
 not variations.
 \end{definition}
+
+\begin{definition}[Justified variation]
+Every pair in $\prec$ carries a \emph{physical reason}: executing the later
+step first is impossible or leaves every valid variation. A
+\emph{variation point} is a set $P = \{\alpha_1, \dots, \alpha_k\}$,
+$k \geq 2$, of alternatives at which valid variations differ: a choice of
+steps, an order between steps that $\prec$ leaves unordered, or a parameter
+tuple $\theta$. Each alternative carries a \emph{preference reason}
+$r(\alpha_i)$, the outcome it serves. A reason is quoted from a source or,
+for physical reasons only, taken from curated domain knowledge; otherwise it
+is recorded as unattested. Departing from $\prec$ is a deviation; choosing
+any alternative of a variation point is not.
+\end{definition}
 ```
 
 ---
@@ -122,7 +144,7 @@ All decisions below were made by the author on 2026-10-11.
 
 | Decision | Choice | Reason |
 | --- | --- | --- |
-| Ingredients on the station | Eggs, salt, pepper, butter, olive oil | Author's choice. No milk or cream. Oregano was on the station until 2026-10-23 (B.6). |
+| Ingredients on the station | Eggs, salt, pepper, butter, olive oil | Author's choice. No milk or cream. Oregano was on the station until 2026-10-23 (B.7). |
 | Utensils on the station | Pan, bowl, wooden spatula or spoon, hand whisk, fork, plate, heat source | Author's choice. |
 | Goal state | Eggs on the plate | Carry-over cooking can scorch eggs left in the pan. |
 | Composed variations | Allowed | Novices will not follow one source exactly; branch selection in Fusion already assumes steps can be mixed. |
@@ -172,10 +194,43 @@ has none. The step is marked `rule/goal_completion` and has no source span, so i
 presented as something a source says. In the reviewed graph of run `scope02` this applies to
 `continente`, `jamie_oliver`, `love_and_lemons`, and `tudo_gostoso`.
 
-## B.6 Open points
+## B.6 Order rules and variation points in `K1` (k1-0.5.0)
+
+Author decisions, 2026-10-25: flexible order also has a reason, a preference; a step that
+varies must have a reason for its variations. Implemented in
+`k1/config/variation_points.yaml` (read by `k1_pipeline/variation.py`).
+
+- **Why rules are written between action classes.** Condition 4 states *≺* through pre- and
+  post-conditions, but the four `K2` labels are too coarse to show most dependencies: the egg
+  is `liquid` before and after cracking, beating, salting and pouring. Each reviewed action is
+  therefore put in an action class (`crack`, `mix_eggs`, `season`, `fat_into_pan`,
+  `heat_fat`, `pan_to_heat`, `eggs_into_pan`, `cook`, `remove_from_heat`,
+  `finish_off_heat`, `plate`), and the physical order is stated between classes.
+- **REQUIRES now means physical order.** Before k1-0.5.0, REQUIRES edges were derived by
+  matching a post-condition label to a later pre-condition label, so `whisk eggs → add salt`
+  was "required" only because both leave the egg liquid. REQUIRES edges are now built only
+  from the eight order rules, and each carries its rule id and reason (reviewed graph: 70 →
+  53 REQUIRES edges). Order that no rule fixes, such as when the salt goes in, is a
+  preference and lives only in each recipe's NEXT edges.
+- **Acyclicity.** The physical order over all recipes, and each recipe's own order, must be
+  acyclic. NEXT edges of different recipes together may form a cycle: `the_kitchn_soft_creamy`
+  melts the butter before beating the eggs and `pingo_doce` after, and both are valid. This is
+  what allows the two butter-melting steps to merge.
+- **One candidate rule was dropped.** "Beat the eggs before they cook" looked physical, but
+  `tudo_gostoso` breaks the yolks without mixing, lets the white set first and mixes late.
+  That is a technique, recorded as the preference point `where_eggs_are_mixed`.
+- **Eight preference points:** seasoning time, cooking fat, melting the butter while beating,
+  where the eggs are mixed, hot pan or cold start, stirring frequency, heat and time (coupled),
+  and doneness. Several alternatives have no stated reason in the corpus (salt timing, butter
+  or oil, heat level): they are recorded as unattested.
+- **Curated physical reasons** (no source states them) are marked `source: curated`, like
+  `physics_bounds.yaml`. They need the author's confirmation.
+
+## B.7 Open points
 
 - **Oregano has no source.** *Resolved 2026-10-23:* removed from the station. None of the ingested recipes used it. It is now a `known_out_of_inventory` term in `config/dish.yaml`, like the other herbs. `definition_version` was not bumped, because no reviewed step names oregano.
 - **Granularity of step equivalence.** At the four-label `K2` level, "beat eggs" and "add salt" are both `egg: liquid → liquid` and would collide. Equivalence has to be decided on the fine-grained `physics_state` plus the set of entities involved, not on `k2_label` alone.
 - **Heat is a level, not a temperature.** Sources say "low", "medium-low", "lume brando". The parameter in `K1` should be a hob level mapped to the lab's induction hob.
 - **Bowl or measuring jug.** The jug in `jamie_oliver` is aliased to `bowl` in `ontology.yaml`; confirm.
-- **Pipeline changes still to do:** transition-based node merging and parameter tuples on nodes. The inventory filter and PT→EN aliases are done (k1-0.3.0).
+- **Pipeline changes still to do:** parameter tuples on nodes. Node merging is now done by hand labels (merge pairs, k1-0.5.0). The inventory filter and PT→EN aliases are done (k1-0.3.0).
+- **Granularity of step equivalence** is now handled by action classes for order, and by merge labels for equivalence (B.6), rather than by `physics_state`.

@@ -31,9 +31,12 @@
     "has_safety_bound": false,
     "in_scope": true
   },
+  "sub_steps": [],
+  "split_checked": true,
+  "split_seconds_spent": 0.0,
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: typo in action phrase corrected (\"Add salt an black pepper, and whisk together\" -> \"Add salt and black pepper, and whisk together\").",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: typo in action phrase corrected (\"Add salt an black pepper, and whisk together\" -> \"Add salt and black pepper, and whisk together\"). Checked for splitting on 2026-10-25 at the annotator's request, not timed: kept as one action.",
   "mode": "from_scratch",
   "seconds_spent": 141.6,
   "seeded_from_run": "scope02",

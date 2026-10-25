@@ -79,6 +79,8 @@ def write_cypher(
             "mean_confidence": round(node.mean_confidence, 4),
             "source_recipe_ids": node.source_recipe_ids,
         }
+        if node.variant_phrases:
+            props["variant_phrases"] = node.variant_phrases
         if node.timing_constraints and node.timing_constraints.duration_s is not None:
             props["timing_duration_s"] = node.timing_constraints.duration_s
         if node.timing_constraints and node.timing_constraints.deadline:

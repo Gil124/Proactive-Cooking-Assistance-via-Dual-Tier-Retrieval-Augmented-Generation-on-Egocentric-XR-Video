@@ -59,6 +59,21 @@ def _load_canonical_recipes(recipes_dir: Path) -> dict:
     return result
 
 
+def _load_recipe_nodes(gen_dir: Path, recipe_id: str) -> list:
+    """Every extracted node of a recipe, in step then sub-step order."""
+    from k1_pipeline.models import ExtractedNode
+    nodes = [
+        ExtractedNode.model_validate_json(f.read_text())
+        for f in gen_dir.glob(f"{recipe_id}_step*.gen.json")
+    ]
+    # File names do not sort in this order ("step03.2" < "step03.gen").
+    return sorted(nodes, key=lambda n: (n.step_number, n.sub_step))
+
+
+def _load_step_nodes(gen_dir: Path, recipe_id: str, step_n: int) -> list:
+    return [n for n in _load_recipe_nodes(gen_dir, recipe_id) if n.step_number == step_n]
+
+
 @click.group()
 def cli():
     """K1 Knowledge Graph construction pipeline."""
@@ -129,7 +144,6 @@ def extract(run_id):
 def critic(run_id):
     """L2 Critic: verify extracted nodes for groundedness."""
     from k1_pipeline.critic.critic import verify_recipe
-    from k1_pipeline.models import ExtractedNode
 
     run_dir = RUNS_DIR / run_id
     gen_dir = run_dir / "L2" / "gen"
@@ -138,10 +152,9 @@ def critic(run_id):
     console.print("[bold]L2: Critic[/bold]")
     for recipe in recipes.values():
         # Load extracted nodes for this recipe
-        gen_files = sorted(gen_dir.glob(f"{recipe.recipe_id}_*.gen.json"))
-        if not gen_files:
+        nodes = _load_recipe_nodes(gen_dir, recipe.recipe_id)
+        if not nodes:
             continue
-        nodes = [ExtractedNode.model_validate_json(f.read_text()) for f in gen_files]
         pairs = verify_recipe(recipe, nodes, run_dir)
         accepted = sum(1 for _, c in pairs if c.verdict.value == "accept")
         console.print(f"  {recipe.recipe_id}: {accepted}/{len(nodes)} accepted")
@@ -152,7 +165,7 @@ def critic(run_id):
 def fuse(run_id):
     """L3: Resolve entities and build the fused multi-path DAG."""
     from k1_pipeline.fuse.dag_builder import build_k1_graph
-    from k1_pipeline.models import CriticOutput as CO, ExtractedNode
+    from k1_pipeline.models import CriticOutput as CO, artifact_stem
     from k1_pipeline.scope import complete_to_goal, filter_recipe_pairs
 
     run_dir = RUNS_DIR / run_id
@@ -163,19 +176,18 @@ def fuse(run_id):
     console.print("[bold]L3: Fuse[/bold]")
     all_pairs: list[tuple[list, str]] = []
     for recipe in recipes.values():
-        gen_files = sorted(gen_dir.glob(f"{recipe.recipe_id}_*.gen.json"))
-        if not gen_files:
+        nodes = _load_recipe_nodes(gen_dir, recipe.recipe_id)
+        if not nodes:
             continue
         pairs = []
-        for gf in gen_files:
-            node = ExtractedNode.model_validate_json(gf.read_text())
-            step_n = node.step_number
+        for node in nodes:
+            stem = artifact_stem(recipe.recipe_id, node.step_number, node.sub_step)
 
             # Prefer the R2 critic verdict when a revision round happened -- that is
             # the FINAL verdict on the (already-revised) node currently on disk.
             # Falling back to the first-pass verdict only when no revision occurred.
-            r2_file = critic_dir / f"{recipe.recipe_id}_step{step_n:02d}.critic.r2.json"
-            r1_file = critic_dir / f"{recipe.recipe_id}_step{step_n:02d}.critic.json"
+            r2_file = critic_dir / f"{stem}.critic.r2.json"
+            r1_file = critic_dir / f"{stem}.critic.json"
 
             critic_file = r2_file if r2_file.exists() else r1_file
             if critic_file.exists():
@@ -331,8 +343,8 @@ def eval_(run_id, check_gold):
 def finalize(run_id, allow_unreviewed):
     """Build the final K1 graph from the reviewed steps in data/gold/."""
     from k1_pipeline.fuse.dag_builder import build_k1_graph
-    from k1_pipeline.gold import gold_to_pair, is_current, load_gold
-    from k1_pipeline.models import CriticOutput as CO, CriticVerdict, ExtractedNode, NodeType
+    from k1_pipeline.gold import gold_to_pairs, is_current, load_gold
+    from k1_pipeline.models import CriticOutput as CO, CriticVerdict, NodeType
     from k1_pipeline.physics import is_thermal_action
     from k1_pipeline.scope import complete_to_goal, filter_recipe_pairs
     from k1_pipeline.store.writer import write_cypher
@@ -348,7 +360,8 @@ def finalize(run_id, allow_unreviewed):
     all_pairs: list[tuple[list, str]] = []
     unreviewed: list[str] = []
     problems: list[str] = []
-    safety: dict[tuple[str, int], bool] = {}
+    safety: dict[str, bool] = {}
+    split_steps = 0
     for recipe in recipes.values():
         pairs = []
         for step in recipe.steps:
@@ -358,26 +371,29 @@ def finalize(run_id, allow_unreviewed):
                 if not gold.expected.in_scope:
                     continue
                 try:
-                    pairs.append(gold_to_pair(gold, recipe, run_dir))
+                    built = gold_to_pairs(gold, recipe, run_dir)
                 except Exception as e:
                     problems.append(f"{label}: {e}")
-                # The reviewer's heat decision decides the safety bounds.
-                safety[(recipe.recipe_id, step.number)] = gold.expected.has_safety_bound
-                if (
-                    gold.expected.node_type == NodeType.Process
-                    and is_thermal_action(gold.expected.action_phrase)
-                    and not gold.expected.has_safety_bound
-                ):
-                    problems.append(
-                        f"{label}: '{gold.expected.action_phrase}' is a heating action "
-                        "but 'Heat can coagulate or scorch' is not ticked"
-                    )
+                    continue
+                split_steps += bool(gold.sub_steps)
+                for node, critic_out, action in built:
+                    pairs.append((node, critic_out))
+                    # The reviewer's heat decision decides the safety bounds.
+                    safety[str(node.node_id)] = action.has_safety_bound
+                    if (
+                        action.node_type == NodeType.Process
+                        and is_thermal_action(action.action_phrase)
+                        and not action.has_safety_bound
+                    ):
+                        problems.append(
+                            f"{label}: '{action.action_phrase}' is a heating action "
+                            "but 'Heat can coagulate or scorch' is not ticked"
+                        )
                 continue
             unreviewed.append(label)
-            gen_file = gen_dir / f"{recipe.recipe_id}_step{step.number:02d}.gen.json"
-            if allow_unreviewed and gen_file.exists():
-                node = ExtractedNode.model_validate_json(gen_file.read_text())
-                pairs.append((node, CO(verdict=CriticVerdict.accept, grounding_quote=node.source_span)))
+            if allow_unreviewed:
+                for node in _load_step_nodes(gen_dir, recipe.recipe_id, step.number):
+                    pairs.append((node, CO(verdict=CriticVerdict.accept, grounding_quote=node.source_span)))
         all_pairs.append((pairs, recipe.recipe_id))
 
     if problems:
@@ -423,9 +439,49 @@ def finalize(run_id, allow_unreviewed):
             f"{r['last_state']}; no Plate step added.[/yellow]"
         )
 
+    if split_steps:
+        console.print(f"  {split_steps} reviewed steps split into atomic sub-steps")
     graph = build_k1_graph(all_pairs, final_dir, safety_overrides=safety)
     graph.version = f"k1-final/{run_id}"
+
+    # A reviewed graph must fit config/variation_points.yaml: every action has a
+    # class, and no recipe does a step before one a physical rule puts first.
+    order = json.loads((final_dir / "L3" / "order_report.json").read_text())
+    if order["unclassified"] or order["violations"]:
+        console.print("[red]Reviewed steps do not fit config/variation_points.yaml:[/red]")
+        for u in order["unclassified"]:
+            console.print(
+                f"  no action class: {u['recipe_id']} step {u['step_number']}"
+                f".{u['sub_step']} '{u['action_phrase']}'"
+            )
+        for v in order["violations"]:
+            console.print(
+                f"  {v['recipe_id']} breaks {v['rule_id']}: '{v['first']}' before '{v['then']}'"
+            )
+        console.print("Add the action to a class, or fix the review or the rule.")
+        sys.exit(1)
+    console.print(f"  Physical order: {order['requires_edges']} REQUIRES edges from the order rules")
     (final_dir / "L3" / "fused_dag.json").write_text(graph.model_dump_json(indent=2))
+    console.print(f"  Reviewed DAG: {len(graph.nodes)} nodes, {len(graph.edges)} edges")
+
+    # Merge the nodes labelled the same step (Merge pairs tab). The labels refer to
+    # this unmerged graph, which is kept as graph.unmerged.json for labelling.
+    from k1_pipeline.merge import apply_merges, load_labels as load_merge_labels
+
+    K1_OUT.mkdir(parents=True, exist_ok=True)
+    (K1_OUT / "graph.unmerged.json").write_text(graph.model_dump_json(indent=2))
+    graph, merge_report = apply_merges(graph, load_merge_labels(gold_dir))
+    from k1_pipeline.variation import preference_points
+
+    graph.preference_points = preference_points()
+    (final_dir / "L3" / "merge_report.json").write_text(
+        json.dumps(merge_report, indent=2, ensure_ascii=False)
+    )
+    (final_dir / "L3" / "merged_dag.json").write_text(graph.model_dump_json(indent=2))
+    for m in merge_report["merged"]:
+        console.print(f"  Merged {len(m['group'])} nodes into '{m['kept']}'")
+    for sk in merge_report["skipped"]:
+        console.print(f"  [yellow]Not merged: {' = '.join(sk['group'])} ({sk['reason']})[/yellow]")
     console.print(f"  [green]Final DAG:[/green] {len(graph.nodes)} nodes, {len(graph.edges)} edges")
 
     if not run_validation(graph, recipes, final_dir):
@@ -433,7 +489,6 @@ def finalize(run_id, allow_unreviewed):
         sys.exit(1)
     console.print("  [green]All 7 gates passed.[/green]")
 
-    K1_OUT.mkdir(parents=True, exist_ok=True)
     final_path = K1_OUT / "graph.final.json"
     final_path.write_text(graph.model_dump_json(indent=2))
     auto_src = run_dir / "L3" / "fused_dag.json"

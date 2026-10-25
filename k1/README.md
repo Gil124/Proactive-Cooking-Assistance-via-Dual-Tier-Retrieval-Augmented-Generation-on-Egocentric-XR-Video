@@ -9,6 +9,8 @@ Open work, concerns, and status: [`TODO.md`](TODO.md)
 
 What belongs in the graph: [`../Notes/10-recipe-variation.md`](../Notes/10-recipe-variation.md)
 and [`config/dish.yaml`](config/dish.yaml).
+Why steps are ordered and why recipes differ (physical rules and preference points):
+[`config/variation_points.yaml`](config/variation_points.yaml).
 
 ## Quick start
 
@@ -38,6 +40,7 @@ uv run k1 viz --run <run_id>
 ```bash
 uv run k1 run --run <run_id> --no-neo4j   # 1. freeze one pipeline run
 uv run k1 viz --run <run_id>              # 2. Gold set tab: review every step
+                                          #    Merge pairs tab: label which nodes are one step
 uv run k1 finalize --run <run_id>         # 3. final graph from the reviewed steps
 uv run k1 eval --run <run_id>             # 4. accuracy, correction effort, time
 ```
@@ -49,7 +52,8 @@ Protocol: [`../Notes/09-k1-evaluation.md`](../Notes/09-k1-evaluation.md).
 | File | Description |
 |---|---|
 | `data/k1/graph.json` | Fused K1 DAG from the last pipeline run |
-| `data/k1/graph.final.json` | Reviewed K1 DAG, written by `k1 finalize`. This is the graph the assistant uses |
+| `data/k1/graph.final.json` | Reviewed K1 DAG with merges applied, written by `k1 finalize`. This is the graph the assistant uses |
+| `data/k1/graph.unmerged.json` | Reviewed K1 DAG before merging. Merge labels refer to its node IDs |
 | `data/k1/graph.auto.json` | Pipeline DAG of the run that was reviewed, kept for comparison |
 | `data/artifacts/runs/<run_id>/L3/scope_report.json` | Every entity trimmed and step dropped by the scope rule |
 | `data/artifacts/runs/<run_id>/eval/correction.json`, `correction_steps.csv` | Pipeline vs review, machine-readable |

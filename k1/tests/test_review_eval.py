@@ -15,7 +15,7 @@ from k1_pipeline.gold import (
     MODE_FROM_SCRATCH,
     WorkTimer,
     auto_step,
-    gold_to_pair,
+    gold_to_pairs,
     is_current,
     load_gold,
     save_gold,
@@ -279,7 +279,7 @@ def test_gold_to_pair_builds_a_grounded_human_node(tmp_path):
     _save(tmp_path, 1, pre_conditions=[{"entity_id": "egg", "k2_label": "liquid"},
                                        {"entity_id": "salt", "k2_label": "solid"}])
     gold = load_gold(tmp_path, "r1", 1)
-    node, critic = gold_to_pair(gold, _recipe())
+    [(node, critic, _)] = gold_to_pairs(gold, _recipe())
     assert node.source_span in _recipe().steps[0].text
     assert node.ingredients == ["egg", "salt"]
     assert node.tools == ["bowl"]
@@ -299,13 +299,15 @@ def test_reviewed_heat_decision_sets_safety_bounds(tmp_path):
     # "stir eggs" has no heating word, so the wording alone attaches no bounds.
     _save(tmp_path, 2, action_phrase="stir eggs", has_safety_bound=True,
           post_conditions=[{"entity_id": "egg", "k2_label": "coagulating"}])
-    pair = gold_to_pair(load_gold(tmp_path, "r1", 2), _recipe())
+    [(node, critic, _)] = gold_to_pairs(load_gold(tmp_path, "r1", 2), _recipe())
 
-    by_wording = build_k1_graph([([pair], "r1")], tmp_path / "a")
+    by_wording = build_k1_graph([([(node, critic)], "r1")], tmp_path / "a")
     assert by_wording.nodes[0].safety_bounds == []
 
-    pair = gold_to_pair(load_gold(tmp_path, "r1", 2), _recipe())
-    reviewed = build_k1_graph([([pair], "r1")], tmp_path / "b", safety_overrides={("r1", 2): True})
+    [(node, critic, _)] = gold_to_pairs(load_gold(tmp_path, "r1", 2), _recipe())
+    reviewed = build_k1_graph(
+        [([(node, critic)], "r1")], tmp_path / "b", safety_overrides={str(node.node_id): True}
+    )
     assert reviewed.nodes[0].safety_bounds
     assert any(e.edge_type == "HAS_SAFETY_BOUND" for e in reviewed.edges)
 
@@ -315,6 +317,6 @@ def test_gold_to_pair_carries_pipeline_timing(tmp_path):
     _gen(run_dir, "r1", 2, source_span="Cook the eggs",
          timing_constraints={"duration_s": 60.0, "deadline": None})
     _save(tmp_path, 2, action_phrase="cook eggs", has_safety_bound=True)
-    node, _ = gold_to_pair(load_gold(tmp_path, "r1", 2), _recipe(), run_dir)
+    [(node, _, _)] = gold_to_pairs(load_gold(tmp_path, "r1", 2), _recipe(), run_dir)
     assert node.timing_constraints.duration_s == 60.0
     assert node.source_span == "Cook the eggs"

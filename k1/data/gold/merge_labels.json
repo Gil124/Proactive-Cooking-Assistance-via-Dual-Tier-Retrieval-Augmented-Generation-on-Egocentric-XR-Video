@@ -1,0 +1,1372 @@
+{
+  "labels": [
+    {
+      "pair_id": "030dd8c401f7cb59__5098513b1a4922ed",
+      "a": {
+        "node_id": "030dd8c401f7cb59",
+        "action_phrase": "finish cooking eggs, then slide eggs onto plate",
+        "block": "Process | egg:coagulating -> egg:solid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "5098513b1a4922ed",
+        "action_phrase": "remove eggs from heat",
+        "block": "Process | egg:coagulating -> egg:solid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 10.9,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "06ddcdddb1eb2b9b__16fae1f4998224ea",
+      "a": {
+        "node_id": "06ddcdddb1eb2b9b",
+        "action_phrase": "break eggs into bowl and beat with whisk",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "16fae1f4998224ea",
+        "action_phrase": "push spatula through eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 38.0,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "06ddcdddb1eb2b9b__43df46722d682c4a",
+      "a": {
+        "node_id": "06ddcdddb1eb2b9b",
+        "action_phrase": "break eggs into bowl and beat with whisk",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "43df46722d682c4a",
+        "action_phrase": "crack and whisk eggs in bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 15.7,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "06ddcdddb1eb2b9b__7952fad4ae166c16",
+      "a": {
+        "node_id": "06ddcdddb1eb2b9b",
+        "action_phrase": "break eggs into bowl and beat with whisk",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "7952fad4ae166c16",
+        "action_phrase": "break egg yolks",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 13.6,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "06ddcdddb1eb2b9b__bb302cf65894ddbf",
+      "a": {
+        "node_id": "06ddcdddb1eb2b9b",
+        "action_phrase": "break eggs into bowl and beat with whisk",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "bb302cf65894ddbf",
+        "action_phrase": "whisk eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 9.4,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "06ddcdddb1eb2b9b__d2e293604144dd52",
+      "a": {
+        "node_id": "06ddcdddb1eb2b9b",
+        "action_phrase": "break eggs into bowl and beat with whisk",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "d2e293604144dd52",
+        "action_phrase": "crack the eggs into a bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.8,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "06e700ae3a347844__b4af8dc6b3222956",
+      "a": {
+        "node_id": "06e700ae3a347844",
+        "action_phrase": "add salt",
+        "block": "Process | egg:liquid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "b4af8dc6b3222956",
+        "action_phrase": "add beaten eggs and salt and stir gently with a spatula without stopping",
+        "block": "Process | egg:liquid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "label": "b_contains_a",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 10.3,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "105b20949cff64ea__1263bf16fea7b71c",
+      "a": {
+        "node_id": "105b20949cff64ea",
+        "action_phrase": "heat pan and melt butter",
+        "block": "Process | butter:solid -> butter:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "1263bf16fea7b71c",
+        "action_phrase": "melt butter",
+        "block": "Process | butter:solid -> butter:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver",
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 7.2,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "105b20949cff64ea__f4f379ee4b5ed278",
+      "a": {
+        "node_id": "105b20949cff64ea",
+        "action_phrase": "heat pan and melt butter",
+        "block": "Process | butter:solid -> butter:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "f4f379ee4b5ed278",
+        "action_phrase": "Put pan in low heat, melt butter",
+        "block": "Process | butter:solid -> butter:liquid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 6.8,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "1263bf16fea7b71c__f4f379ee4b5ed278",
+      "a": {
+        "node_id": "1263bf16fea7b71c",
+        "action_phrase": "melt butter",
+        "block": "Process | butter:solid -> butter:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver",
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "f4f379ee4b5ed278",
+        "action_phrase": "Put pan in low heat, melt butter",
+        "block": "Process | butter:solid -> butter:liquid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 6.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "16fae1f4998224ea__43df46722d682c4a",
+      "a": {
+        "node_id": "16fae1f4998224ea",
+        "action_phrase": "push spatula through eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "43df46722d682c4a",
+        "action_phrase": "crack and whisk eggs in bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 6.8,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "16fae1f4998224ea__61e037990074ccda",
+      "a": {
+        "node_id": "16fae1f4998224ea",
+        "action_phrase": "push spatula through eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "61e037990074ccda",
+        "action_phrase": "stir eggs gently without stopping",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 121.6,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "16fae1f4998224ea__7952fad4ae166c16",
+      "a": {
+        "node_id": "16fae1f4998224ea",
+        "action_phrase": "push spatula through eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "7952fad4ae166c16",
+        "action_phrase": "break egg yolks",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "16fae1f4998224ea__bb302cf65894ddbf",
+      "a": {
+        "node_id": "16fae1f4998224ea",
+        "action_phrase": "push spatula through eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "bb302cf65894ddbf",
+        "action_phrase": "whisk eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 3.9,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "16fae1f4998224ea__d2e293604144dd52",
+      "a": {
+        "node_id": "16fae1f4998224ea",
+        "action_phrase": "push spatula through eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "d2e293604144dd52",
+        "action_phrase": "crack the eggs into a bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.0,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "2ab4f9c314847487__3110d8f2267f64c2",
+      "a": {
+        "node_id": "2ab4f9c314847487",
+        "action_phrase": "Add salt and black pepper, and whisk together",
+        "block": "Process | egg:liquid|pepper:solid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "b": {
+        "node_id": "3110d8f2267f64c2",
+        "action_phrase": "whisk salt and pepper in eggs",
+        "block": "Process | egg:liquid|pepper:solid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 9.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "2ab4f9c314847487__e1545c869e5e8626",
+      "a": {
+        "node_id": "2ab4f9c314847487",
+        "action_phrase": "Add salt and black pepper, and whisk together",
+        "block": "Process | egg:liquid|pepper:solid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "b": {
+        "node_id": "e1545c869e5e8626",
+        "action_phrase": "whisk eggs with salt and pepper",
+        "block": "Process | egg:liquid|pepper:solid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.1,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "3110d8f2267f64c2__e1545c869e5e8626",
+      "a": {
+        "node_id": "3110d8f2267f64c2",
+        "action_phrase": "whisk salt and pepper in eggs",
+        "block": "Process | egg:liquid|pepper:solid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "b": {
+        "node_id": "e1545c869e5e8626",
+        "action_phrase": "whisk eggs with salt and pepper",
+        "block": "Process | egg:liquid|pepper:solid|salt:solid -> egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.1,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "43df46722d682c4a__7952fad4ae166c16",
+      "a": {
+        "node_id": "43df46722d682c4a",
+        "action_phrase": "crack and whisk eggs in bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "7952fad4ae166c16",
+        "action_phrase": "break egg yolks",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 7.0,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "43df46722d682c4a__bb302cf65894ddbf",
+      "a": {
+        "node_id": "43df46722d682c4a",
+        "action_phrase": "crack and whisk eggs in bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "bb302cf65894ddbf",
+        "action_phrase": "whisk eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 11.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "43df46722d682c4a__d2e293604144dd52",
+      "a": {
+        "node_id": "43df46722d682c4a",
+        "action_phrase": "crack and whisk eggs in bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "d2e293604144dd52",
+        "action_phrase": "crack the eggs into a bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.2,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "43ec9d8da3a7725e__78beed4f0d51a447",
+      "a": {
+        "node_id": "43ec9d8da3a7725e",
+        "action_phrase": "serve eggs",
+        "block": "Plate | egg:solid -> egg:solid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "b": {
+        "node_id": "78beed4f0d51a447",
+        "action_phrase": "transfer eggs to plate",
+        "block": "Plate | egg:solid -> egg:solid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 7.7,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "4ae0490781f7b007__7d5c8099b618ce0c",
+      "a": {
+        "node_id": "4ae0490781f7b007",
+        "action_phrase": "cook eggs over low heat folding slowly",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "7d5c8099b618ce0c",
+        "action_phrase": "pour and cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 33.3,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "4ae0490781f7b007__822b56f76127ad88",
+      "a": {
+        "node_id": "4ae0490781f7b007",
+        "action_phrase": "cook eggs over low heat folding slowly",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "822b56f76127ad88",
+        "action_phrase": "cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 34.2,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Saved as 'different' in the tab by mistake; set back to 'same' on 2026-10-26 at the annotator's request."
+    },
+    {
+      "pair_id": "4ae0490781f7b007__84af40b7ed299d75",
+      "a": {
+        "node_id": "4ae0490781f7b007",
+        "action_phrase": "cook eggs over low heat folding slowly",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "84af40b7ed299d75",
+        "action_phrase": "Cook eggs",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 19.9,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "4ae0490781f7b007__88606a2248bc96af",
+      "a": {
+        "node_id": "4ae0490781f7b007",
+        "action_phrase": "cook eggs over low heat folding slowly",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "88606a2248bc96af",
+        "action_phrase": "Stir gently until eggs are slightly underdone, remove from heat",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 8.6,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "4ae0490781f7b007__bc27f9794c404ae2",
+      "a": {
+        "node_id": "4ae0490781f7b007",
+        "action_phrase": "cook eggs over low heat folding slowly",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "bc27f9794c404ae2",
+        "action_phrase": "Stir eggs with spatula until cooked",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 10.2,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "4ae0490781f7b007__f3b99d8c00d7229f",
+      "a": {
+        "node_id": "4ae0490781f7b007",
+        "action_phrase": "cook eggs over low heat folding slowly",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "continente"
+        ]
+      },
+      "b": {
+        "node_id": "f3b99d8c00d7229f",
+        "action_phrase": "stir eggs gently until slightly underdone",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 0.0,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "5098513b1a4922ed__da0caf3b7f89b65c",
+      "a": {
+        "node_id": "5098513b1a4922ed",
+        "action_phrase": "remove eggs from heat",
+        "block": "Process | egg:coagulating -> egg:solid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "b": {
+        "node_id": "da0caf3b7f89b65c",
+        "action_phrase": "finish cooking eggs",
+        "block": "Process | egg:coagulating -> egg:solid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 20.2,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "52dde1ec50ba9a45__cc1369266993ad0b",
+      "a": {
+        "node_id": "52dde1ec50ba9a45",
+        "action_phrase": "remove pan from heat_source",
+        "block": "Transfer | egg:coagulating -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "cc1369266993ad0b",
+        "action_phrase": "remove pan from heat",
+        "block": "Transfer | egg:coagulating -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 5.8,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "61e037990074ccda__7952fad4ae166c16",
+      "a": {
+        "node_id": "61e037990074ccda",
+        "action_phrase": "stir eggs gently without stopping",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "7952fad4ae166c16",
+        "action_phrase": "break egg yolks",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 5.7,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "61e037990074ccda__bb302cf65894ddbf",
+      "a": {
+        "node_id": "61e037990074ccda",
+        "action_phrase": "stir eggs gently without stopping",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "bb302cf65894ddbf",
+        "action_phrase": "whisk eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente",
+          "love_and_lemons",
+          "pingo_doce",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 19.4,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "61e037990074ccda__d2e293604144dd52",
+      "a": {
+        "node_id": "61e037990074ccda",
+        "action_phrase": "stir eggs gently without stopping",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "pingo_doce"
+        ]
+      },
+      "b": {
+        "node_id": "d2e293604144dd52",
+        "action_phrase": "crack the eggs into a bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver",
+          "love_and_lemons",
+          "pingo_doce"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 7.0,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "7952fad4ae166c16__bb302cf65894ddbf",
+      "a": {
+        "node_id": "7952fad4ae166c16",
+        "action_phrase": "break egg yolks",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "b": {
+        "node_id": "bb302cf65894ddbf",
+        "action_phrase": "whisk eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 6.1,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "7952fad4ae166c16__d2e293604144dd52",
+      "a": {
+        "node_id": "7952fad4ae166c16",
+        "action_phrase": "break egg yolks",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "b": {
+        "node_id": "d2e293604144dd52",
+        "action_phrase": "crack the eggs into a bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 9.9,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "7d5c8099b618ce0c__84af40b7ed299d75",
+      "a": {
+        "node_id": "7d5c8099b618ce0c",
+        "action_phrase": "pour and cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "84af40b7ed299d75",
+        "action_phrase": "Cook eggs",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 6.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "7d5c8099b618ce0c__88606a2248bc96af",
+      "a": {
+        "node_id": "7d5c8099b618ce0c",
+        "action_phrase": "pour and cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "88606a2248bc96af",
+        "action_phrase": "Stir gently until eggs are slightly underdone, remove from heat",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "b_contains_a",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 12.0,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "7d5c8099b618ce0c__bc27f9794c404ae2",
+      "a": {
+        "node_id": "7d5c8099b618ce0c",
+        "action_phrase": "pour and cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "bc27f9794c404ae2",
+        "action_phrase": "Stir eggs with spatula until cooked",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 15.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "822b56f76127ad88__84af40b7ed299d75",
+      "a": {
+        "node_id": "822b56f76127ad88",
+        "action_phrase": "cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "84af40b7ed299d75",
+        "action_phrase": "Cook eggs",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 0.0,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "822b56f76127ad88__bc27f9794c404ae2",
+      "a": {
+        "node_id": "822b56f76127ad88",
+        "action_phrase": "cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "bc27f9794c404ae2",
+        "action_phrase": "Stir eggs with spatula until cooked",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 0.0,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "822b56f76127ad88__f3b99d8c00d7229f",
+      "a": {
+        "node_id": "822b56f76127ad88",
+        "action_phrase": "cook eggs to form soft curds",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "love_and_lemons"
+        ]
+      },
+      "b": {
+        "node_id": "f3b99d8c00d7229f",
+        "action_phrase": "stir eggs gently until slightly underdone",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 0.0,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "84af40b7ed299d75__88606a2248bc96af",
+      "a": {
+        "node_id": "84af40b7ed299d75",
+        "action_phrase": "Cook eggs",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "88606a2248bc96af",
+        "action_phrase": "Stir gently until eggs are slightly underdone, remove from heat",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "b_contains_a",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 12.7,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "84af40b7ed299d75__bc27f9794c404ae2",
+      "a": {
+        "node_id": "84af40b7ed299d75",
+        "action_phrase": "Cook eggs",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "bc27f9794c404ae2",
+        "action_phrase": "Stir eggs with spatula until cooked",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 14.8,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "84af40b7ed299d75__f3b99d8c00d7229f",
+      "a": {
+        "node_id": "84af40b7ed299d75",
+        "action_phrase": "Cook eggs",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "f3b99d8c00d7229f",
+        "action_phrase": "stir eggs gently until slightly underdone",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 0.0,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "88606a2248bc96af__bc27f9794c404ae2",
+      "a": {
+        "node_id": "88606a2248bc96af",
+        "action_phrase": "Stir gently until eggs are slightly underdone, remove from heat",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "b": {
+        "node_id": "bc27f9794c404ae2",
+        "action_phrase": "Stir eggs with spatula until cooked",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "a_contains_b",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 6.2,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "8c954987ce3a9c3c__9068a7bbf81fd113",
+      "a": {
+        "node_id": "8c954987ce3a9c3c",
+        "action_phrase": "spread butter in pan",
+        "block": "Transfer | butter:solid -> butter:solid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "b": {
+        "node_id": "9068a7bbf81fd113",
+        "action_phrase": "pan at low heat and add butter",
+        "block": "Transfer | butter:solid -> butter:solid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 16.5,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "bb302cf65894ddbf__d2e293604144dd52",
+      "a": {
+        "node_id": "bb302cf65894ddbf",
+        "action_phrase": "whisk eggs",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "continente",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "b": {
+        "node_id": "d2e293604144dd52",
+        "action_phrase": "crack the eggs into a bowl",
+        "block": "Process | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 4.1,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "bc27f9794c404ae2__f3b99d8c00d7229f",
+      "a": {
+        "node_id": "bc27f9794c404ae2",
+        "action_phrase": "Stir eggs with spatula until cooked",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "b": {
+        "node_id": "f3b99d8c00d7229f",
+        "action_phrase": "stir eggs gently until slightly underdone",
+        "block": "Process | egg:liquid -> egg:coagulating",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 0.0,
+      "graph_version": "k1-final/scope02",
+      "notes": "Author decision 2026-10-25: same start and end state; folding, stirring or no detail are ways of doing the same cooking action. Applied at the annotator's request, not timed."
+    },
+    {
+      "pair_id": "c2157c55a5f6dc9d__ff39ba95fd733c0d",
+      "a": {
+        "node_id": "c2157c55a5f6dc9d",
+        "action_phrase": "melt butter and pour egg into pan",
+        "block": "Process | butter:solid|egg:liquid -> butter:liquid|egg:liquid",
+        "source_recipe_ids": [
+          "recipe_tin_eats"
+        ]
+      },
+      "b": {
+        "node_id": "ff39ba95fd733c0d",
+        "action_phrase": "melt butter and pour in the eggs",
+        "block": "Process | butter:solid|egg:liquid -> butter:liquid|egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 11.0,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "ca5d69ac0b6860f4__d4388da8ca4de84f",
+      "a": {
+        "node_id": "ca5d69ac0b6860f4",
+        "action_phrase": "put eggs in pan",
+        "block": "Transfer | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "b": {
+        "node_id": "d4388da8ca4de84f",
+        "action_phrase": "move pan to heat source",
+        "block": "Transfer | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 6.6,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "ca5d69ac0b6860f4__ff55fc3aab31f012",
+      "a": {
+        "node_id": "ca5d69ac0b6860f4",
+        "action_phrase": "put eggs in pan",
+        "block": "Transfer | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "b": {
+        "node_id": "ff55fc3aab31f012",
+        "action_phrase": "pour eggs in pan",
+        "block": "Transfer | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "jamie_oliver",
+          "love_and_lemons",
+          "pingo_doce",
+          "recipe_tin_eats",
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "same",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-25",
+      "seconds_spent": 8.4,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    },
+    {
+      "pair_id": "d4388da8ca4de84f__ff55fc3aab31f012",
+      "a": {
+        "node_id": "d4388da8ca4de84f",
+        "action_phrase": "move pan to heat source",
+        "block": "Transfer | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "tudo_gostoso"
+        ]
+      },
+      "b": {
+        "node_id": "ff55fc3aab31f012",
+        "action_phrase": "pour eggs in pan",
+        "block": "Transfer | egg:liquid -> egg:liquid",
+        "source_recipe_ids": [
+          "the_kitchn_soft_creamy"
+        ]
+      },
+      "label": "different",
+      "added_by_hand": false,
+      "annotator": "gil.arroteia",
+      "annotation_date": "2026-10-23",
+      "seconds_spent": 6.1,
+      "graph_version": "k1-final/scope02",
+      "notes": ""
+    }
+  ]
+}

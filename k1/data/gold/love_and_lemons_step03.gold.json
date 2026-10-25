@@ -24,9 +24,57 @@
     "has_safety_bound": true,
     "in_scope": true
   },
+  "sub_steps": [
+    {
+      "node_type": "Transfer",
+      "action_phrase": "pour eggs in pan",
+      "pre_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "liquid"
+        }
+      ],
+      "post_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "liquid"
+        }
+      ],
+      "tools": [
+        "pan"
+      ],
+      "has_safety_bound": false,
+      "in_scope": true
+    },
+    {
+      "node_type": "Process",
+      "action_phrase": "cook eggs to form soft curds",
+      "pre_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "liquid"
+        }
+      ],
+      "post_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "coagulating"
+        }
+      ],
+      "tools": [
+        "spatula",
+        "pan",
+        "heat_source"
+      ],
+      "has_safety_bound": true,
+      "in_scope": true
+    }
+  ],
+  "split_checked": true,
+  "split_seconds_spent": 0.0,
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat_source added to tools (step is on the heat).",
+  "notes": "Changed on 2026-10-12 after review, at the annotator's request, not timed: heat_source added to tools (step is on the heat). Split into atomic steps on 2026-10-25 at the annotator's request (suggestions accepted), not timed.",
   "mode": "corrected",
   "seconds_spent": 54.4,
   "seeded_from_run": "scope02",

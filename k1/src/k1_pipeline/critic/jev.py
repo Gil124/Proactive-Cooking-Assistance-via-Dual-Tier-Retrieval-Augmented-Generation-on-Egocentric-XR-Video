@@ -33,6 +33,15 @@ NOUL_KEYS = (
 )
 
 
+# Steps are extracted as atomic actions (generator rule 9), so one extraction may
+# cover only part of the step text.
+ATOMIC_NOTE = (
+    "The step is extracted as atomic actions, one extraction each, in order. This "
+    "extraction is one of them: judge it against the part of the step its source_span "
+    "quotes. It does not have to cover the whole step."
+)
+
+
 class JevError(RuntimeError):
     """The Decisions API call failed or returned a shape we cannot branch on."""
 
@@ -146,6 +155,7 @@ def extraction_state(
             + " The extraction leaves out items outside that inventory on purpose."
         ),
         "step_text": step_text,
+        "granularity": ATOMIC_NOTE,
         "extraction": {
             "node_type": node.node_type.value,
             "action_phrase": node.action_phrase,

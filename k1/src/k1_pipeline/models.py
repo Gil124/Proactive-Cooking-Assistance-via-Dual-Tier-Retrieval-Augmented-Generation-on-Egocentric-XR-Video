@@ -77,10 +77,14 @@ class TimingConstraints(BaseModel):
 
 
 class ExtractedNode(BaseModel):
-    """Generator output for one recipe step."""
+    """Generator output for one atomic action of a recipe step."""
     node_id: UUID = Field(default_factory=uuid4)
     recipe_id: str = Field(default="")
     step_number: int = Field(default=0)
+    sub_step: int = Field(
+        default=1, ge=1,
+        description="Set by the pipeline: position of this action within its recipe step.",
+    )
     node_type: NodeType = Field(description="Process | Transfer | Plate")
     action_phrase: str = Field(description="Short verb phrase naming the action, e.g. 'whisk eggs'")
     pre_conditions: list[StateCondition] = Field(
@@ -126,6 +130,27 @@ class ExtractedNode(BaseModel):
             if not self.post_conditions:
                 raise ValueError("Process nodes must have at least one post_condition.")
         return self
+
+
+def artifact_stem(recipe_id: str, step_number: int, sub_step: int = 1) -> str:
+    """
+    File stem for one node's L2 artifacts: `{recipe}_step03` for the first action
+    of a step, `{recipe}_step03.2` for the second. The first keeps the pre-split
+    name, so runs made before sub-steps existed read the same.
+    """
+    stem = f"{recipe_id}_step{step_number:02d}"
+    return stem if sub_step == 1 else f"{stem}.{sub_step}"
+
+
+class ExtractedStep(BaseModel):
+    """Generator output for one recipe step: its atomic actions, in order."""
+    nodes: list[ExtractedNode] = Field(
+        min_length=1,
+        description=(
+            "One node per atomic action, in the order the step performs them. "
+            "A step with a single action has one node."
+        ),
+    )
 
 
 # ── L2 Critic ─────────────────────────────────────────────────────────────────
@@ -193,6 +218,10 @@ class K1Node(BaseModel):
     critic_verdicts: list[str]
     confidences: list[float]          # raw per-observation values
     mean_confidence: float             # derived: mean(confidences)
+    variant_phrases: list[str] = Field(
+        default_factory=list,
+        description="Wordings of the other nodes merged into this one (merge labels).",
+    )
 
 
 class K1Edge(BaseModel):
@@ -213,6 +242,11 @@ class K1Graph(BaseModel):
     ingredient_nodes: list[dict] = Field(default_factory=list)
     tool_nodes: list[dict] = Field(default_factory=list)
     branch_labels: list[str] = Field(default_factory=list)
+    preference_points: list[dict] = Field(
+        default_factory=list,
+        description="Variation points with preference reasons (config/variation_points.yaml), "
+                    "copied in by `k1 finalize` so the runtime graph is self-contained.",
+    )
 
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
@@ -247,10 +281,25 @@ class GoldNode(BaseModel):
     """
     A human-annotated gold node for evaluation.
     Schema matches data/gold/ANNOTATION_PROTOCOL.md exactly.
+
+    `expected` labels the whole step; the pipeline's step-level output is scored
+    against it. `sub_steps`, when present, is the same step split into atomic
+    actions (two or more, in order); the graph is built from those instead.
     """
     recipe_id: str
     step_number: int
     expected: GoldExpected
+    sub_steps: list[GoldExpected] = Field(
+        default_factory=list,
+        description="The step as atomic actions, in order. Empty = the step is one node.",
+    )
+    split_checked: bool = Field(
+        default=False,
+        description="The reviewer decided whether to split this step (split or kept as one).",
+    )
+    split_seconds_spent: Optional[float] = Field(
+        default=None, description="Active time on splitting, kept apart from seconds_spent."
+    )
     annotator: str
     annotation_date: str
     notes: str = ""
@@ -269,3 +318,13 @@ class GoldNode(BaseModel):
     definition_version: Optional[str] = Field(
         default=None, description="dish.yaml definition_version when the file was saved."
     )
+
+    @model_validator(mode="after")
+    def check_sub_steps(self) -> "GoldNode":
+        if len(self.sub_steps) == 1:
+            raise ValueError("sub_steps holds two or more actions; one action is `expected`.")
+        return self
+
+    def graph_steps(self) -> list[GoldExpected]:
+        """The nodes this step contributes to the graph, in order."""
+        return list(self.sub_steps) if self.sub_steps else [self.expected]

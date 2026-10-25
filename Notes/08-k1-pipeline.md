@@ -101,7 +101,18 @@ Junk filter rules (deterministic, no LLM):
 
 ### L2 extract + critic contracts
 
-Generator output per step (`data/artifacts/runs/{run_id}/L2/gen/{recipe_id}_{step_n}.json`):
+**Atomic steps (generator rule 9).** The generator returns a step as an ordered list of
+atomic actions (`ExtractedStep.nodes`): one verb on one thing with one visible result.
+"Crack the eggs into a bowl and whisk them" is two nodes; "cook over low heat, folding
+slowly" is one (manner and heat are details of the action). Each action is stored as its own
+file: `{recipe_id}_step03.gen.json` for the first, `{recipe_id}_step03.2.gen.json` for the
+second, with `sub_step` set on the node. Critic files follow the same names. If any action of
+a step gets `revise`, the whole step is extracted again with every action's instructions,
+since fixing one action can change how many there are. Jev and the generative critic are told
+that a node may cover only the part of the step its `source_span` quotes. Fuse orders nodes by
+`(step_number, sub_step)`. Runs made before k1-0.5.0 have one file per step and read the same.
+
+Generator output per action (`data/artifacts/runs/{run_id}/L2/gen/{recipe_id}_step{NN}[.{k}].gen.json`):
 ```json
 {
   "node_type": "Process|Transfer|Plate",
@@ -149,22 +160,40 @@ Fingerprint for node dedup: `sha256(node_type + canonical_action + k2_pre + k2_p
 Entity aliases resolved via **dictionary-only lookup** from `k1/config/ontology.yaml` (v1).
 Embedding + LLM pairwise disambiguation is documented as a future upgrade.
 
-**REQUIRES edge construction (k1-0.2.0 rule):**
-- REQUIRES edges are built *within a single recipe*, using that recipe's step ordering.
-- An edge is added from node i to node j only when `step_index(i) < step_index(j)` and
-  a post-condition of step i matches a pre-condition of step j (`entity_id` + `k2_label`).
-- All edges (NEXT and REQUIRES) are deduplicated via a `(from_id, to_id, edge_type)` set.
+**REQUIRES edge construction (k1-0.5.0, physical order):**
+- REQUIRES means "must come before, for a physical reason" (`Notes/10` A.3 and B.6). Edges are
+  built from the order rules in `k1/config/variation_points.yaml`, written between action
+  classes. Within a recipe, an earlier action of a rule's `before` class gets an edge to every
+  later action of its `after` class. Each edge carries `rule_id` and `reason`.
+- An action whose phrase has no class gets no REQUIRES edge. Unclassified actions, and recipes
+  that do an `after` action before a `before` action, are written to `L3/order_report.json`.
+  `k1 finalize` stops on either; a pipeline run only reports them.
+- Order that no rule fixes is a preference. It is only in each recipe's NEXT edges.
+- NEXT edges are deduplicated per recipe (`(from, to, recipe)`); REQUIRES and the other edges
+  per `(from, to, type)`.
 
-**Cycle-breaking pass:**
-After all NEXT and REQUIRES edges are added, `_break_cycles` runs:
-- While any cycle exists in the NEXT + REQUIRES subgraph, remove one edge per cycle:
-  prefer removing REQUIRES over NEXT; among ties prefer the lowest-weight edge.
-- Removed edges are written to `L3/removed_edges.json` for inspection.
+**Acyclicity and cycle-breaking:**
+- The physical order (REQUIRES over all recipes) and each recipe's own order (its NEXT edges
+  plus the REQUIRES edges among its nodes) must be acyclic. NEXT edges of different recipes
+  together may form a cycle, because recipes may order a flexible step differently.
+- `_break_cycles` removes single edges until those subgraphs are acyclic, preferring a
+  recipe's NEXT edge over a REQUIRES edge, lowest weight first. Removed edges are written to
+  `L3/removed_edges.json`.
+
+**Merging (k1-0.5.0, `k1 finalize` only):** nodes labelled the same step in the Merge pairs tab
+(`k1/data/gold/merge_labels.json`) are folded into one node by `merge.apply_merges`. The node
+keeps the wording used by most recipes (then the shortest), lists the others in
+`variant_phrases`, and takes the union of provenance, tools, ingredients and safety bounds. A
+group is skipped and reported when one of its pairs is labelled otherwise, its members differ
+in node type or K2 transition, or merging would create a cycle in a recipe's order or the
+physical order. Written to `final/L3/merge_report.json`. The reviewed graph before merging is
+`k1/data/k1/graph.unmerged.json`; the merge labels refer to its node IDs.
 
 ### L4 validate gates (all must pass before store)
 
 1. Pydantic schema valid.
-2. Graph (NEXT + REQUIRES edges) is acyclic.
+2. The physical order (REQUIRES) and each recipe's order (its NEXT plus the REQUIRES among its
+   nodes) are acyclic.
 3. Every `Process` node has ≥ 1 pre_condition and ≥ 1 post_condition.
 4. **Gate 4 thermal rule (k1-0.2.0):** Thermality is re-derived from `physics.is_thermal_action(node.action_phrase)` — it is **not** inferred from the presence of `safety_bounds`. A thermal `Process` that is missing `safety_bounds` OR is missing a `HAS_SAFETY_BOUND` edge **fails** this gate.
 5. Every `k2_label ∈ {liquid, coagulating, solid, scorched}`.
@@ -203,7 +232,16 @@ K1 returns:
 - The `HAS_SAFETY_BOUND` edges on that step (temperature thresholds)
 - The next node ID(s) in the DAG
 
-Implemented in `k1/src/k1_pipeline/query.py` (`K1Query.step(branch, node_id)`), over `k1/data/k1/graph.final.json`.
+And, for the reasons behind the order (`Notes/10` A.3):
+- `required_before(node_id)`: the step's physical prerequisites, each with its rule and reason.
+  Only these can make an out-of-order action a deviation.
+- `preferences(branch)`: the alternative the branch takes at each variation point, with the
+  outcome it serves (or none, when no source states one). Never a trigger; used to infer what
+  the cook is aiming for and to word a suggestion. The points are copied into
+  `graph.final.json` (`preference_points`) by `k1 finalize`; they are not loaded into Neo4j.
+
+Implemented in `k1/src/k1_pipeline/query.py` (`K1Query.step(branch, node_id)`), over
+`k1/data/k1/graph.final.json` (reviewed, merges applied).
 
 Fusion **does not** query ImpactVariable, OutcomeVariable, or community summaries.
 Do not add those node types to the runtime graph.

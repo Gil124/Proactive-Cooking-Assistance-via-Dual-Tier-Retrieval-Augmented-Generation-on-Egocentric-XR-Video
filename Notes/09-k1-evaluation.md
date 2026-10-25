@@ -114,6 +114,38 @@ reviewed; nodes identical in both, only in the pipeline graph, only in the revie
 - The author had seen earlier pipeline output for some recipes before this protocol existed.
 - Time is self-paced active time in a review tool, not a controlled timing study.
 
+## Atomic steps (splitting a reviewed step)
+
+A reviewed step that does several actions is split into ordered sub-steps in the Gold set
+tab (rules in `k1/data/gold/ANNOTATION_PROTOCOL.md`, "Atomic steps"). The step-level label
+(`expected`) is kept, so the step-level scores keep their meaning and stay comparable with
+earlier versions; `k1 finalize` builds the graph from the sub-steps. The eval reports
+splitting apart ("Splitting into atomic steps"): steps split by the pipeline and by the
+reviewer, actions on each side, how often both give a step the same number of actions, and the
+time spent splitting, which is not added to the step review times. With a split pipeline
+run, the step-level scores compare the pipeline's first action with `expected`; the
+splitting table covers the rest.
+
+## Merge pairs (which nodes are the same step)
+
+Nodes merge only on an exact fingerprint, so the same step in different words stays as
+separate nodes. Merge decisions are labelled by hand in the **Merge pairs** tab of `k1 viz`,
+against `k1/data/k1/graph.final.json`, and saved to `k1/data/gold/merge_labels.json`
+(`k1_pipeline/merge.py`).
+
+- **Candidates:** every pair of nodes with the same `node_type` and the same K2 transition
+  (pre and post `(entity, k2_label)` sets). 34 pairs in `k1-final/scope02`. Other pairs can be
+  added by hand; that usually means one of the two steps is labelled wrongly.
+- **Labels:** `same` (merge), `a_contains_b` / `b_contains_a` (one step includes the other,
+  e.g. "crack and whisk" vs "whisk"; not merged), `different`.
+- **Out of date:** node IDs hash the action phrase, so editing a reviewed step changes its ID.
+  A label whose nodes are gone is not counted and the new pair shows as open.
+- **Checks shown in the tab:** merge groups (connected `same` labels); *not transitive* when
+  two nodes end up in one group but their own pair says otherwise; *order conflict* when the
+  merges make one recipe's order contradict another's (cycle in the merged NEXT graph).
+- **Use:** the labels are the merge decision for the current graph, and the test set if an
+  automatic judge (e.g. a Jev question) is added later. Time per pair is recorded as for steps.
+
 ## Per-stage metrics
 
 ### L1 — Ingest

@@ -31,29 +31,42 @@
       "safety_bounds": [],
       "source_recipe_ids": [
         "continente",
+        "love_and_lemons",
+        "pingo_doce",
         "the_kitchn_soft_creamy"
       ],
       "source_step_indices": [
+        1,
+        1,
         1,
         2
       ],
       "source_spans": [
         "Bata 4 ovos numa tigela.",
+        "Crack the eggs into a medium bowl and add the milk or water. Whisk until smooth and combined, with no streaks of egg white remaining.",
+        "Parta os ovos para uma taça e bata com um garfo até a gema e a clara estarem combinadas.",
         "Crack 2 or more large eggs into a bowl. Whisk them vigorously until the whites and yolks are completely mixed, and the eggs are a bit frothy."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
         "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
         "accept",
+        "accept",
+        "accept",
         "accept"
       ],
       "confidences": [
         1.0,
+        1.0,
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "06e700ae3a347844",
@@ -93,24 +106,31 @@
       ],
       "safety_bounds": [],
       "source_recipe_ids": [
-        "continente"
+        "continente",
+        "pingo_doce"
       ],
       "source_step_indices": [
-        2
+        2,
+        3
       ],
       "source_spans": [
-        "junte uma pitada de sal e uma colher de sopa de natas e misture bem"
+        "junte uma pitada de sal e uma colher de sopa de natas e misture bem",
+        "Adicione os ovos batidos e o sal e mexa suavemente com uma espátula, sem parar."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "e27cf2abf02e9360",
@@ -157,89 +177,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "4ae0490781f7b007",
-      "node_type": "Process",
-      "action_phrase": "cook eggs over low heat folding slowly",
-      "canonical_action": "cook_eggs_over_low_heat_folding_slowly",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "pan",
-        "heat_source",
-        "spatula"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "continente"
-      ],
-      "source_step_indices": [
-        4
-      ],
-      "source_spans": [
-        "Junte os ovos batidos e deixe cozinhar em lume brando, envolvendo lentamente."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "9a685a29fb02eb1a",
@@ -304,7 +243,8 @@
         1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "d2e293604144dd52",
@@ -334,93 +274,43 @@
       ],
       "safety_bounds": [],
       "source_recipe_ids": [
-        "jamie_oliver"
+        "jamie_oliver",
+        "love_and_lemons",
+        "pingo_doce"
       ],
       "source_step_indices": [
+        1,
+        1,
         1
       ],
       "source_spans": [
-        "Crack the eggs into a measuring jug."
+        "Crack the eggs into a measuring jug.",
+        "Crack the eggs into a medium bowl and add the milk or water. Whisk until smooth and combined, with no streaks of egg white remaining.",
+        "Parta os ovos para uma taça e bata com um garfo até a gema e a clara estarem combinadas."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
-      "node_id": "2ab4f9c314847487",
+      "node_id": "1263bf16fea7b71c",
       "node_type": "Process",
-      "action_phrase": "Add salt and black pepper, and whisk together",
-      "canonical_action": "add_salt_and_black_pepper,_and_whisk_together",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        },
-        {
-          "entity_id": "salt",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        },
-        {
-          "entity_id": "pepper",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": {
-        "duration_s": null,
-        "deadline": null
-      },
-      "ingredients": [
-        "egg",
-        "salt",
-        "pepper"
-      ],
-      "tools": [
-        "bowl",
-        "whisk"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "jamie_oliver"
-      ],
-      "source_step_indices": [
-        2
-      ],
-      "source_spans": [
-        "Add a tiny pinch of sea salt and black pepper, then use a fork to beat them together well."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "9068a7bbf81fd113",
-      "node_type": "Transfer",
-      "action_phrase": "pan at low heat and add butter",
-      "canonical_action": "pan_at_low_heat_and_add_butter",
+      "action_phrase": "melt butter",
+      "canonical_action": "melt_butter",
       "pre_conditions": [
         {
           "entity_id": "butter",
@@ -431,13 +321,13 @@
       "post_conditions": [
         {
           "entity_id": "butter",
-          "physics_state": "solid",
-          "k2_label": "solid"
+          "physics_state": "liquid",
+          "k2_label": "liquid"
         }
       ],
       "timing_constraints": {
         "duration_s": null,
-        "deadline": null
+        "deadline": "when butter starts to bubble"
       },
       "ingredients": [
         "butter"
@@ -489,36 +379,53 @@
         }
       ],
       "source_recipe_ids": [
-        "jamie_oliver"
+        "jamie_oliver",
+        "recipe_tin_eats",
+        "pingo_doce",
+        "the_kitchn_soft_creamy"
       ],
       "source_step_indices": [
-        3
+        4,
+        3,
+        2,
+        1
       ],
       "source_spans": [
-        "Put a medium saucepan over a low heat and add the butter."
+        "Leave it to melt slowly, then when it starts to bubble carefully pour in the eggs.",
+        "Melt butter over medium heat (Note 1), then pour egg in.",
+        "Leve uma frigideira ao lume em temperatura média-baixa, adicione a manteiga e deixe derreter.",
+        "Add 1 teaspoon unsalted butter and let it begin to melt"
       ],
       "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
+        "accept",
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
+        1.0,
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "heat pan and melt butter",
+        "Put pan in low heat, melt butter"
+      ]
     },
     {
-      "node_id": "ff39ba95fd733c0d",
-      "node_type": "Process",
-      "action_phrase": "melt butter and pour in the eggs",
-      "canonical_action": "melt_butter_and_pour_in_the_eggs",
+      "node_id": "ff55fc3aab31f012",
+      "node_type": "Transfer",
+      "action_phrase": "pour eggs in pan",
+      "canonical_action": "pour_eggs_in_pan",
       "pre_conditions": [
-        {
-          "entity_id": "butter",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        },
         {
           "entity_id": "egg",
           "physics_state": "liquid",
@@ -527,89 +434,71 @@
       ],
       "post_conditions": [
         {
-          "entity_id": "butter",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        },
-        {
           "entity_id": "egg",
           "physics_state": "liquid",
           "k2_label": "liquid"
         }
       ],
-      "timing_constraints": {
-        "duration_s": null,
-        "deadline": "when butter starts to bubble"
-      },
+      "timing_constraints": null,
       "ingredients": [
-        "butter",
         "egg"
       ],
       "tools": [
-        "pan",
-        "heat_source"
+        "pan"
       ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "butter_smoke_point",
-          "label": "Butter smoke point",
-          "temperature_c": 150.0,
-          "description": "Unsalted butter smoke point ~150 °C. Clarified butter is higher (~250 °C). Indicates pan is too hot for fat medium.\n",
-          "k2_transition": null,
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
+      "safety_bounds": [],
       "source_recipe_ids": [
-        "jamie_oliver"
+        "jamie_oliver",
+        "love_and_lemons",
+        "pingo_doce",
+        "recipe_tin_eats",
+        "the_kitchn_soft_creamy",
+        "tudo_gostoso"
       ],
       "source_step_indices": [
-        4
+        4,
+        3,
+        3,
+        3,
+        4,
+        1
       ],
       "source_spans": [
-        "when it starts to bubble carefully pour in the eggs"
+        "Leave it to melt slowly, then when it starts to bubble carefully pour in the eggs.",
+        "Pour in the eggs, and let them cook for a few seconds without stirring. Pull a rubber spatula across the bottom of the pan to form large, soft curds of scrambled eggs.",
+        "Adicione os ovos batidos e o sal e mexa suavemente com uma espátula, sem parar.",
+        "Melt butter over medium heat (Note 1), then pour egg in.",
+        "Pour the eggs into the pan. The eggs will spread out in a thin layer — that's fine.",
+        "Passe toda a manteiga no fundo de uma frigideira e coloque os ovos sobre a manteiga."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
+        "accept",
+        "accept",
+        "accept",
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "put eggs in pan"
+      ]
     },
     {
       "node_id": "6114d44c941598ca",
@@ -712,18 +601,19 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
-      "node_id": "88606a2248bc96af",
-      "node_type": "Process",
-      "action_phrase": "Stir gently until eggs are slightly underdone, remove from heat",
-      "canonical_action": "stir_gently_until_eggs_are_slightly_underdone,_remove_from_heat",
+      "node_id": "cc1369266993ad0b",
+      "node_type": "Transfer",
+      "action_phrase": "remove pan from heat",
+      "canonical_action": "remove_pan_from_heat",
       "pre_conditions": [
         {
           "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
+          "physics_state": "coagulating",
+          "k2_label": "coagulating"
         }
       ],
       "post_conditions": [
@@ -733,10 +623,7 @@
           "k2_label": "coagulating"
         }
       ],
-      "timing_constraints": {
-        "duration_s": null,
-        "deadline": "eggs look silky, slightly runny and slightly underdone"
-      },
+      "timing_constraints": null,
       "ingredients": [
         "egg"
       ],
@@ -744,107 +631,41 @@
         "pan",
         "heat_source"
       ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
+      "safety_bounds": [],
       "source_recipe_ids": [
-        "jamie_oliver"
+        "jamie_oliver",
+        "love_and_lemons",
+        "recipe_tin_eats"
       ],
       "source_step_indices": [
+        6,
+        5,
         6
       ],
       "source_spans": [
-        "Keep gently stirring until the eggs still look silky, slightly runny and slightly underdone, and then remove from the heat – the heat of the pan will continue to cook the eggs to perfection."
+        "Keep gently stirring until the eggs still look silky, slightly runny and slightly underdone, and then remove from the heat – the heat of the pan will continue to cook the eggs to perfection.",
+        "Remove the pan from the heat when the eggs are mostly set, but a little liquid egg remains.",
+        "Take it off the stove when it's still a bit undercooked for your taste."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "43df46722d682c4a",
-      "node_type": "Process",
-      "action_phrase": "crack and whisk eggs in bowl",
-      "canonical_action": "crack_and_whisk_eggs_in_bowl",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "bowl",
-        "whisk"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "love_and_lemons"
-      ],
-      "source_step_indices": [
-        1
-      ],
-      "source_spans": [
-        "Crack the eggs into a medium bowl and add the milk or water. Whisk until smooth and combined, with no streaks of egg white remaining."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "remove pan from heat_source"
+      ]
     },
     {
       "node_id": "183121ea5bec9a45",
@@ -947,89 +768,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "7d5c8099b618ce0c",
-      "node_type": "Process",
-      "action_phrase": "pour and cook eggs to form soft curds",
-      "canonical_action": "pour_and_cook_eggs_to_form_soft_curds",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "spatula",
-        "pan",
-        "heat_source"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "love_and_lemons"
-      ],
-      "source_step_indices": [
-        3
-      ],
-      "source_spans": [
-        "Pour in the eggs, and let them cook for a few seconds without stirring. Pull a rubber spatula across the bottom of the pan to form large, soft curds of scrambled eggs."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "4940ac5f5a5b14e3",
@@ -1114,282 +854,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "cc1369266993ad0b",
-      "node_type": "Transfer",
-      "action_phrase": "remove pan from heat",
-      "canonical_action": "remove_pan_from_heat",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "pan",
-        "heat_source"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "love_and_lemons"
-      ],
-      "source_step_indices": [
-        5
-      ],
-      "source_spans": [
-        "Remove the pan from the heat when the eggs are mostly set, but a little liquid egg remains."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "06ddcdddb1eb2b9b",
-      "node_type": "Process",
-      "action_phrase": "break eggs into bowl and beat with whisk",
-      "canonical_action": "break_eggs_into_bowl_and_beat_with_whisk",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": {
-        "duration_s": null,
-        "deadline": null
-      },
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "bowl",
-        "whisk"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "pingo_doce"
-      ],
-      "source_step_indices": [
-        1
-      ],
-      "source_spans": [
-        "Parta os ovos para uma taça e bata com um garfo até a gema e a clara estarem combinadas."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "105b20949cff64ea",
-      "node_type": "Process",
-      "action_phrase": "heat pan and melt butter",
-      "canonical_action": "heat_pan_and_melt_butter",
-      "pre_conditions": [
-        {
-          "entity_id": "butter",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "butter",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "butter"
-      ],
-      "tools": [
-        "pan",
-        "heat_source"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "butter_smoke_point",
-          "label": "Butter smoke point",
-          "temperature_c": 150.0,
-          "description": "Unsalted butter smoke point ~150 °C. Clarified butter is higher (~250 °C). Indicates pan is too hot for fat medium.\n",
-          "k2_transition": null,
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "pingo_doce"
-      ],
-      "source_step_indices": [
-        2
-      ],
-      "source_spans": [
-        "Leve uma frigideira ao lume em temperatura média-baixa, adicione a manteiga e deixe derreter."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "b4af8dc6b3222956",
-      "node_type": "Process",
-      "action_phrase": "add beaten eggs and salt and stir gently with a spatula without stopping",
-      "canonical_action": "add_beaten_eggs_and_salt_and_stir_gently_with_a_spatula_without_stopping",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        },
-        {
-          "entity_id": "salt",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg",
-        "salt"
-      ],
-      "tools": [
-        "spatula",
-        "heat_source"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "pingo_doce"
-      ],
-      "source_step_indices": [
-        3
-      ],
-      "source_spans": [
-        "Adicione os ovos batidos e o sal e mexa suavemente com uma espátula, sem parar."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "c695e87b0d0d8a88",
@@ -1473,7 +939,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "fcaa1925a9ba75b8",
@@ -1534,169 +1001,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "e1545c869e5e8626",
-      "node_type": "Process",
-      "action_phrase": "whisk eggs with salt and pepper",
-      "canonical_action": "whisk_eggs_with_salt_and_pepper",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        },
-        {
-          "entity_id": "salt",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        },
-        {
-          "entity_id": "pepper",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg",
-        "salt",
-        "pepper"
-      ],
-      "tools": [
-        "whisk"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "recipe_tin_eats"
-      ],
-      "source_step_indices": [
-        2
-      ],
-      "source_spans": [
-        "Whisk together eggs, milk, salt and pepper."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "c2157c55a5f6dc9d",
-      "node_type": "Process",
-      "action_phrase": "melt butter and pour egg into pan",
-      "canonical_action": "melt_butter_and_pour_egg_into_pan",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        },
-        {
-          "entity_id": "butter",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        },
-        {
-          "entity_id": "butter",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": {
-        "duration_s": null,
-        "deadline": null
-      },
-      "ingredients": [
-        "egg",
-        "butter"
-      ],
-      "tools": [
-        "pan",
-        "heat_source"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "butter_smoke_point",
-          "label": "Butter smoke point",
-          "temperature_c": 150.0,
-          "description": "Unsalted butter smoke point ~150 °C. Clarified butter is higher (~250 °C). Indicates pan is too hot for fat medium.\n",
-          "k2_transition": null,
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "recipe_tin_eats"
-      ],
-      "source_step_indices": [
-        3
-      ],
-      "source_spans": [
-        "Melt butter over medium heat (Note 1), then pour egg in."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "16fae1f4998224ea",
@@ -1764,24 +1070,33 @@
         }
       ],
       "source_recipe_ids": [
-        "recipe_tin_eats"
+        "recipe_tin_eats",
+        "pingo_doce"
       ],
       "source_step_indices": [
-        4
+        4,
+        3
       ],
       "source_spans": [
-        "Wait 5 seconds, then start leisurely pushing the rubber spatula back and forth in long strokes, and all around the skillet edges, to push the set egg out of the way and let raw egg run onto the skillet to cook. After 30 seconds or so, start adding some folding action too."
+        "Wait 5 seconds, then start leisurely pushing the rubber spatula back and forth in long strokes, and all around the skillet edges, to push the set egg out of the way and let raw egg run onto the skillet to cook. After 30 seconds or so, start adding some folding action too.",
+        "Adicione os ovos batidos e o sal e mexa suavemente com uma espátula, sem parar."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "stir eggs gently without stopping"
+      ]
     },
     {
       "node_id": "84af40b7ed299d75",
@@ -1811,7 +1126,119 @@
       ],
       "tools": [
         "pan",
-        "heat_source"
+        "heat_source",
+        "spatula"
+      ],
+      "safety_bounds": [
+        {
+          "bound_id": "coagulation_onset",
+          "label": "Egg coagulation onset",
+          "temperature_c": 62.0,
+          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
+          "k2_transition": "liquid → coagulating",
+          "severity": "suggestion"
+        },
+        {
+          "bound_id": "coagulation_full",
+          "label": "Full egg coagulation",
+          "temperature_c": 70.0,
+          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
+          "k2_transition": "coagulating → solid",
+          "severity": "alert"
+        },
+        {
+          "bound_id": "maillard_onset",
+          "label": "Maillard browning onset",
+          "temperature_c": 140.0,
+          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
+          "k2_transition": "solid → scorched",
+          "severity": "alert"
+        },
+        {
+          "bound_id": "syneresis_risk",
+          "label": "Syneresis (weeping) risk",
+          "temperature_c": null,
+          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
+          "k2_transition": "solid → scorched",
+          "severity": "alert"
+        }
+      ],
+      "source_recipe_ids": [
+        "recipe_tin_eats",
+        "continente",
+        "love_and_lemons",
+        "the_kitchn_soft_creamy",
+        "jamie_oliver"
+      ],
+      "source_step_indices": [
+        5,
+        4,
+        3,
+        5,
+        6
+      ],
+      "source_spans": [
+        "Cook for 60 seconds in total until you have a pile of soft, custardy scrambled egg folds (\"curds\") and no raw egg leaking on the edges of the pile.",
+        "Junte os ovos batidos e deixe cozinhar em lume brando, envolvendo lentamente.",
+        "Pour in the eggs, and let them cook for a few seconds without stirring. Pull a rubber spatula across the bottom of the pan to form large, soft curds of scrambled eggs.",
+        "Stir the eggs occasionally with a spatula. At first the eggs will be very liquidy; then you'll notice large, opaque curds starting to form. Eventually, the eggs will no longer run in to fill the gaps when you stir. Frequent stirring will give you smaller curds; stirring less frequently will give you larger, irregular curds. Continue cooking until the eggs are as soft or as firm as you like them, about 10 to 15 minutes.",
+        "Keep gently stirring until the eggs still look silky, slightly runny and slightly underdone, and then remove from the heat – the heat of the pan will continue to cook the eggs to perfection."
+      ],
+      "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia",
+        "human/gil.arroteia"
+      ],
+      "critic_verdicts": [
+        "accept",
+        "accept",
+        "accept",
+        "accept",
+        "accept"
+      ],
+      "confidences": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "cook eggs over low heat folding slowly",
+        "cook eggs to form soft curds",
+        "Stir eggs with spatula until cooked",
+        "stir eggs gently until slightly underdone"
+      ]
+    },
+    {
+      "node_id": "da0caf3b7f89b65c",
+      "node_type": "Process",
+      "action_phrase": "finish cooking eggs",
+      "canonical_action": "finish_cooking_eggs",
+      "pre_conditions": [
+        {
+          "entity_id": "egg",
+          "physics_state": "coagulating",
+          "k2_label": "coagulating"
+        }
+      ],
+      "post_conditions": [
+        {
+          "entity_id": "egg",
+          "physics_state": "solid",
+          "k2_label": "solid"
+        }
+      ],
+      "timing_constraints": null,
+      "ingredients": [
+        "egg"
+      ],
+      "tools": [
+        "spatula",
+        "pan"
       ],
       "safety_bounds": [
         {
@@ -1851,107 +1278,10 @@
         "recipe_tin_eats"
       ],
       "source_step_indices": [
-        5
-      ],
-      "source_spans": [
-        "Cook for 60 seconds in total until you have a pile of soft, custardy scrambled egg folds (\"curds\") and no raw egg leaking on the edges of the pile."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "52dde1ec50ba9a45",
-      "node_type": "Transfer",
-      "action_phrase": "remove pan from heat_source",
-      "canonical_action": "remove_pan_from_heat_source",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "pan",
-        "heat_source"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "recipe_tin_eats"
-      ],
-      "source_step_indices": [
-        6
-      ],
-      "source_spans": [
-        "Take it off the stove when it's still a bit undercooked for your taste."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "030dd8c401f7cb59",
-      "node_type": "Process",
-      "action_phrase": "finish cooking eggs, then slide eggs onto plate",
-      "canonical_action": "finish_cooking_eggs,_then_slide_eggs_onto_plate",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "plate",
-        "pan",
-        "spatula"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "recipe_tin_eats"
-      ],
-      "source_step_indices": [
         7
       ],
       "source_spans": [
-        "then slide onto hot toasted crusty bread slathered with butter."
+        "Gently push /fold the eggs for another 10 seconds - it will finish cooking with residual pan heat - then slide onto hot toasted crusty bread slathered with butter."
       ],
       "extractor_models": [
         "human/gil.arroteia"
@@ -1962,7 +1292,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "3b0fc0c388d6198d",
@@ -2018,99 +1349,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "f4f379ee4b5ed278",
-      "node_type": "Process",
-      "action_phrase": "Put pan in low heat, melt butter",
-      "canonical_action": "put_pan_in_low_heat,_melt_butter",
-      "pre_conditions": [
-        {
-          "entity_id": "butter",
-          "physics_state": "solid",
-          "k2_label": "solid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "butter",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": {
-        "duration_s": null,
-        "deadline": null
-      },
-      "ingredients": [
-        "butter"
-      ],
-      "tools": [
-        "pan",
-        "heat_source"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "butter_smoke_point",
-          "label": "Butter smoke point",
-          "temperature_c": 150.0,
-          "description": "Unsalted butter smoke point ~150 °C. Clarified butter is higher (~250 °C). Indicates pan is too hot for fat medium.\n",
-          "k2_transition": null,
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "the_kitchn_soft_creamy"
-      ],
-      "source_step_indices": [
-        1
-      ],
-      "source_spans": [
-        "Add 1 teaspoon unsalted butter and let it begin to melt"
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "3110d8f2267f64c2",
@@ -2151,159 +1391,45 @@
         "pepper"
       ],
       "tools": [
-        "whisk"
+        "whisk",
+        "bowl"
       ],
       "safety_bounds": [],
       "source_recipe_ids": [
-        "the_kitchn_soft_creamy"
+        "the_kitchn_soft_creamy",
+        "jamie_oliver",
+        "recipe_tin_eats"
       ],
       "source_step_indices": [
-        3
+        3,
+        2,
+        2
       ],
       "source_spans": [
-        "Whisk 1/4 teaspoon kosher salt and a few grinds of black pepper into the eggs."
+        "Whisk 1/4 teaspoon kosher salt and a few grinds of black pepper into the eggs.",
+        "Add a tiny pinch of sea salt and black pepper, then use a fork to beat them together well.",
+        "Whisk together eggs, milk, salt and pepper."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "ff55fc3aab31f012",
-      "node_type": "Transfer",
-      "action_phrase": "pour eggs in pan",
-      "canonical_action": "pour_eggs_in_pan",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "timing_constraints": null,
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "pan"
-      ],
-      "safety_bounds": [],
-      "source_recipe_ids": [
-        "the_kitchn_soft_creamy"
-      ],
-      "source_step_indices": [
-        4
-      ],
-      "source_spans": [
-        "Pour the eggs into the pan. The eggs will spread out in a thin layer — that's fine."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
-    },
-    {
-      "node_id": "bc27f9794c404ae2",
-      "node_type": "Process",
-      "action_phrase": "Stir eggs with spatula until cooked",
-      "canonical_action": "stir_eggs_with_spatula_until_cooked",
-      "pre_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
-        }
-      ],
-      "post_conditions": [
-        {
-          "entity_id": "egg",
-          "physics_state": "coagulating",
-          "k2_label": "coagulating"
-        }
-      ],
-      "timing_constraints": {
-        "duration_s": 750.0,
-        "deadline": null
-      },
-      "ingredients": [
-        "egg"
-      ],
-      "tools": [
-        "spatula",
-        "heat_source"
-      ],
-      "safety_bounds": [
-        {
-          "bound_id": "coagulation_onset",
-          "label": "Egg coagulation onset",
-          "temperature_c": 62.0,
-          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
-          "k2_transition": "liquid → coagulating",
-          "severity": "suggestion"
-        },
-        {
-          "bound_id": "coagulation_full",
-          "label": "Full egg coagulation",
-          "temperature_c": 70.0,
-          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
-          "k2_transition": "coagulating → solid",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "maillard_onset",
-          "label": "Maillard browning onset",
-          "temperature_c": 140.0,
-          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        },
-        {
-          "bound_id": "syneresis_risk",
-          "label": "Syneresis (weeping) risk",
-          "temperature_c": null,
-          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
-          "k2_transition": "solid → scorched",
-          "severity": "alert"
-        }
-      ],
-      "source_recipe_ids": [
-        "the_kitchn_soft_creamy"
-      ],
-      "source_step_indices": [
-        5
-      ],
-      "source_spans": [
-        "Stir the eggs occasionally with a spatula. At first the eggs will be very liquidy; then you'll notice large, opaque curds starting to form. Eventually, the eggs will no longer run in to fill the gaps when you stir. Frequent stirring will give you smaller curds; stirring less frequently will give you larger, irregular curds. Continue cooking until the eggs are as soft or as firm as you like them, about 10 to 15 minutes."
-      ],
-      "extractor_models": [
-        "human/gil.arroteia"
-      ],
-      "critic_verdicts": [
-        "accept"
-      ],
-      "confidences": [
-        1.0
-      ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "Add salt and black pepper, and whisk together",
+        "whisk eggs with salt and pepper"
+      ]
     },
     {
       "node_id": "5098513b1a4922ed",
@@ -2387,7 +1513,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "43ec9d8da3a7725e",
@@ -2417,40 +1544,44 @@
       ],
       "safety_bounds": [],
       "source_recipe_ids": [
-        "the_kitchn_soft_creamy"
+        "the_kitchn_soft_creamy",
+        "recipe_tin_eats"
       ],
       "source_step_indices": [
+        7,
         7
       ],
       "source_spans": [
-        "Slide the eggs onto a plate and serve."
+        "Slide the eggs onto a plate and serve.",
+        "Gently push /fold the eggs for another 10 seconds - it will finish cooking with residual pan heat - then slide onto hot toasted crusty bread slathered with butter."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "transfer eggs to plate"
+      ]
     },
     {
-      "node_id": "4f8421e0da5a6e59",
+      "node_id": "8c954987ce3a9c3c",
       "node_type": "Transfer",
-      "action_phrase": "spread butter in pan and add eggs",
-      "canonical_action": "spread_butter_in_pan_and_add_eggs",
+      "action_phrase": "spread butter in pan",
+      "canonical_action": "spread_butter_in_pan",
       "pre_conditions": [
         {
           "entity_id": "butter",
           "physics_state": "solid",
           "k2_label": "solid"
-        },
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
         }
       ],
       "post_conditions": [
@@ -2458,41 +1589,89 @@
           "entity_id": "butter",
           "physics_state": "solid",
           "k2_label": "solid"
-        },
-        {
-          "entity_id": "egg",
-          "physics_state": "liquid",
-          "k2_label": "liquid"
         }
       ],
-      "timing_constraints": null,
+      "timing_constraints": {
+        "duration_s": null,
+        "deadline": null
+      },
       "ingredients": [
-        "butter",
-        "egg"
+        "butter"
       ],
       "tools": [
-        "pan"
+        "pan",
+        "heat_source"
       ],
-      "safety_bounds": [],
+      "safety_bounds": [
+        {
+          "bound_id": "coagulation_onset",
+          "label": "Egg coagulation onset",
+          "temperature_c": 62.0,
+          "description": "Egg proteins begin to denature and form a gel network around 62 °C. K2 state transitions from liquid → coagulating at this boundary.\n",
+          "k2_transition": "liquid → coagulating",
+          "severity": "suggestion"
+        },
+        {
+          "bound_id": "coagulation_full",
+          "label": "Full egg coagulation",
+          "temperature_c": 70.0,
+          "description": "Egg proteins fully cross-linked into a firm solid above 70 °C. K2 state transitions from coagulating → solid at this boundary. Irreversible beyond this point.\n",
+          "k2_transition": "coagulating → solid",
+          "severity": "alert"
+        },
+        {
+          "bound_id": "maillard_onset",
+          "label": "Maillard browning onset",
+          "temperature_c": 140.0,
+          "description": "Maillard reaction between reducing sugars and amino acids begins ~140 °C. Produces browning, flavour changes, and aroma compounds. For scrambled eggs: indicates pan temperature is dangerously high.\n",
+          "k2_transition": "solid → scorched",
+          "severity": "alert"
+        },
+        {
+          "bound_id": "butter_smoke_point",
+          "label": "Butter smoke point",
+          "temperature_c": 150.0,
+          "description": "Unsalted butter smoke point ~150 °C. Clarified butter is higher (~250 °C). Indicates pan is too hot for fat medium.\n",
+          "k2_transition": null,
+          "severity": "alert"
+        },
+        {
+          "bound_id": "syneresis_risk",
+          "label": "Syneresis (weeping) risk",
+          "temperature_c": null,
+          "description": "Over-contraction of the protein matrix forces liquid out of curds. Caused by over-heating past full coagulation (70 °C+) or mechanical over-agitation of set curds. Not a single temperature; triggered by continuing to cook past solid state.\n",
+          "k2_transition": "solid → scorched",
+          "severity": "alert"
+        }
+      ],
       "source_recipe_ids": [
-        "tudo_gostoso"
+        "tudo_gostoso",
+        "jamie_oliver"
       ],
       "source_step_indices": [
-        1
+        1,
+        3
       ],
       "source_spans": [
-        "Passe toda a manteiga no fundo de uma frigideira e coloque os ovos sobre a manteiga."
+        "Passe toda a manteiga no fundo de uma frigideira e coloque os ovos sobre a manteiga.",
+        "Put a medium saucepan over a low heat and add the butter."
       ],
       "extractor_models": [
+        "human/gil.arroteia",
         "human/gil.arroteia"
       ],
       "critic_verdicts": [
+        "accept",
         "accept"
       ],
       "confidences": [
+        1.0,
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": [
+        "pan at low heat and add butter"
+      ]
     },
     {
       "node_id": "7952fad4ae166c16",
@@ -2539,7 +1718,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "d4388da8ca4de84f",
@@ -2620,7 +1800,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "a02fb85193f50539",
@@ -2719,7 +1900,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     },
     {
       "node_id": "9b4bf055b17a412d",
@@ -2818,7 +2000,8 @@
       "confidences": [
         1.0
       ],
-      "mean_confidence": 1.0
+      "mean_confidence": 1.0,
+      "variant_phrases": []
     }
   ],
   "edges": [
@@ -2840,14 +2023,14 @@
     },
     {
       "from_node_id": "e27cf2abf02e9360",
-      "to_node_id": "4ae0490781f7b007",
+      "to_node_id": "84af40b7ed299d75",
       "edge_type": "NEXT",
       "source_recipe_id": "continente",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "4ae0490781f7b007",
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "9a685a29fb02eb1a",
       "edge_type": "NEXT",
       "source_recipe_id": "continente",
@@ -2856,30 +2039,38 @@
     },
     {
       "from_node_id": "d2e293604144dd52",
-      "to_node_id": "2ab4f9c314847487",
+      "to_node_id": "3110d8f2267f64c2",
       "edge_type": "NEXT",
       "source_recipe_id": "jamie_oliver",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "2ab4f9c314847487",
-      "to_node_id": "9068a7bbf81fd113",
+      "from_node_id": "3110d8f2267f64c2",
+      "to_node_id": "8c954987ce3a9c3c",
       "edge_type": "NEXT",
       "source_recipe_id": "jamie_oliver",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "9068a7bbf81fd113",
-      "to_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "8c954987ce3a9c3c",
+      "to_node_id": "1263bf16fea7b71c",
       "edge_type": "NEXT",
       "source_recipe_id": "jamie_oliver",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "NEXT",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
       "to_node_id": "6114d44c941598ca",
       "edge_type": "NEXT",
       "source_recipe_id": "jamie_oliver",
@@ -2888,14 +2079,22 @@
     },
     {
       "from_node_id": "6114d44c941598ca",
-      "to_node_id": "88606a2248bc96af",
+      "to_node_id": "84af40b7ed299d75",
       "edge_type": "NEXT",
       "source_recipe_id": "jamie_oliver",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "88606a2248bc96af",
+      "from_node_id": "84af40b7ed299d75",
+      "to_node_id": "cc1369266993ad0b",
+      "edge_type": "NEXT",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "cc1369266993ad0b",
       "to_node_id": "9a685a29fb02eb1a",
       "edge_type": "NEXT",
       "source_recipe_id": "jamie_oliver",
@@ -2903,7 +2102,15 @@
       "properties": {}
     },
     {
-      "from_node_id": "43df46722d682c4a",
+      "from_node_id": "d2e293604144dd52",
+      "to_node_id": "bb302cf65894ddbf",
+      "edge_type": "NEXT",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "bb302cf65894ddbf",
       "to_node_id": "183121ea5bec9a45",
       "edge_type": "NEXT",
       "source_recipe_id": "love_and_lemons",
@@ -2912,14 +2119,22 @@
     },
     {
       "from_node_id": "183121ea5bec9a45",
-      "to_node_id": "7d5c8099b618ce0c",
+      "to_node_id": "ff55fc3aab31f012",
       "edge_type": "NEXT",
       "source_recipe_id": "love_and_lemons",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "7d5c8099b618ce0c",
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "84af40b7ed299d75",
+      "edge_type": "NEXT",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "4940ac5f5a5b14e3",
       "edge_type": "NEXT",
       "source_recipe_id": "love_and_lemons",
@@ -2943,377 +2158,49 @@
       "properties": {}
     },
     {
-      "from_node_id": "06ddcdddb1eb2b9b",
-      "to_node_id": "105b20949cff64ea",
-      "edge_type": "NEXT",
-      "source_recipe_id": "pingo_doce",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "105b20949cff64ea",
-      "to_node_id": "b4af8dc6b3222956",
-      "edge_type": "NEXT",
-      "source_recipe_id": "pingo_doce",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "b4af8dc6b3222956",
-      "to_node_id": "c695e87b0d0d8a88",
-      "edge_type": "NEXT",
-      "source_recipe_id": "pingo_doce",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "c695e87b0d0d8a88",
-      "to_node_id": "fcaa1925a9ba75b8",
-      "edge_type": "NEXT",
-      "source_recipe_id": "pingo_doce",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "e1545c869e5e8626",
-      "to_node_id": "c2157c55a5f6dc9d",
-      "edge_type": "NEXT",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "c2157c55a5f6dc9d",
-      "to_node_id": "16fae1f4998224ea",
-      "edge_type": "NEXT",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "16fae1f4998224ea",
-      "to_node_id": "84af40b7ed299d75",
-      "edge_type": "NEXT",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "52dde1ec50ba9a45",
-      "edge_type": "NEXT",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "52dde1ec50ba9a45",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "NEXT",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "030dd8c401f7cb59",
-      "to_node_id": "3b0fc0c388d6198d",
-      "edge_type": "NEXT",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "f4f379ee4b5ed278",
+      "from_node_id": "d2e293604144dd52",
       "to_node_id": "bb302cf65894ddbf",
       "edge_type": "NEXT",
-      "source_recipe_id": "the_kitchn_soft_creamy",
+      "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "bb302cf65894ddbf",
-      "to_node_id": "3110d8f2267f64c2",
+      "to_node_id": "1263bf16fea7b71c",
       "edge_type": "NEXT",
-      "source_recipe_id": "the_kitchn_soft_creamy",
+      "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "3110d8f2267f64c2",
+      "from_node_id": "1263bf16fea7b71c",
       "to_node_id": "ff55fc3aab31f012",
       "edge_type": "NEXT",
-      "source_recipe_id": "the_kitchn_soft_creamy",
+      "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "ff55fc3aab31f012",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "NEXT",
-      "source_recipe_id": "the_kitchn_soft_creamy",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "bc27f9794c404ae2",
-      "to_node_id": "5098513b1a4922ed",
-      "edge_type": "NEXT",
-      "source_recipe_id": "the_kitchn_soft_creamy",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "5098513b1a4922ed",
-      "to_node_id": "43ec9d8da3a7725e",
-      "edge_type": "NEXT",
-      "source_recipe_id": "the_kitchn_soft_creamy",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "4f8421e0da5a6e59",
-      "to_node_id": "7952fad4ae166c16",
-      "edge_type": "NEXT",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "7952fad4ae166c16",
-      "to_node_id": "d4388da8ca4de84f",
-      "edge_type": "NEXT",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "d4388da8ca4de84f",
-      "to_node_id": "a02fb85193f50539",
-      "edge_type": "NEXT",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "a02fb85193f50539",
-      "to_node_id": "9b4bf055b17a412d",
-      "edge_type": "NEXT",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "9b4bf055b17a412d",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "NEXT",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "bb302cf65894ddbf",
       "to_node_id": "06e700ae3a347844",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "continente",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "bb302cf65894ddbf",
-      "to_node_id": "4ae0490781f7b007",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "continente",
+      "edge_type": "NEXT",
+      "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "06e700ae3a347844",
-      "to_node_id": "4ae0490781f7b007",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "continente",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "4ae0490781f7b007",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "continente",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "d2e293604144dd52",
-      "to_node_id": "2ab4f9c314847487",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "d2e293604144dd52",
-      "to_node_id": "ff39ba95fd733c0d",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "d2e293604144dd52",
-      "to_node_id": "6114d44c941598ca",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "d2e293604144dd52",
-      "to_node_id": "88606a2248bc96af",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "2ab4f9c314847487",
-      "to_node_id": "ff39ba95fd733c0d",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "2ab4f9c314847487",
-      "to_node_id": "6114d44c941598ca",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "2ab4f9c314847487",
-      "to_node_id": "88606a2248bc96af",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "9068a7bbf81fd113",
-      "to_node_id": "ff39ba95fd733c0d",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ff39ba95fd733c0d",
-      "to_node_id": "6114d44c941598ca",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ff39ba95fd733c0d",
-      "to_node_id": "88606a2248bc96af",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "6114d44c941598ca",
-      "to_node_id": "88606a2248bc96af",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "88606a2248bc96af",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "jamie_oliver",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "43df46722d682c4a",
-      "to_node_id": "7d5c8099b618ce0c",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
-      "to_node_id": "4940ac5f5a5b14e3",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
-      "to_node_id": "cc1369266993ad0b",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "4940ac5f5a5b14e3",
-      "to_node_id": "cc1369266993ad0b",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "4940ac5f5a5b14e3",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "cc1369266993ad0b",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "love_and_lemons",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "06ddcdddb1eb2b9b",
-      "to_node_id": "b4af8dc6b3222956",
-      "edge_type": "REQUIRES",
+      "to_node_id": "16fae1f4998224ea",
+      "edge_type": "NEXT",
       "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "06ddcdddb1eb2b9b",
+      "from_node_id": "16fae1f4998224ea",
       "to_node_id": "c695e87b0d0d8a88",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "pingo_doce",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "b4af8dc6b3222956",
-      "to_node_id": "c695e87b0d0d8a88",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
@@ -3321,47 +2208,31 @@
     {
       "from_node_id": "c695e87b0d0d8a88",
       "to_node_id": "fcaa1925a9ba75b8",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "pingo_doce",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "e1545c869e5e8626",
-      "to_node_id": "c2157c55a5f6dc9d",
-      "edge_type": "REQUIRES",
+      "from_node_id": "3110d8f2267f64c2",
+      "to_node_id": "1263bf16fea7b71c",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "e1545c869e5e8626",
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "NEXT",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
       "to_node_id": "16fae1f4998224ea",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "e1545c869e5e8626",
-      "to_node_id": "84af40b7ed299d75",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "c2157c55a5f6dc9d",
-      "to_node_id": "16fae1f4998224ea",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "recipe_tin_eats",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "c2157c55a5f6dc9d",
-      "to_node_id": "84af40b7ed299d75",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
       "weight": 1.0,
       "properties": {}
@@ -3369,63 +2240,55 @@
     {
       "from_node_id": "16fae1f4998224ea",
       "to_node_id": "84af40b7ed299d75",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "52dde1ec50ba9a45",
-      "edge_type": "REQUIRES",
+      "to_node_id": "cc1369266993ad0b",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "REQUIRES",
+      "from_node_id": "cc1369266993ad0b",
+      "to_node_id": "da0caf3b7f89b65c",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "52dde1ec50ba9a45",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "REQUIRES",
+      "from_node_id": "da0caf3b7f89b65c",
+      "to_node_id": "43ec9d8da3a7725e",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "030dd8c401f7cb59",
+      "from_node_id": "43ec9d8da3a7725e",
       "to_node_id": "3b0fc0c388d6198d",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "bb302cf65894ddbf",
+      "edge_type": "NEXT",
+      "source_recipe_id": "the_kitchn_soft_creamy",
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "bb302cf65894ddbf",
       "to_node_id": "3110d8f2267f64c2",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "the_kitchn_soft_creamy",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "bb302cf65894ddbf",
-      "to_node_id": "ff55fc3aab31f012",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "the_kitchn_soft_creamy",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "bb302cf65894ddbf",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "the_kitchn_soft_creamy",
       "weight": 1.0,
       "properties": {}
@@ -3433,31 +2296,23 @@
     {
       "from_node_id": "3110d8f2267f64c2",
       "to_node_id": "ff55fc3aab31f012",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "the_kitchn_soft_creamy",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "3110d8f2267f64c2",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "the_kitchn_soft_creamy",
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "ff55fc3aab31f012",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "REQUIRES",
+      "to_node_id": "84af40b7ed299d75",
+      "edge_type": "NEXT",
       "source_recipe_id": "the_kitchn_soft_creamy",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "bc27f9794c404ae2",
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "5098513b1a4922ed",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "the_kitchn_soft_creamy",
       "weight": 1.0,
       "properties": {}
@@ -3465,31 +2320,23 @@
     {
       "from_node_id": "5098513b1a4922ed",
       "to_node_id": "43ec9d8da3a7725e",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "the_kitchn_soft_creamy",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "4f8421e0da5a6e59",
+      "from_node_id": "8c954987ce3a9c3c",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "NEXT",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
       "to_node_id": "7952fad4ae166c16",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "4f8421e0da5a6e59",
-      "to_node_id": "d4388da8ca4de84f",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "4f8421e0da5a6e59",
-      "to_node_id": "a02fb85193f50539",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "tudo_gostoso",
       "weight": 1.0,
       "properties": {}
@@ -3497,15 +2344,7 @@
     {
       "from_node_id": "7952fad4ae166c16",
       "to_node_id": "d4388da8ca4de84f",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "7952fad4ae166c16",
-      "to_node_id": "a02fb85193f50539",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "tudo_gostoso",
       "weight": 1.0,
       "properties": {}
@@ -3513,7 +2352,7 @@
     {
       "from_node_id": "d4388da8ca4de84f",
       "to_node_id": "a02fb85193f50539",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "tudo_gostoso",
       "weight": 1.0,
       "properties": {}
@@ -3521,15 +2360,7 @@
     {
       "from_node_id": "a02fb85193f50539",
       "to_node_id": "9b4bf055b17a412d",
-      "edge_type": "REQUIRES",
-      "source_recipe_id": "tudo_gostoso",
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "a02fb85193f50539",
-      "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "tudo_gostoso",
       "weight": 1.0,
       "properties": {}
@@ -3537,13 +2368,431 @@
     {
       "from_node_id": "9b4bf055b17a412d",
       "to_node_id": "9a685a29fb02eb1a",
-      "edge_type": "REQUIRES",
+      "edge_type": "NEXT",
       "source_recipe_id": "tudo_gostoso",
       "weight": 1.0,
       "properties": {}
     },
     {
-      "from_node_id": "4ae0490781f7b007",
+      "from_node_id": "84af40b7ed299d75",
+      "to_node_id": "9a685a29fb02eb1a",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "continente",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "d2e293604144dd52",
+      "to_node_id": "3110d8f2267f64c2",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "crack_before_mix",
+        "reason": "The eggs must be out of the shell before they can be beaten."
+      }
+    },
+    {
+      "from_node_id": "d2e293604144dd52",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "crack_before_pan",
+        "reason": "The eggs must be out of the shell before they go into the pan."
+      }
+    },
+    {
+      "from_node_id": "8c954987ce3a9c3c",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "fat_before_eggs",
+        "reason": "The fat coats the pan before the eggs go in, so the eggs do not stick and scorch."
+      }
+    },
+    {
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "fat_before_eggs",
+        "reason": "The fat coats the pan before the eggs go in, so the eggs do not stick and scorch."
+      }
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "6114d44c941598ca",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "eggs_in_pan_before_cook",
+        "reason": "The eggs can only cook once they are in the pan."
+      }
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "84af40b7ed299d75",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "eggs_in_pan_before_cook",
+        "reason": "The eggs can only cook once they are in the pan."
+      }
+    },
+    {
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "6114d44c941598ca",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "84af40b7ed299d75",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "6114d44c941598ca",
+      "to_node_id": "cc1369266993ad0b",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_removing",
+        "reason": "The pan comes off the heat once the eggs have cooked on it."
+      }
+    },
+    {
+      "from_node_id": "84af40b7ed299d75",
+      "to_node_id": "cc1369266993ad0b",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_removing",
+        "reason": "The pan comes off the heat once the eggs have cooked on it."
+      }
+    },
+    {
+      "from_node_id": "6114d44c941598ca",
+      "to_node_id": "9a685a29fb02eb1a",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "jamie_oliver",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "d2e293604144dd52",
+      "to_node_id": "bb302cf65894ddbf",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "crack_before_mix",
+        "reason": "The eggs must be out of the shell before they can be beaten."
+      }
+    },
+    {
+      "from_node_id": "183121ea5bec9a45",
+      "to_node_id": "ff55fc3aab31f012",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "fat_before_eggs",
+        "reason": "The fat coats the pan before the eggs go in, so the eggs do not stick and scorch."
+      }
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "4940ac5f5a5b14e3",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "eggs_in_pan_before_cook",
+        "reason": "The eggs can only cook once they are in the pan."
+      }
+    },
+    {
+      "from_node_id": "183121ea5bec9a45",
+      "to_node_id": "84af40b7ed299d75",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "183121ea5bec9a45",
+      "to_node_id": "4940ac5f5a5b14e3",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "4940ac5f5a5b14e3",
+      "to_node_id": "cc1369266993ad0b",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_removing",
+        "reason": "The pan comes off the heat once the eggs have cooked on it."
+      }
+    },
+    {
+      "from_node_id": "4940ac5f5a5b14e3",
+      "to_node_id": "9a685a29fb02eb1a",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "love_and_lemons",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "16fae1f4998224ea",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "pingo_doce",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "eggs_in_pan_before_cook",
+        "reason": "The eggs can only cook once they are in the pan."
+      }
+    },
+    {
+      "from_node_id": "1263bf16fea7b71c",
+      "to_node_id": "16fae1f4998224ea",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "pingo_doce",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "16fae1f4998224ea",
+      "to_node_id": "c695e87b0d0d8a88",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "pingo_doce",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_removing",
+        "reason": "The pan comes off the heat once the eggs have cooked on it."
+      }
+    },
+    {
+      "from_node_id": "16fae1f4998224ea",
+      "to_node_id": "fcaa1925a9ba75b8",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "pingo_doce",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "16fae1f4998224ea",
+      "to_node_id": "cc1369266993ad0b",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_removing",
+        "reason": "The pan comes off the heat once the eggs have cooked on it."
+      }
+    },
+    {
+      "from_node_id": "cc1369266993ad0b",
+      "to_node_id": "da0caf3b7f89b65c",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "residual_heat_after_removing",
+        "reason": "Off the heat, the heat stored in the pan keeps cooking the eggs."
+      }
+    },
+    {
+      "from_node_id": "16fae1f4998224ea",
+      "to_node_id": "43ec9d8da3a7725e",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "16fae1f4998224ea",
+      "to_node_id": "3b0fc0c388d6198d",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "84af40b7ed299d75",
+      "to_node_id": "43ec9d8da3a7725e",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "84af40b7ed299d75",
+      "to_node_id": "3b0fc0c388d6198d",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "da0caf3b7f89b65c",
+      "to_node_id": "43ec9d8da3a7725e",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "da0caf3b7f89b65c",
+      "to_node_id": "3b0fc0c388d6198d",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "recipe_tin_eats",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "84af40b7ed299d75",
+      "to_node_id": "5098513b1a4922ed",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "the_kitchn_soft_creamy",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_removing",
+        "reason": "The pan comes off the heat once the eggs have cooked on it."
+      }
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "a02fb85193f50539",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "eggs_in_pan_before_cook",
+        "reason": "The eggs can only cook once they are in the pan."
+      }
+    },
+    {
+      "from_node_id": "ff55fc3aab31f012",
+      "to_node_id": "9b4bf055b17a412d",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "eggs_in_pan_before_cook",
+        "reason": "The eggs can only cook once they are in the pan."
+      }
+    },
+    {
+      "from_node_id": "d4388da8ca4de84f",
+      "to_node_id": "a02fb85193f50539",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "d4388da8ca4de84f",
+      "to_node_id": "9b4bf055b17a412d",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "heat_before_cook",
+        "reason": "The pan must be on the heat for the eggs to cook."
+      }
+    },
+    {
+      "from_node_id": "a02fb85193f50539",
+      "to_node_id": "9a685a29fb02eb1a",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "9b4bf055b17a412d",
+      "to_node_id": "9a685a29fb02eb1a",
+      "edge_type": "REQUIRES",
+      "source_recipe_id": "tudo_gostoso",
+      "weight": 1.0,
+      "properties": {
+        "rule_id": "cook_before_plate",
+        "reason": "The eggs are plated once they reach the goal state (coagulating or solid)."
+      }
+    },
+    {
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "bound_coagulation_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3556,7 +2805,7 @@
       }
     },
     {
-      "from_node_id": "4ae0490781f7b007",
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "bound_coagulation_full",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3569,7 +2818,7 @@
       }
     },
     {
-      "from_node_id": "4ae0490781f7b007",
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "bound_maillard_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3582,7 +2831,7 @@
       }
     },
     {
-      "from_node_id": "4ae0490781f7b007",
+      "from_node_id": "84af40b7ed299d75",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3595,7 +2844,7 @@
       }
     },
     {
-      "from_node_id": "9068a7bbf81fd113",
+      "from_node_id": "8c954987ce3a9c3c",
       "to_node_id": "bound_coagulation_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3608,7 +2857,7 @@
       }
     },
     {
-      "from_node_id": "9068a7bbf81fd113",
+      "from_node_id": "8c954987ce3a9c3c",
       "to_node_id": "bound_coagulation_full",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3621,7 +2870,7 @@
       }
     },
     {
-      "from_node_id": "9068a7bbf81fd113",
+      "from_node_id": "8c954987ce3a9c3c",
       "to_node_id": "bound_maillard_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3634,7 +2883,7 @@
       }
     },
     {
-      "from_node_id": "9068a7bbf81fd113",
+      "from_node_id": "8c954987ce3a9c3c",
       "to_node_id": "bound_butter_smoke_point",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3647,7 +2896,7 @@
       }
     },
     {
-      "from_node_id": "9068a7bbf81fd113",
+      "from_node_id": "8c954987ce3a9c3c",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3660,7 +2909,7 @@
       }
     },
     {
-      "from_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "1263bf16fea7b71c",
       "to_node_id": "bound_coagulation_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3673,7 +2922,7 @@
       }
     },
     {
-      "from_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "1263bf16fea7b71c",
       "to_node_id": "bound_coagulation_full",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3686,7 +2935,7 @@
       }
     },
     {
-      "from_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "1263bf16fea7b71c",
       "to_node_id": "bound_maillard_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3699,7 +2948,7 @@
       }
     },
     {
-      "from_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "1263bf16fea7b71c",
       "to_node_id": "bound_butter_smoke_point",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3712,7 +2961,7 @@
       }
     },
     {
-      "from_node_id": "ff39ba95fd733c0d",
+      "from_node_id": "1263bf16fea7b71c",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3778,58 +3027,6 @@
     },
     {
       "from_node_id": "6114d44c941598ca",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "88606a2248bc96af",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "88606a2248bc96af",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "88606a2248bc96af",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "88606a2248bc96af",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -3895,58 +3092,6 @@
     },
     {
       "from_node_id": "183121ea5bec9a45",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "7d5c8099b618ce0c",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4011,7 +3156,7 @@
       }
     },
     {
-      "from_node_id": "105b20949cff64ea",
+      "from_node_id": "16fae1f4998224ea",
       "to_node_id": "bound_coagulation_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4024,7 +3169,7 @@
       }
     },
     {
-      "from_node_id": "105b20949cff64ea",
+      "from_node_id": "16fae1f4998224ea",
       "to_node_id": "bound_coagulation_full",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4037,7 +3182,7 @@
       }
     },
     {
-      "from_node_id": "105b20949cff64ea",
+      "from_node_id": "16fae1f4998224ea",
       "to_node_id": "bound_maillard_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4050,72 +3195,7 @@
       }
     },
     {
-      "from_node_id": "105b20949cff64ea",
-      "to_node_id": "bound_butter_smoke_point",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "butter_smoke_point",
-        "temperature_c": 150.0,
-        "severity": "alert",
-        "k2_transition": null
-      }
-    },
-    {
-      "from_node_id": "105b20949cff64ea",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "b4af8dc6b3222956",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "b4af8dc6b3222956",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "b4af8dc6b3222956",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "b4af8dc6b3222956",
+      "from_node_id": "16fae1f4998224ea",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4180,7 +3260,7 @@
       }
     },
     {
-      "from_node_id": "c2157c55a5f6dc9d",
+      "from_node_id": "da0caf3b7f89b65c",
       "to_node_id": "bound_coagulation_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4193,7 +3273,7 @@
       }
     },
     {
-      "from_node_id": "c2157c55a5f6dc9d",
+      "from_node_id": "da0caf3b7f89b65c",
       "to_node_id": "bound_coagulation_full",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4206,7 +3286,7 @@
       }
     },
     {
-      "from_node_id": "c2157c55a5f6dc9d",
+      "from_node_id": "da0caf3b7f89b65c",
       "to_node_id": "bound_maillard_onset",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4219,241 +3299,7 @@
       }
     },
     {
-      "from_node_id": "c2157c55a5f6dc9d",
-      "to_node_id": "bound_butter_smoke_point",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "butter_smoke_point",
-        "temperature_c": 150.0,
-        "severity": "alert",
-        "k2_transition": null
-      }
-    },
-    {
-      "from_node_id": "c2157c55a5f6dc9d",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "16fae1f4998224ea",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "16fae1f4998224ea",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "16fae1f4998224ea",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "16fae1f4998224ea",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "84af40b7ed299d75",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "f4f379ee4b5ed278",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "f4f379ee4b5ed278",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "f4f379ee4b5ed278",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "f4f379ee4b5ed278",
-      "to_node_id": "bound_butter_smoke_point",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "butter_smoke_point",
-        "temperature_c": 150.0,
-        "severity": "alert",
-        "k2_transition": null
-      }
-    },
-    {
-      "from_node_id": "f4f379ee4b5ed278",
-      "to_node_id": "bound_syneresis_risk",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "syneresis_risk",
-        "temperature_c": null,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "bc27f9794c404ae2",
-      "to_node_id": "bound_coagulation_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_onset",
-        "temperature_c": 62.0,
-        "severity": "suggestion",
-        "k2_transition": "liquid → coagulating"
-      }
-    },
-    {
-      "from_node_id": "bc27f9794c404ae2",
-      "to_node_id": "bound_coagulation_full",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "coagulation_full",
-        "temperature_c": 70.0,
-        "severity": "alert",
-        "k2_transition": "coagulating → solid"
-      }
-    },
-    {
-      "from_node_id": "bc27f9794c404ae2",
-      "to_node_id": "bound_maillard_onset",
-      "edge_type": "HAS_SAFETY_BOUND",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {
-        "bound_id": "maillard_onset",
-        "temperature_c": 140.0,
-        "severity": "alert",
-        "k2_transition": "solid → scorched"
-      }
-    },
-    {
-      "from_node_id": "bc27f9794c404ae2",
+      "from_node_id": "da0caf3b7f89b65c",
       "to_node_id": "bound_syneresis_risk",
       "edge_type": "HAS_SAFETY_BOUND",
       "source_recipe_id": null,
@@ -4773,7 +3619,7 @@
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "4ae0490781f7b007",
+      "to_node_id": "84af40b7ed299d75",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4781,7 +3627,7 @@
     },
     {
       "from_node_id": "tool_pan",
-      "to_node_id": "4ae0490781f7b007",
+      "to_node_id": "84af40b7ed299d75",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4789,7 +3635,7 @@
     },
     {
       "from_node_id": "tool_heat_source",
-      "to_node_id": "4ae0490781f7b007",
+      "to_node_id": "84af40b7ed299d75",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4797,7 +3643,7 @@
     },
     {
       "from_node_id": "tool_spatula",
-      "to_node_id": "4ae0490781f7b007",
+      "to_node_id": "84af40b7ed299d75",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4837,7 +3683,7 @@
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "2ab4f9c314847487",
+      "to_node_id": "3110d8f2267f64c2",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4845,7 +3691,7 @@
     },
     {
       "from_node_id": "ingredient_salt",
-      "to_node_id": "2ab4f9c314847487",
+      "to_node_id": "3110d8f2267f64c2",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4853,7 +3699,7 @@
     },
     {
       "from_node_id": "ingredient_pepper",
-      "to_node_id": "2ab4f9c314847487",
+      "to_node_id": "3110d8f2267f64c2",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4861,7 +3707,7 @@
     },
     {
       "from_node_id": "tool_bowl",
-      "to_node_id": "2ab4f9c314847487",
+      "to_node_id": "3110d8f2267f64c2",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4869,7 +3715,7 @@
     },
     {
       "from_node_id": "tool_whisk",
-      "to_node_id": "2ab4f9c314847487",
+      "to_node_id": "3110d8f2267f64c2",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4877,7 +3723,7 @@
     },
     {
       "from_node_id": "ingredient_butter",
-      "to_node_id": "9068a7bbf81fd113",
+      "to_node_id": "8c954987ce3a9c3c",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4885,7 +3731,7 @@
     },
     {
       "from_node_id": "tool_pan",
-      "to_node_id": "9068a7bbf81fd113",
+      "to_node_id": "8c954987ce3a9c3c",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4893,7 +3739,7 @@
     },
     {
       "from_node_id": "tool_heat_source",
-      "to_node_id": "9068a7bbf81fd113",
+      "to_node_id": "8c954987ce3a9c3c",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4901,15 +3747,31 @@
     },
     {
       "from_node_id": "ingredient_butter",
-      "to_node_id": "ff39ba95fd733c0d",
+      "to_node_id": "1263bf16fea7b71c",
       "edge_type": "INGREDIENT_OF",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "tool_pan",
+      "to_node_id": "1263bf16fea7b71c",
+      "edge_type": "USES_TOOL",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "tool_heat_source",
+      "to_node_id": "1263bf16fea7b71c",
+      "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
       "properties": {}
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "ff39ba95fd733c0d",
+      "to_node_id": "ff55fc3aab31f012",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4917,15 +3779,7 @@
     },
     {
       "from_node_id": "tool_pan",
-      "to_node_id": "ff39ba95fd733c0d",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "ff39ba95fd733c0d",
+      "to_node_id": "ff55fc3aab31f012",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4965,7 +3819,7 @@
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "88606a2248bc96af",
+      "to_node_id": "cc1369266993ad0b",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4973,7 +3827,7 @@
     },
     {
       "from_node_id": "tool_pan",
-      "to_node_id": "88606a2248bc96af",
+      "to_node_id": "cc1369266993ad0b",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -4981,31 +3835,7 @@
     },
     {
       "from_node_id": "tool_heat_source",
-      "to_node_id": "88606a2248bc96af",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "43df46722d682c4a",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_bowl",
-      "to_node_id": "43df46722d682c4a",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_whisk",
-      "to_node_id": "43df46722d682c4a",
+      "to_node_id": "cc1369266993ad0b",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5045,38 +3875,6 @@
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "7d5c8099b618ce0c",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_spatula",
-      "to_node_id": "7d5c8099b618ce0c",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "7d5c8099b618ce0c",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "7d5c8099b618ce0c",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
       "to_node_id": "4940ac5f5a5b14e3",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
@@ -5109,87 +3907,7 @@
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "cc1369266993ad0b",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "cc1369266993ad0b",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "cc1369266993ad0b",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "06ddcdddb1eb2b9b",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_bowl",
-      "to_node_id": "06ddcdddb1eb2b9b",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_whisk",
-      "to_node_id": "06ddcdddb1eb2b9b",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_butter",
-      "to_node_id": "105b20949cff64ea",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "105b20949cff64ea",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "105b20949cff64ea",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "b4af8dc6b3222956",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_salt",
-      "to_node_id": "b4af8dc6b3222956",
+      "to_node_id": "16fae1f4998224ea",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5197,7 +3915,7 @@
     },
     {
       "from_node_id": "tool_spatula",
-      "to_node_id": "b4af8dc6b3222956",
+      "to_node_id": "16fae1f4998224ea",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5205,7 +3923,7 @@
     },
     {
       "from_node_id": "tool_heat_source",
-      "to_node_id": "b4af8dc6b3222956",
+      "to_node_id": "16fae1f4998224ea",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5260,64 +3978,8 @@
       "properties": {}
     },
     {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "e1545c869e5e8626",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_salt",
-      "to_node_id": "e1545c869e5e8626",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_pepper",
-      "to_node_id": "e1545c869e5e8626",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_whisk",
-      "to_node_id": "e1545c869e5e8626",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "c2157c55a5f6dc9d",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_butter",
-      "to_node_id": "c2157c55a5f6dc9d",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
       "from_node_id": "tool_pan",
-      "to_node_id": "c2157c55a5f6dc9d",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "c2157c55a5f6dc9d",
+      "to_node_id": "16fae1f4998224ea",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5325,7 +3987,7 @@
     },
     {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "16fae1f4998224ea",
+      "to_node_id": "da0caf3b7f89b65c",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5333,7 +3995,7 @@
     },
     {
       "from_node_id": "tool_spatula",
-      "to_node_id": "16fae1f4998224ea",
+      "to_node_id": "da0caf3b7f89b65c",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5341,239 +4003,7 @@
     },
     {
       "from_node_id": "tool_pan",
-      "to_node_id": "16fae1f4998224ea",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "16fae1f4998224ea",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "84af40b7ed299d75",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "84af40b7ed299d75",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "84af40b7ed299d75",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "52dde1ec50ba9a45",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "52dde1ec50ba9a45",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "52dde1ec50ba9a45",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_plate",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_spatula",
-      "to_node_id": "030dd8c401f7cb59",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "3b0fc0c388d6198d",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_pepper",
-      "to_node_id": "3b0fc0c388d6198d",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_plate",
-      "to_node_id": "3b0fc0c388d6198d",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_butter",
-      "to_node_id": "f4f379ee4b5ed278",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "f4f379ee4b5ed278",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "f4f379ee4b5ed278",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "3110d8f2267f64c2",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_salt",
-      "to_node_id": "3110d8f2267f64c2",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_pepper",
-      "to_node_id": "3110d8f2267f64c2",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_whisk",
-      "to_node_id": "3110d8f2267f64c2",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "ff55fc3aab31f012",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "ff55fc3aab31f012",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_spatula",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "bc27f9794c404ae2",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "ingredient_egg",
-      "to_node_id": "5098513b1a4922ed",
-      "edge_type": "INGREDIENT_OF",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_pan",
-      "to_node_id": "5098513b1a4922ed",
-      "edge_type": "USES_TOOL",
-      "source_recipe_id": null,
-      "weight": 1.0,
-      "properties": {}
-    },
-    {
-      "from_node_id": "tool_heat_source",
-      "to_node_id": "5098513b1a4922ed",
+      "to_node_id": "da0caf3b7f89b65c",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5596,16 +4026,32 @@
       "properties": {}
     },
     {
-      "from_node_id": "ingredient_butter",
-      "to_node_id": "4f8421e0da5a6e59",
+      "from_node_id": "ingredient_egg",
+      "to_node_id": "3b0fc0c388d6198d",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
       "properties": {}
     },
     {
+      "from_node_id": "ingredient_pepper",
+      "to_node_id": "3b0fc0c388d6198d",
+      "edge_type": "INGREDIENT_OF",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "tool_plate",
+      "to_node_id": "3b0fc0c388d6198d",
+      "edge_type": "USES_TOOL",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
       "from_node_id": "ingredient_egg",
-      "to_node_id": "4f8421e0da5a6e59",
+      "to_node_id": "5098513b1a4922ed",
       "edge_type": "INGREDIENT_OF",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5613,7 +4059,15 @@
     },
     {
       "from_node_id": "tool_pan",
-      "to_node_id": "4f8421e0da5a6e59",
+      "to_node_id": "5098513b1a4922ed",
+      "edge_type": "USES_TOOL",
+      "source_recipe_id": null,
+      "weight": 1.0,
+      "properties": {}
+    },
+    {
+      "from_node_id": "tool_heat_source",
+      "to_node_id": "5098513b1a4922ed",
       "edge_type": "USES_TOOL",
       "source_recipe_id": null,
       "weight": 1.0,
@@ -5813,5 +4267,305 @@
     "recipe_tin_eats",
     "the_kitchn_soft_creamy",
     "tudo_gostoso"
+  ],
+  "preference_points": [
+    {
+      "id": "seasoning_time",
+      "kind": "structural",
+      "description": "When the salt and pepper go in.",
+      "alternatives": [
+        {
+          "choice": "in the bowl, with the beating",
+          "recipes": [
+            "continente",
+            "jamie_oliver",
+            "recipe_tin_eats",
+            "the_kitchn_soft_creamy"
+          ],
+          "outcome": null,
+          "source": null
+        },
+        {
+          "choice": "in the pan, with the eggs",
+          "recipes": [
+            "pingo_doce"
+          ],
+          "outcome": null,
+          "source": null
+        },
+        {
+          "choice": "at the end, on the cooked eggs",
+          "recipes": [
+            "love_and_lemons",
+            "pingo_doce",
+            "recipe_tin_eats"
+          ],
+          "outcome": null,
+          "source": {
+            "recipe_id": "love_and_lemons",
+            "step": 5,
+            "quote": "Season to taste with salt and pepper"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cooking_fat",
+      "kind": "structural",
+      "description": "Which fat greases the pan.",
+      "alternatives": [
+        {
+          "choice": "butter",
+          "recipes": [
+            "jamie_oliver",
+            "pingo_doce",
+            "recipe_tin_eats",
+            "the_kitchn_soft_creamy",
+            "tudo_gostoso"
+          ],
+          "outcome": null,
+          "source": null
+        },
+        {
+          "choice": "olive oil",
+          "recipes": [
+            "continente"
+          ],
+          "outcome": null,
+          "source": null
+        },
+        {
+          "choice": "either",
+          "recipes": [
+            "love_and_lemons"
+          ],
+          "outcome": null,
+          "source": {
+            "recipe_id": "love_and_lemons",
+            "step": 2,
+            "quote": "Brush a small nonstick skillet with olive oil, or melt a little butter"
+          }
+        }
+      ]
+    },
+    {
+      "id": "butter_while_whisking",
+      "kind": "structural",
+      "description": "Whether the butter melts before the eggs are beaten or at the same time.",
+      "alternatives": [
+        {
+          "choice": "melt the butter while beating the eggs",
+          "recipes": [
+            "the_kitchn_soft_creamy"
+          ],
+          "outcome": "The two steps overlap, so the pan is ready when the eggs are.",
+          "source": {
+            "recipe_id": "the_kitchn_soft_creamy",
+            "step": 1,
+            "quote": "let it begin to melt while you whisk the eggs"
+          }
+        },
+        {
+          "choice": "beat the eggs first, then melt the butter",
+          "recipes": [
+            "jamie_oliver",
+            "love_and_lemons",
+            "pingo_doce",
+            "recipe_tin_eats"
+          ],
+          "outcome": null,
+          "source": null
+        }
+      ]
+    },
+    {
+      "id": "where_eggs_are_mixed",
+      "kind": "structural",
+      "description": "Whether the eggs are beaten in a bowl or broken and mixed in the pan.",
+      "alternatives": [
+        {
+          "choice": "beaten in a bowl before the pan",
+          "recipes": [
+            "continente",
+            "jamie_oliver",
+            "love_and_lemons",
+            "pingo_doce",
+            "recipe_tin_eats",
+            "the_kitchn_soft_creamy"
+          ],
+          "outcome": null,
+          "source": null
+        },
+        {
+          "choice": "cracked onto the butter, yolks broken in the pan, white set first, mixed late",
+          "recipes": [
+            "tudo_gostoso"
+          ],
+          "outcome": "The white cooks before the yolk.",
+          "source": {
+            "recipe_id": "tudo_gostoso",
+            "step": 4,
+            "quote": "A clara vai cozinhar primeiro que a gema."
+          }
+        }
+      ]
+    },
+    {
+      "id": "pan_start",
+      "kind": "structural",
+      "description": "Whether the eggs go into a hot pan or the pan heats with the eggs in it.",
+      "alternatives": [
+        {
+          "choice": "fat heated first, eggs into a hot pan",
+          "recipes": [
+            "jamie_oliver",
+            "love_and_lemons",
+            "pingo_doce",
+            "recipe_tin_eats",
+            "the_kitchn_soft_creamy"
+          ],
+          "outcome": null,
+          "source": null
+        },
+        {
+          "choice": "cold start, pan goes on the heat with the eggs in it",
+          "recipes": [
+            "tudo_gostoso"
+          ],
+          "outcome": null,
+          "source": {
+            "recipe_id": "tudo_gostoso",
+            "step": 3,
+            "quote": "Só depois deste passo, leve a frigideira para o fogo com fogo baixo."
+          }
+        }
+      ]
+    },
+    {
+      "id": "agitation",
+      "kind": "parametric",
+      "description": "How often the eggs are stirred while they cook.",
+      "alternatives": [
+        {
+          "choice": "stirred often or without stopping",
+          "recipes": [
+            "pingo_doce",
+            "love_and_lemons"
+          ],
+          "outcome": "Smaller curds.",
+          "source": {
+            "recipe_id": "the_kitchn_soft_creamy",
+            "step": 5,
+            "quote": "Frequent stirring will give you smaller curds"
+          }
+        },
+        {
+          "choice": "stirred occasionally",
+          "recipes": [
+            "the_kitchn_soft_creamy"
+          ],
+          "outcome": "Larger, irregular curds.",
+          "source": {
+            "recipe_id": "the_kitchn_soft_creamy",
+            "step": 5,
+            "quote": "stirring less frequently will give you larger, irregular curds"
+          }
+        }
+      ]
+    },
+    {
+      "id": "heat_and_time",
+      "kind": "parametric",
+      "description": "Heat level and cooking time, which are coupled (Notes/10, A.4): a time that is right at low heat scorches the eggs at higher heat.\n",
+      "alternatives": [
+        {
+          "choice": "low heat, long cook",
+          "recipes": [
+            "continente",
+            "jamie_oliver",
+            "the_kitchn_soft_creamy",
+            "tudo_gostoso"
+          ],
+          "outcome": null,
+          "source": {
+            "recipe_id": "the_kitchn_soft_creamy",
+            "step": 5,
+            "quote": "Continue cooking until the eggs are as soft or as firm as you like them, about 10 to 15 minutes."
+          }
+        },
+        {
+          "choice": "medium-low heat",
+          "recipes": [
+            "pingo_doce",
+            "love_and_lemons"
+          ],
+          "outcome": null,
+          "source": {
+            "recipe_id": "pingo_doce",
+            "step": 2,
+            "quote": "temperatura média-baixa"
+          }
+        },
+        {
+          "choice": "medium heat, short cook",
+          "recipes": [
+            "recipe_tin_eats"
+          ],
+          "outcome": "Soft, custardy folds in about a minute.",
+          "source": {
+            "recipe_id": "recipe_tin_eats",
+            "step": 5,
+            "quote": "Cook for 60 seconds in total until you have a pile of soft, custardy scrambled egg folds"
+          }
+        }
+      ]
+    },
+    {
+      "id": "doneness",
+      "kind": "structural",
+      "description": "How set the eggs are when they leave the heat, and whether they finish off it.",
+      "alternatives": [
+        {
+          "choice": "off the heat slightly underdone, finished by the pan's heat",
+          "recipes": [
+            "jamie_oliver",
+            "love_and_lemons",
+            "recipe_tin_eats",
+            "the_kitchn_soft_creamy"
+          ],
+          "outcome": "The eggs reach the wanted texture off the heat instead of overcooking on it.",
+          "source": {
+            "recipe_id": "the_kitchn_soft_creamy",
+            "step": 6,
+            "quote": "The eggs will continue cooking for a minute or two off the heat, so remove them when they're almost — but not quite — as cooked as you like them."
+          }
+        },
+        {
+          "choice": "off the heat at the wanted texture, moist and creamy or firmer",
+          "recipes": [
+            "pingo_doce",
+            "continente"
+          ],
+          "outcome": "The cook chooses between moist and creamy or firmer eggs.",
+          "source": {
+            "recipe_id": "pingo_doce",
+            "step": 4,
+            "quote": "Retire do lume quando atingirem a consistência desejada: húmidos e cremosos ou mais firmes."
+          }
+        },
+        {
+          "choice": "kept moist, not overcooked",
+          "recipes": [
+            "tudo_gostoso"
+          ],
+          "outcome": "Moist, creamy eggs.",
+          "source": {
+            "recipe_id": "tudo_gostoso",
+            "step": 6,
+            "quote": "Não frite demais, pois o mexido deve ficar úmido e cremoso."
+          }
+        }
+      ]
+    }
   ]
 }

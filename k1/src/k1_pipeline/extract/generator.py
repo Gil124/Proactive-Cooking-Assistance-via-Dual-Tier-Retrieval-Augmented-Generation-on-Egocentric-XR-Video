@@ -1,6 +1,7 @@
 """
 L2 Extract — Generator
 Extracts structured K1 nodes from individual recipe steps using a constrained LLM.
+A step is split into atomic actions, one node each, in order (rule 9 below).
 All output is grounded via source_span (verbatim quote).
 """
 
@@ -14,7 +15,15 @@ from rich.console import Console
 
 from k1_pipeline.config_loader import get_k2_compile_map, load_models, load_physics_bounds
 from k1_pipeline.extract.llm_client import GENERATOR_MODELS, call_with_fallback
-from k1_pipeline.models import CanonicalRecipe, ExtractedNode, K2Label, NodeType, StateCondition
+from k1_pipeline.models import (
+    CanonicalRecipe,
+    ExtractedNode,
+    ExtractedStep,
+    K2Label,
+    NodeType,
+    StateCondition,
+    artifact_stem,
+)
 from k1_pipeline.scope import scope_prompt_block
 
 console = Console()
@@ -38,7 +47,8 @@ _K2_MAP = get_k2_compile_map()
 
 _SYSTEM_PROMPT = f"""\
 You are an expert knowledge graph extraction agent for cooking recipes.
-Your task is to extract a single K1 graph node from one recipe step.
+Your task is to extract K1 graph nodes from one recipe step: one node per
+atomic action, in the order the step performs them.
 
 == ONTOLOGY (frozen — do not invent new types) ==
 node_type values:
@@ -83,6 +93,21 @@ OR match one of these known bounds:
    bread, adding a garnish or a sauce), set in_scope to false. Still give
    node_type, a short action_phrase, and source_span; conditions may be empty.
    Otherwise in_scope is true.
+9. ATOMIC STEPS. One node is one action: one verb applied to one thing, with one
+   visible result. When a step does several actions, return one node per action,
+   in order; several small nodes are better than one large one.
+   "Crack the eggs into a bowl and whisk them" -> "crack eggs into bowl", "whisk eggs".
+   "Melt the butter, then pour in the eggs" -> "melt butter", "pour eggs into pan".
+   "Stir until just set, then remove from the heat" -> "stir eggs until just set",
+   "remove pan from heat".
+   Do NOT split:
+   - manner, heat level, duration or an end point of the same action:
+     "cook over low heat, folding slowly, until soft curds form" is one node.
+   - seasoning added while doing the same action: "whisk the eggs with salt and
+     pepper" is one node.
+   Each node needs its own pre_conditions and post_conditions: a later node starts
+   from the state the earlier one leaves. Each node's source_span quotes the part
+   of the step it comes from.
 """
 
 
@@ -98,8 +123,8 @@ def _build_prompt(
         f"Variant: {recipe.variant_label}\n"
         f"Ingredients: {ingredient_list}\n\n"
         f"Step {step_number}: \"{step.text}\"\n\n"
-        "Extract the K1 node for this step. "
-        "source_span must be copied verbatim from the step text above."
+        "Extract the K1 nodes for this step, one per atomic action, in order. "
+        "Each source_span must be copied verbatim from the step text above."
     )
     if revision_hint:
         prompt += f"\n\nCritic revision note (fix these issues): {revision_hint}"
@@ -151,76 +176,92 @@ def compile_k2_label(physics_state: str) -> K2Label:
     return K2Label.liquid  # safest default for eggs
 
 
-def extract_node(
+def _step_files(artifact_dir: Path, recipe_id: str, step_number: int) -> list[Path]:
+    """The step's cached artifacts in sub-step order, stopping at the first gap."""
+    files = []
+    sub = 1
+    while (path := artifact_dir / f"{artifact_stem(recipe_id, step_number, sub)}.gen.json").exists():
+        files.append(path)
+        sub += 1
+    return files
+
+
+def clear_step(artifact_dir: Path, recipe_id: str, step_number: int) -> None:
+    """Delete a step's cached artifacts so the generator runs again."""
+    for path in _step_files(artifact_dir, recipe_id, step_number):
+        path.unlink()
+
+
+def _compile_conditions(conditions: list[StateCondition]) -> list[StateCondition]:
+    # Re-compile k2_labels via compile map (LLM may have used free text)
+    return [
+        StateCondition(
+            entity_id=c.entity_id,
+            physics_state=c.physics_state,
+            k2_label=compile_k2_label(c.physics_state),
+        )
+        for c in conditions
+    ]
+
+
+def extract_step(
     recipe: CanonicalRecipe,
     step_number: int,
     artifact_dir: Path,
     revision_hint: str | None = None,
-) -> ExtractedNode:
+) -> list[ExtractedNode]:
     """
-    Run the generator for one step. Returns an ExtractedNode.
-    Persists the raw output to artifact_dir.
+    Run the generator for one step. Returns its atomic actions as ExtractedNodes,
+    in order. Persists one file per action: `{recipe}_stepNN.gen.json` for the
+    first, `{recipe}_stepNN.2.gen.json` for the second, and so on.
     """
     artifact_dir.mkdir(parents=True, exist_ok=True)
-    artifact_path = artifact_dir / f"{recipe.recipe_id}_step{step_number:02d}.gen.json"
 
-    # Return cached if exists
-    if artifact_path.exists():
+    # Return cached if every file reads
+    cached = _step_files(artifact_dir, recipe.recipe_id, step_number)
+    if cached:
         try:
-            return ExtractedNode.model_validate_json(artifact_path.read_text())
+            return [ExtractedNode.model_validate_json(p.read_text()) for p in cached]
         except Exception:
-            pass  # re-extract
+            clear_step(artifact_dir, recipe.recipe_id, step_number)  # re-extract
 
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
         {"role": "user", "content": _build_prompt(recipe, step_number, revision_hint)},
     ]
 
-    node = call_with_fallback(
+    result = call_with_fallback(
         GENERATOR_MODELS,
-        ExtractedNode,
+        ExtractedStep,
         messages,
         max_tokens=int(_MODELS_CFG["extraction"].get("max_tokens", 16384)),
     )
 
-    # Patch in provenance fields that LLM can't set
-    node.recipe_id = recipe.recipe_id
-    node.step_number = step_number
-    node.extractor_model = _GENERATOR_MODEL
     step_text = next(s.text for s in recipe.steps if s.number == step_number)
-    node.source_span = ground_span(node.source_span, step_text)
-
-    # Re-compile k2_labels via compile map (LLM may have used free text)
-    node.pre_conditions = [
-        StateCondition(
-            entity_id=c.entity_id,
-            physics_state=c.physics_state,
-            k2_label=compile_k2_label(c.physics_state),
-        )
-        for c in node.pre_conditions
-    ]
-    node.post_conditions = [
-        StateCondition(
-            entity_id=c.entity_id,
-            physics_state=c.physics_state,
-            k2_label=compile_k2_label(c.physics_state),
-        )
-        for c in node.post_conditions
-    ]
-
-    artifact_path.write_text(node.model_dump_json(indent=2))
-    return node
+    nodes = []
+    for sub, node in enumerate(result.nodes, 1):
+        # Patch in provenance fields that LLM can't set
+        node.recipe_id = recipe.recipe_id
+        node.step_number = step_number
+        node.sub_step = sub
+        node.extractor_model = _GENERATOR_MODEL
+        node.source_span = ground_span(node.source_span, step_text)
+        node.pre_conditions = _compile_conditions(node.pre_conditions)
+        node.post_conditions = _compile_conditions(node.post_conditions)
+        path = artifact_dir / f"{artifact_stem(recipe.recipe_id, step_number, sub)}.gen.json"
+        path.write_text(node.model_dump_json(indent=2))
+        nodes.append(node)
+    return nodes
 
 
 def extract_recipe(
     recipe: CanonicalRecipe,
     run_dir: Path,
 ) -> list[ExtractedNode]:
-    """Extract all steps of a recipe. Returns list of ExtractedNode."""
+    """Extract all steps of a recipe. Returns every node, in step then sub-step order."""
     artifact_dir = run_dir / "L2" / "gen"
     nodes = []
     for step in recipe.steps:
         console.print(f"  [dim]Extracting {recipe.recipe_id} step {step.number}/{len(recipe.steps)}[/dim]")
-        node = extract_node(recipe, step.number, artifact_dir)
-        nodes.append(node)
+        nodes.extend(extract_step(recipe, step.number, artifact_dir))
     return nodes

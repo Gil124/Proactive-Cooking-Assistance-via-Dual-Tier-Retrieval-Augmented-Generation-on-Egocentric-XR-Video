@@ -116,3 +116,22 @@ def test_cypher_statements_keep_statement_under_header():
     schema = (Path(__file__).parent.parent / "config" / "graph_schema.cypher").read_text()
     schema_stmts = cypher_statements(schema)
     assert sum(s.startswith("CREATE CONSTRAINT") for s in schema_stmts) == 6
+
+
+def test_required_before_gives_physical_reasons(q):
+    # Every cooking step in every branch has a physical prerequisite with a reason.
+    for branch in q.branches():
+        for node_id in _walk(q, branch):
+            for req in q.required_before(node_id):
+                assert req["rule_id"] and req["reason"]
+    cook = next(n for n in q.graph.nodes if n.action_phrase == "Cook eggs")
+    assert {r["rule_id"] for r in q.required_before(cook.node_id)} >= {"eggs_in_pan_before_cook"}
+
+
+def test_preferences_per_branch(q):
+    prefs = q.preferences("the_kitchn_soft_creamy")
+    by_point = {p["point"]: p for p in prefs}
+    assert by_point["agitation"]["outcome"] == "Larger, irregular curds."
+    assert by_point["butter_while_whisking"]["source"]["recipe_id"] == "the_kitchn_soft_creamy"
+    for branch in q.branches():
+        assert q.preferences(branch), branch

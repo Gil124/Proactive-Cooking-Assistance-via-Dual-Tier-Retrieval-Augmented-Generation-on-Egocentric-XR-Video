@@ -3,7 +3,9 @@ Regression tests for DAG cycle detection and breaking in dag_builder.py.
 
 Scenarios:
 - A<->C REQUIRES cycle is resolved by the cycle-breaker.
-- Opposing NEXT orders (recipe A: X->Y, recipe B: Y->X) are also resolved.
+- Opposing NEXT orders (recipe A: X->Y, recipe B: Y->X) are kept: a flexible step
+  may be ordered differently by different recipes (Notes/10, A.3). Each recipe's
+  own order and the physical order (REQUIRES) stay acyclic.
 - removed_edges.json is written with the removed edges.
 """
 from __future__ import annotations
@@ -117,10 +119,11 @@ def test_requires_cycle_resolved():
         assert isinstance(removed, list)
 
 
-def test_opposing_next_cycle_resolved():
+def test_opposing_next_orders_are_kept():
     """
     Recipe r1: [X, Y] and recipe r2: [Y, X] create opposing NEXT edges X->Y and Y->X.
-    Cycle breaker must resolve this.
+    No rule orders X and Y, so both orders are valid variations: both edges stay,
+    each recipe is acyclic on its own, and Gate 2 passes.
     """
     import networkx as nx
     from k1_pipeline.fuse.dag_builder import build_k1_graph
@@ -180,10 +183,35 @@ def test_opposing_next_cycle_resolved():
             ([(node_y_r2, _accept(node_y_r2)), (node_x_r2, _accept(node_x_r2))], "r2"),
         ], run_dir)
 
-        G = nx.DiGraph()
-        for node in graph.nodes:
-            G.add_node(node.node_id)
-        for edge in graph.edges:
-            if edge.edge_type in ("NEXT", "REQUIRES"):
-                G.add_edge(edge.from_node_id, edge.to_node_id)
-        assert nx.is_directed_acyclic_graph(G), "Opposing-NEXT cycle must be resolved"
+        from k1_pipeline.fuse.dag_builder import order_subgraphs
+        from k1_pipeline.validate.gates import validate
+
+        nxt = [e for e in graph.edges if e.edge_type == "NEXT"]
+        assert sorted(e.source_recipe_id for e in nxt) == ["r1", "r2"]
+        assert json.loads((run_dir / "L3" / "removed_edges.json").read_text()) == []
+        for sub in order_subgraphs(graph.edges).values():
+            G = nx.DiGraph([(e.from_node_id, e.to_node_id) for e in sub])
+            assert nx.is_directed_acyclic_graph(G)
+        assert not any("Gate 2" in e for e in validate(graph, {}))
+
+
+def test_shared_consecutive_nodes_keep_one_next_edge_per_recipe(tmp_path):
+    # Two recipes both go "crack" -> "whisk". Each branch needs its own NEXT edge.
+    from k1_pipeline.fuse.dag_builder import build_k1_graph
+    from k1_pipeline.models import CriticOutput, CriticVerdict, ExtractedNode
+
+    def node(recipe, step, phrase):
+        n = ExtractedNode(
+            recipe_id=recipe, step_number=step, node_type="Process", action_phrase=phrase,
+            pre_conditions=[{"entity_id": "egg", "physics_state": "raw", "k2_label": "liquid"}],
+            post_conditions=[{"entity_id": "egg", "physics_state": "beaten", "k2_label": "liquid"}],
+            source_span="x", confidence=0.9,
+        )
+        return n, CriticOutput(verdict=CriticVerdict.accept, grounding_quote="x")
+
+    graph = build_k1_graph(
+        [([node(r, 1, "crack eggs"), node(r, 2, "whisk eggs")], r) for r in ("a", "b")],
+        tmp_path,
+    )
+    nxt = [e for e in graph.edges if e.edge_type == "NEXT"]
+    assert sorted(e.source_recipe_id for e in nxt) == ["a", "b"]

@@ -9,10 +9,17 @@ Strategy:
     sharing compatible pre/post states.
   - HAS_SAFETY_BOUND edges are attached from physics_bounds.yaml (not from extraction).
 
-REQUIRES edges are built within each recipe's step sequence (earlier producer ->
-later consumer).  A cycle-breaking pass removes edges (preferring REQUIRES > NEXT,
-lowest weight first) until the NEXT+REQUIRES digraph is acyclic.  Removed edges
-are written to L3/removed_edges.json for inspection.
+NEXT edges are each recipe's own order. REQUIRES edges are the physical order:
+built from the order rules in config/variation_points.yaml (variation.py), each
+carrying its rule id and reason. Order that no rule fixes is a preference and is
+only in NEXT. Actions without an action class get no REQUIRES edge; they and any
+recipe that breaks a rule are listed in L3/order_report.json.
+
+Acyclicity (Notes/10, A.3): REQUIRES over all recipes, and each recipe's NEXT plus
+the REQUIRES among its nodes. Different recipes may order flexible steps differently,
+so NEXT edges of several recipes together may form a cycle. A cycle-breaking pass
+removes single edges of one recipe until that recipe is acyclic; removed edges are
+written to L3/removed_edges.json for inspection.
 """
 
 from __future__ import annotations
@@ -23,6 +30,7 @@ import re
 from pathlib import Path
 
 from k1_pipeline.config_loader import load_physics_bounds
+from k1_pipeline.variation import action_class, required_pairs
 from k1_pipeline.fuse.entity_resolver import resolve_entity, resolve_entities_in_conditions
 from k1_pipeline.models import (
     CriticOutput,
@@ -78,74 +86,88 @@ def _safety_bounds_for_node(node: ExtractedNode, thermal: bool | None = None) ->
     return bounds
 
 
+def recipe_paths(edges: list[K1Edge]) -> dict[str, set[str]]:
+    """Nodes on each recipe's path, from its NEXT edges."""
+    paths: dict[str, set[str]] = {}
+    for e in edges:
+        if e.edge_type == "NEXT" and e.source_recipe_id:
+            paths.setdefault(e.source_recipe_id, set()).update((e.from_node_id, e.to_node_id))
+    return paths
+
+
+def order_subgraphs(edges: list[K1Edge]) -> dict[str, list[K1Edge]]:
+    """
+    The edges that must be acyclic together: "*requires*" -> every REQUIRES edge;
+    each recipe -> its NEXT edges plus the REQUIRES edges among its nodes.
+    """
+    requires = [e for e in edges if e.edge_type == "REQUIRES"]
+    out: dict[str, list[K1Edge]] = {"*requires*": requires}
+    loose = [e for e in edges if e.edge_type == "NEXT" and not e.source_recipe_id]
+    if loose:
+        # NEXT edges that name no recipe are checked as one sequence.
+        out["*no recipe*"] = loose
+    for recipe_id, nodes in recipe_paths(edges).items():
+        out[recipe_id] = [
+            e for e in edges if e.edge_type == "NEXT" and e.source_recipe_id == recipe_id
+        ] + [e for e in requires if e.from_node_id in nodes and e.to_node_id in nodes]
+    return out
+
+
 def _break_cycles(
     node_ids: set[str],
     edges: list[K1Edge],
     l3_dir: Path,
 ) -> list[K1Edge]:
     """
-    Remove minimum set of edges (preferring REQUIRES over NEXT, lowest weight first)
-    to make the NEXT+REQUIRES subgraph acyclic.
-    Writes removed edges to l3_dir/removed_edges.json.
+    Remove single edges until every order subgraph (order_subgraphs) is acyclic,
+    preferring a recipe's NEXT edge over a REQUIRES edge (REQUIRES is physical),
+    lowest weight first. Writes removed edges to l3_dir/removed_edges.json.
     Returns the surviving edge list.
     """
     import networkx as nx  # type: ignore
 
-    traversal_types = {"NEXT", "REQUIRES"}
-    traversal_edges = [e for e in edges if e.edge_type in traversal_types]
-    other_edges = [e for e in edges if e.edge_type not in traversal_types]
-
-    def _build_graph(edge_list: list[K1Edge]) -> nx.DiGraph:
-        g: nx.DiGraph = nx.DiGraph()
-        g.add_nodes_from(node_ids)
-        for e in edge_list:
-            g.add_edge(e.from_node_id, e.to_node_id, edge_obj=e)
-        return g
-
     removed: list[dict] = []
-    current = list(traversal_edges)
+    current = list(edges)
 
     while True:
-        g = _build_graph(current)
-        try:
-            cycles = list(nx.find_cycle(g, orientation="original"))
-        except nx.NetworkXNoCycle:
+        found = None
+        for name, sub in order_subgraphs(current).items():
+            g: nx.MultiDiGraph = nx.MultiDiGraph()
+            g.add_nodes_from(node_ids)
+            for e in sub:
+                g.add_edge(e.from_node_id, e.to_node_id, edge_obj=e)
+            try:
+                cycle = nx.find_cycle(g, orientation="original")
+            except nx.NetworkXNoCycle:
+                continue
+            found = [g.edges[u, v, k]["edge_obj"] for u, v, k, _ in cycle]
+            break
+        if found is None:
             break
 
-        # Sort edges in cycle by priority: prefer removing REQUIRES, then lowest weight
-        cycle_edge_objs = []
-        for u, v, _ in cycles:
-            edge_data = g.get_edge_data(u, v)
-            if edge_data and "edge_obj" in edge_data:
-                cycle_edge_objs.append(edge_data["edge_obj"])
-
         def _removal_priority(e: K1Edge) -> tuple[int, float]:
-            return (0 if e.edge_type == "REQUIRES" else 1, e.weight)
+            return (0 if e.edge_type == "NEXT" else 1, e.weight)
 
-        cycle_edge_objs.sort(key=_removal_priority)
-        to_remove = cycle_edge_objs[0]
+        to_remove = sorted(found, key=_removal_priority)[0]
         removed.append({
             "from": to_remove.from_node_id,
             "to": to_remove.to_node_id,
             "type": to_remove.edge_type,
+            "recipe": to_remove.source_recipe_id,
             "weight": to_remove.weight,
         })
-        current = [e for e in current if not (
-            e.from_node_id == to_remove.from_node_id
-            and e.to_node_id == to_remove.to_node_id
-            and e.edge_type == to_remove.edge_type
-        )]
+        current = [e for e in current if e is not to_remove]
 
     removed_path = l3_dir / "removed_edges.json"
     removed_path.write_text(json.dumps(removed, indent=2))
 
-    return current + other_edges
+    return current
 
 
 def build_k1_graph(
     verified_nodes: list[tuple[list[tuple[ExtractedNode, CriticOutput]], str]],
     run_dir: Path,
-    safety_overrides: dict[tuple[str, int], bool] | None = None,
+    safety_overrides: dict[str, bool] | None = None,
 ) -> K1Graph:
     """
     Build the fused K1Graph from all verified (node, critic) pairs across all recipes.
@@ -154,9 +176,10 @@ def build_k1_graph(
         verified_nodes: list of (recipe_pairs, recipe_id) where recipe_pairs is
                         list of (ExtractedNode, CriticOutput).
         run_dir: artifacts directory for L3 output.
-        safety_overrides: {(recipe_id, step_number): has_safety_bound} from human
-                        review (`k1 finalize`). Steps not listed are decided by
-                        the action wording, as in a pipeline run.
+        safety_overrides: {str(ExtractedNode.node_id): has_safety_bound} from human
+                        review (`k1 finalize`), one entry per reviewed action, so
+                        the sub-steps of one step can differ. Nodes not listed are
+                        decided by the action wording, as in a pipeline run.
     """
     safety_overrides = safety_overrides or {}
     l3_dir = run_dir / "L3"
@@ -177,7 +200,7 @@ def build_k1_graph(
 
     for node, critic, recipe_id in all_nodes:
         fp = _fingerprint(node)
-        thermal = safety_overrides.get((recipe_id, node.step_number))
+        thermal = safety_overrides.get(str(node.node_id))
         if fp not in fingerprint_map:
             k1_node = K1Node(
                 node_id=fp,
@@ -224,7 +247,7 @@ def build_k1_graph(
 
     # Phase 3: build NEXT edges per recipe ordering
     edges: list[K1Edge] = []
-    edge_set: set[tuple[str, str, str]] = set()  # (from, to, type) dedup
+    edge_set: set[tuple] = set()  # (from, to, type) dedup; NEXT also keyed by recipe
 
     recipe_sequences: dict[str, list[tuple[str, int]]] = {}
     for node, critic, recipe_id in all_nodes:
@@ -233,7 +256,9 @@ def build_k1_graph(
 
     for recipe_id, seq in recipe_sequences.items():
         for i in range(len(seq) - 1):
-            key = (seq[i][0], seq[i + 1][0], "NEXT")
+            # NEXT is a branch's order. Two recipes can share the same consecutive
+            # pair of nodes; each keeps its own edge, or the second branch breaks.
+            key = (seq[i][0], seq[i + 1][0], "NEXT", recipe_id)
             if key not in edge_set:
                 edge_set.add(key)
                 edges.append(K1Edge(
@@ -244,30 +269,48 @@ def build_k1_graph(
                     weight=1.0,
                 ))
 
-    # Phase 4: REQUIRES edges -- built within each recipe, earlier producer -> later consumer
-    # For each recipe: find nodes where an earlier step's post_conditions match a later step's pre_condition
+    # Phase 4: REQUIRES edges -- the physical order rules (variation_points.yaml),
+    # applied inside each recipe: an earlier action of a rule's `before` class
+    # precedes a later action of its `after` class.
+    order_report: dict = {"unclassified": [], "violations": [], "requires_edges": 0}
+    observed = {}  # (recipe_id, position) -> ExtractedNode, for the report
+    for node, _, recipe_id in all_nodes:
+        observed.setdefault(recipe_id, []).append(node)
     for recipe_id, seq in recipe_sequences.items():
-        for i, (fp_i, step_i) in enumerate(seq):
-            k1_i = fingerprint_map[fp_i]
-            # Check all later steps in this recipe
-            for j, (fp_j, step_j) in enumerate(seq):
-                if step_j <= step_i:
-                    continue  # only later steps
-                k1_j = fingerprint_map[fp_j]
-                for post_cond in k1_i.post_conditions:
-                    for pre_cond in k1_j.pre_conditions:
-                        if post_cond.entity_id == pre_cond.entity_id and post_cond.k2_label == pre_cond.k2_label:
-                            key = (fp_i, fp_j, "REQUIRES")
-                            if key not in edge_set:
-                                edge_set.add(key)
-                                edges.append(K1Edge(
-                                    from_node_id=fp_i,
-                                    to_node_id=fp_j,
-                                    edge_type="REQUIRES",
-                                    source_recipe_id=recipe_id,
-                                    weight=1.0,
-                                ))
-                            break  # one match sufficient per (i, j) pair
+        nodes_in_order = observed[recipe_id]
+        classes = [action_class(fingerprint_map[fp].action_phrase) for fp, _ in seq]
+        for n, cls in zip(nodes_in_order, classes):
+            if cls is None:
+                order_report["unclassified"].append({
+                    "recipe_id": recipe_id, "step_number": n.step_number,
+                    "sub_step": n.sub_step, "action_phrase": n.action_phrase,
+                })
+        pairs, violations = required_pairs(classes)
+        for i, j, rule in pairs:
+            fp_i, fp_j = seq[i][0], seq[j][0]
+            key = (fp_i, fp_j, "REQUIRES")
+            if fp_i == fp_j or key in edge_set:
+                continue
+            edge_set.add(key)
+            edges.append(K1Edge(
+                from_node_id=fp_i,
+                to_node_id=fp_j,
+                edge_type="REQUIRES",
+                source_recipe_id=recipe_id,
+                weight=1.0,
+                properties={"rule_id": rule["id"], "reason": rule["reason"]},
+            ))
+            order_report["requires_edges"] += 1
+        for v in violations:
+            order_report["violations"].append({
+                "recipe_id": recipe_id,
+                "rule_id": v["rule_id"],
+                "first": fingerprint_map[seq[v["first"]][0]].action_phrase,
+                "then": fingerprint_map[seq[v["then"]][0]].action_phrase,
+            })
+    (l3_dir / "order_report.json").write_text(
+        json.dumps(order_report, indent=2, ensure_ascii=False)
+    )
 
     # Phase 4b: cycle-breaking pass on NEXT+REQUIRES subgraph
     edges = _break_cycles(node_ids, edges, l3_dir)

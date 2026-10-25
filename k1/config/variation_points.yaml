@@ -1,0 +1,293 @@
+# Why steps are ordered and why recipes differ — added in k1-0.5.0
+# Definition: Notes/10-recipe-variation.md, A.3 ("Justified variation").
+# Do not modify without updating that note and CHANGELOG.md.
+#
+# Every ordering and every choice in K1 has a reason of one of two kinds:
+#   physical   — a fixed order. Doing otherwise is a deviation; the assistant may intervene.
+#   preference — a choice between valid variations, justified by the outcome it serves.
+#                Choosing another alternative is never a deviation.
+#
+# A reason is grounded like a K1 step: `source` quotes a recipe step verbatim
+# ({recipe_id, step, quote}). `source: curated` marks a reason from domain knowledge,
+# as for physics_bounds.yaml. `source: null` means no source in the corpus states a
+# reason; nothing is invented to fill the gap.
+
+# ── Action classes ────────────────────────────────────────────────────────────
+# Each reviewed action belongs to one class. The order rules are written between
+# classes, so they hold for every wording of the same action. Matching is on the
+# action phrase, case-insensitive, after trimming. An action not listed here gets
+# no REQUIRES edge and is reported in L3/order_report.json.
+
+action_classes:
+  crack:
+    - crack the eggs into a bowl
+  mix_eggs:
+    - whisk eggs
+    - whisk eggs with salt and pepper
+    - whisk salt and pepper in eggs
+    - add salt and black pepper, and whisk together
+    - break egg yolks
+  season:
+    - add salt
+  fat_into_pan:
+    - pour oil into pan
+    - spread butter in pan
+    - pan at low heat and add butter
+  heat_fat:
+    - melt butter
+    - heat pan and melt butter
+    - put pan in low heat, melt butter
+    - heat pan with oil or butter
+  pan_to_heat:
+    - move pan to heat source
+  eggs_into_pan:
+    - pour eggs in pan
+    - put eggs in pan
+  cook:
+    - cook eggs
+    - cook eggs over low heat folding slowly
+    - cook eggs to form soft curds
+    - cook eggs folding and stirring
+    - cook egg white
+    - stir eggs with spatula until cooked
+    - stir eggs gently until slightly underdone
+    - stir eggs gently without stopping
+    - stir eggs to incorporate butter
+    - stir with a spatula
+    - push spatula through eggs
+  remove_from_heat:
+    - remove pan from heat
+    - remove pan from heat_source
+    - remove eggs from heat
+  finish_off_heat:
+    - finish cooking eggs
+  plate:
+    - transfer eggs to plate
+    - serve eggs
+    - serve scrambled eggs with black pepper
+    - sprinkle eggs with pepper
+
+# ── Physical order (the partial order ≺ of Notes/10, condition 4) ──────────────
+# `before` and `after` are action classes. Inside one recipe, every action of a
+# `before` class that comes earlier than an action of an `after` class gets a
+# REQUIRES edge carrying the rule id and reason. The rules must not form a cycle.
+# A recipe that does an `after` action before a `before` action is reported.
+
+order_rules:
+  - id: crack_before_mix
+    before: [crack]
+    after: [mix_eggs]
+    reason: The eggs must be out of the shell before they can be beaten.
+    source: curated
+
+  - id: crack_before_pan
+    before: [crack]
+    after: [eggs_into_pan]
+    reason: The eggs must be out of the shell before they go into the pan.
+    source: curated
+
+  - id: fat_before_eggs
+    before: [fat_into_pan, heat_fat]
+    after: [eggs_into_pan]
+    reason: The fat coats the pan before the eggs go in, so the eggs do not stick and scorch.
+    source: curated
+
+  - id: eggs_in_pan_before_cook
+    before: [eggs_into_pan]
+    after: [cook]
+    reason: The eggs can only cook once they are in the pan.
+    source: curated
+
+  - id: heat_before_cook
+    before: [heat_fat, pan_to_heat]
+    after: [cook]
+    reason: The pan must be on the heat for the eggs to cook.
+    source: curated
+
+  - id: cook_before_removing
+    before: [cook]
+    after: [remove_from_heat]
+    reason: The pan comes off the heat once the eggs have cooked on it.
+    source: curated
+
+  - id: residual_heat_after_removing
+    before: [remove_from_heat]
+    after: [finish_off_heat]
+    reason: Off the heat, the heat stored in the pan keeps cooking the eggs.
+    source:
+      recipe_id: jamie_oliver
+      step: 6
+      quote: "the heat of the pan will continue to cook the eggs to perfection"
+
+  - id: cook_before_plate
+    before: [cook, finish_off_heat]
+    after: [plate]
+    reason: The eggs are plated once they reach the goal state (coagulating or solid).
+    source: curated
+
+# ── Preference points (where valid variations differ) ─────────────────────────
+# kind: structural (which steps, or their order) or parametric (how a step is done:
+# heat, duration, agitation). Each alternative names the recipes that take it and
+# the outcome it serves.
+
+preference_points:
+  - id: seasoning_time
+    kind: structural
+    description: When the salt and pepper go in.
+    alternatives:
+      - choice: in the bowl, with the beating
+        recipes: [continente, jamie_oliver, recipe_tin_eats, the_kitchn_soft_creamy]
+        outcome: null
+        source: null
+      - choice: in the pan, with the eggs
+        recipes: [pingo_doce]
+        outcome: null
+        source: null
+      - choice: at the end, on the cooked eggs
+        recipes: [love_and_lemons, pingo_doce, recipe_tin_eats]
+        outcome: null
+        source:
+          recipe_id: love_and_lemons
+          step: 5
+          quote: "Season to taste with salt and pepper"
+
+  - id: cooking_fat
+    kind: structural
+    description: Which fat greases the pan.
+    alternatives:
+      - choice: butter
+        recipes: [jamie_oliver, pingo_doce, recipe_tin_eats, the_kitchn_soft_creamy, tudo_gostoso]
+        outcome: null
+        source: null
+      - choice: olive oil
+        recipes: [continente]
+        outcome: null
+        source: null
+      - choice: either
+        recipes: [love_and_lemons]
+        outcome: null
+        source:
+          recipe_id: love_and_lemons
+          step: 2
+          quote: "Brush a small nonstick skillet with olive oil, or melt a little butter"
+
+  - id: butter_while_whisking
+    kind: structural
+    description: Whether the butter melts before the eggs are beaten or at the same time.
+    alternatives:
+      - choice: melt the butter while beating the eggs
+        recipes: [the_kitchn_soft_creamy]
+        outcome: The two steps overlap, so the pan is ready when the eggs are.
+        source:
+          recipe_id: the_kitchn_soft_creamy
+          step: 1
+          quote: "let it begin to melt while you whisk the eggs"
+      - choice: beat the eggs first, then melt the butter
+        recipes: [jamie_oliver, love_and_lemons, pingo_doce, recipe_tin_eats]
+        outcome: null
+        source: null
+
+  - id: where_eggs_are_mixed
+    kind: structural
+    description: Whether the eggs are beaten in a bowl or broken and mixed in the pan.
+    alternatives:
+      - choice: beaten in a bowl before the pan
+        recipes: [continente, jamie_oliver, love_and_lemons, pingo_doce, recipe_tin_eats, the_kitchn_soft_creamy]
+        outcome: null
+        source: null
+      - choice: cracked onto the butter, yolks broken in the pan, white set first, mixed late
+        recipes: [tudo_gostoso]
+        outcome: The white cooks before the yolk.
+        source:
+          recipe_id: tudo_gostoso
+          step: 4
+          quote: "A clara vai cozinhar primeiro que a gema."
+
+  - id: pan_start
+    kind: structural
+    description: Whether the eggs go into a hot pan or the pan heats with the eggs in it.
+    alternatives:
+      - choice: fat heated first, eggs into a hot pan
+        recipes: [jamie_oliver, love_and_lemons, pingo_doce, recipe_tin_eats, the_kitchn_soft_creamy]
+        outcome: null
+        source: null
+      - choice: cold start, pan goes on the heat with the eggs in it
+        recipes: [tudo_gostoso]
+        outcome: null
+        source:
+          recipe_id: tudo_gostoso
+          step: 3
+          quote: "Só depois deste passo, leve a frigideira para o fogo com fogo baixo."
+
+  - id: agitation
+    kind: parametric
+    description: How often the eggs are stirred while they cook.
+    alternatives:
+      - choice: stirred often or without stopping
+        recipes: [pingo_doce, love_and_lemons]
+        outcome: Smaller curds.
+        source:
+          recipe_id: the_kitchn_soft_creamy
+          step: 5
+          quote: "Frequent stirring will give you smaller curds"
+      - choice: stirred occasionally
+        recipes: [the_kitchn_soft_creamy]
+        outcome: Larger, irregular curds.
+        source:
+          recipe_id: the_kitchn_soft_creamy
+          step: 5
+          quote: "stirring less frequently will give you larger, irregular curds"
+
+  - id: heat_and_time
+    kind: parametric
+    description: >
+      Heat level and cooking time, which are coupled (Notes/10, A.4): a time that is
+      right at low heat scorches the eggs at higher heat.
+    alternatives:
+      - choice: low heat, long cook
+        recipes: [continente, jamie_oliver, the_kitchn_soft_creamy, tudo_gostoso]
+        outcome: null
+        source:
+          recipe_id: the_kitchn_soft_creamy
+          step: 5
+          quote: "Continue cooking until the eggs are as soft or as firm as you like them, about 10 to 15 minutes."
+      - choice: medium-low heat
+        recipes: [pingo_doce, love_and_lemons]
+        outcome: null
+        source:
+          recipe_id: pingo_doce
+          step: 2
+          quote: "temperatura média-baixa"
+      - choice: medium heat, short cook
+        recipes: [recipe_tin_eats]
+        outcome: Soft, custardy folds in about a minute.
+        source:
+          recipe_id: recipe_tin_eats
+          step: 5
+          quote: "Cook for 60 seconds in total until you have a pile of soft, custardy scrambled egg folds"
+
+  - id: doneness
+    kind: structural
+    description: How set the eggs are when they leave the heat, and whether they finish off it.
+    alternatives:
+      - choice: off the heat slightly underdone, finished by the pan's heat
+        recipes: [jamie_oliver, love_and_lemons, recipe_tin_eats, the_kitchn_soft_creamy]
+        outcome: The eggs reach the wanted texture off the heat instead of overcooking on it.
+        source:
+          recipe_id: the_kitchn_soft_creamy
+          step: 6
+          quote: "The eggs will continue cooking for a minute or two off the heat, so remove them when they're almost — but not quite — as cooked as you like them."
+      - choice: off the heat at the wanted texture, moist and creamy or firmer
+        recipes: [pingo_doce, continente]
+        outcome: The cook chooses between moist and creamy or firmer eggs.
+        source:
+          recipe_id: pingo_doce
+          step: 4
+          quote: "Retire do lume quando atingirem a consistência desejada: húmidos e cremosos ou mais firmes."
+      - choice: kept moist, not overcooked
+        recipes: [tudo_gostoso]
+        outcome: Moist, creamy eggs.
+        source:
+          recipe_id: tudo_gostoso
+          step: 6
+          quote: "Não frite demais, pois o mexido deve ficar úmido e cremoso."

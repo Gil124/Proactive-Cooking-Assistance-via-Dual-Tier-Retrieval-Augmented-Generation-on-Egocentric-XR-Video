@@ -24,9 +24,12 @@
     "has_safety_bound": true,
     "in_scope": true
   },
+  "sub_steps": [],
+  "split_checked": true,
+  "split_seconds_spent": 0.0,
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "",
+  "notes": "Checked for splitting on 2026-10-25 at the annotator's request, not timed: kept as one action.",
   "mode": "corrected",
   "seconds_spent": 23.4,
   "seeded_from_run": "scope02",

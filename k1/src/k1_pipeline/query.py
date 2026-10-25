@@ -10,10 +10,13 @@ K1 returns:
 - the next node ID(s) in the DAG
 
 `step()` returns all three in one call, so Fusion makes one K1 lookup per
-cycle. A branch is a source recipe: NEXT edges carry it as `source_recipe_id`.
+cycle. The reasons behind the order are there too (Notes/10, A.3):
+`required_before()` gives a step's physical prerequisites with their reasons,
+and `preferences()` the alternatives a branch takes at each variation point,
+with the outcome each serves. A branch is a source recipe: NEXT edges carry it as `source_recipe_id`.
 Shared nodes have one outgoing NEXT edge per branch that uses them.
 
-Reads graph.final.json (the reviewed graph) by default. The graph is
+Reads graph.final.json (the reviewed graph, merges applied) by default. The graph is
 immutable during a session, so it is loaded once and indexed in memory.
 No model is called here.
 """
@@ -26,6 +29,8 @@ from pathlib import Path
 from k1_pipeline.models import K1Graph, K1Node, SafetyBound, StateCondition
 
 FINAL_GRAPH = Path(__file__).parent.parent.parent / "data" / "k1" / "graph.final.json"
+# The reviewed graph before merges; merge labels refer to its node IDs.
+UNMERGED_GRAPH = FINAL_GRAPH.with_name("graph.unmerged.json")
 
 
 @dataclass(frozen=True)
@@ -113,6 +118,43 @@ class K1Query:
             safety_bounds=self.safety_bounds(node_id),
             next_node_ids=self.next_node_ids(node_id, branch),
         )
+
+    def required_before(self, node_id: str) -> list[dict]:
+        """
+        Steps that must come before this one, from the physical order rules:
+        [{"node_id", "action_phrase", "rule_id", "reason"}].
+        """
+        self.node(node_id)
+        return [
+            {
+                "node_id": e.from_node_id,
+                "action_phrase": self._nodes[e.from_node_id].action_phrase,
+                "rule_id": e.properties.get("rule_id"),
+                "reason": e.properties.get("reason"),
+            }
+            for e in self.graph.edges
+            if e.edge_type == "REQUIRES" and e.to_node_id == node_id and e.from_node_id in self._nodes
+        ]
+
+    def preferences(self, branch: str) -> list[dict]:
+        """
+        The alternative this branch takes at each variation point it is part of:
+        [{"point", "kind", "choice", "outcome", "source"}]. An `outcome` of None
+        means no source states why.
+        """
+        self._check_branch(branch)
+        out = []
+        for point in self.graph.preference_points:
+            for alt in point.get("alternatives", []):
+                if branch in (alt.get("recipes") or []):
+                    out.append({
+                        "point": point["id"],
+                        "kind": point["kind"],
+                        "choice": alt["choice"],
+                        "outcome": alt.get("outcome"),
+                        "source": alt.get("source"),
+                    })
+        return out
 
     def _check_branch(self, branch: str) -> None:
         if branch not in self._branch_nodes:

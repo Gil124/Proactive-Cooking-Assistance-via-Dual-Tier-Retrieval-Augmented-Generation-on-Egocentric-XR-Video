@@ -38,13 +38,25 @@ in `CHANGELOG.md` under k1-0.4.0, `graph.final.json` built and passing all 7 gat
       edit left the on-heat stirring step without heat/`heat_source`. Fixed; the
       remove-from-heat steps follow the residual-heat rule and are correct. Graph rebuilt
       (307 edges), Neo4j reloaded, eval rerun (CHANGELOG k1-0.4.2).
-- [x] **Oregano** removed from the station (`config/dish.yaml`, `Notes/10` B.6).
+- [x] **Oregano** removed from the station (`config/dish.yaml`, `Notes/10` B.7).
 
 ### Known limitations (fix or state in the dissertation)
 
-- [ ] **Transition-based node merging** is not implemented. Nodes still merge on the action
-      string, so the 7 branches are 7 linear recipes with few shared nodes. Runtime branch
-      selection therefore means picking a recipe.
+- [x] **Merge labels by hand:** 34/34 pairs labelled (CHANGELOG, Unreleased). Led to the
+      atomic-steps decision.
+- [x] **Split compound steps:** 17/17 decided, 9 split (CHANGELOG, Unreleased). Graph and
+      Neo4j rebuilt.
+- [x] **Cooking group relabelled** (all same, 2026-10-25); heat-and-melt order conflict resolved
+      by per-recipe acyclicity.
+- [x] **Apply merge labels in `k1 finalize`** (`merge.apply_merges`, k1-0.5.0).
+- [ ] **Review `config/variation_points.yaml`** (author): the 7 curated physical reasons, the
+      action classes, and the preference points; add a reason where you have one, marked as
+      an author note.
+- [ ] **Label the 11 open merge pairs** in the Merge pairs tab, then `k1 finalize`.
+- [ ] **Run the pipeline with rule 9 live** to measure how well the generator splits
+      (costs API calls; a new run, since `scope02` stays frozen).
+- [~] **Node merging:** by atomic steps, shared wording and hand merge labels (k1-0.5.0).
+      10 of 30 nodes are shared by several recipes. Merging is not automatic for new recipes.
 - [ ] **Heat and duration as coupled parameter tuples** are not stored on nodes, so low-heat
       and high-heat branches cannot be told apart from the graph.
 - [ ] **Timing is sparse and unreviewed.** 11 of 39 nodes have `timing_constraints`,

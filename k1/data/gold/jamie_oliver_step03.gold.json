@@ -23,9 +23,12 @@
     "has_safety_bound": true,
     "in_scope": true
   },
+  "sub_steps": [],
+  "split_checked": true,
+  "split_seconds_spent": 0.0,
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "heat_source added to tools on 2026-10-12 after review, at the annotator's request: the step says \"over a low heat\". Not timed. Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: \"medium heat\" corrected to \"low heat\" (source: \"over a low heat\").",
+  "notes": "heat_source added to tools on 2026-10-12 after review, at the annotator's request: the step says \"over a low heat\". Not timed. Changed on 2026-10-12 after review, at the annotator's request, not timed: heat ticked (step is on the heat). Changed on 2026-10-12 after review, at the annotator's request, not timed: \"medium heat\" corrected to \"low heat\" (source: \"over a low heat\"). Checked for splitting on 2026-10-25 at the annotator's request, not timed: kept as one action. Heating the pan is how the butter melts, so this is one action (author decision).",
   "mode": "from_scratch",
   "seconds_spent": 70.9,
   "seeded_from_run": "scope02",

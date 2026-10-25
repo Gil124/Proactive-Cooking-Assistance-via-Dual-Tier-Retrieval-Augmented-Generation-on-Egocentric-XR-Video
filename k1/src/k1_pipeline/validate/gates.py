@@ -34,16 +34,20 @@ def validate(graph: K1Graph, canonical_recipes: dict[str, "CanonicalRecipe"]) ->
 
     # Gate 1: Pydantic already enforced (no-op here)
 
-    # Gate 2: Acyclicity -- only check NEXT/REQUIRES edges (not cross-entity)
-    G = nx.DiGraph()
-    for node in graph.nodes:
-        G.add_node(node.node_id)
-    for edge in graph.edges:
-        if edge.edge_type in ("NEXT", "REQUIRES"):
+    # Gate 2: Acyclicity (Notes/10, A.3). The physical order (REQUIRES, all recipes)
+    # and each recipe's own order (its NEXT plus the REQUIRES among its nodes) are
+    # acyclic. NEXT edges of different recipes together may form a cycle: recipes
+    # may order a flexible step differently.
+    from k1_pipeline.fuse.dag_builder import order_subgraphs
+
+    for name, sub in order_subgraphs(graph.edges).items():
+        G = nx.DiGraph()
+        for edge in sub:
             G.add_edge(edge.from_node_id, edge.to_node_id)
-    if not nx.is_directed_acyclic_graph(G):
-        cycles = list(nx.simple_cycles(G))
-        errors.append(f"Gate 2 FAIL: Graph contains cycles: {cycles[:3]}")
+        if not nx.is_directed_acyclic_graph(G):
+            cycles = list(nx.simple_cycles(G))
+            scope = "physical order" if name == "*requires*" else f"recipe '{name}'"
+            errors.append(f"Gate 2 FAIL: {scope} contains cycles: {cycles[:3]}")
 
     # Gate 3: Process pre/post conditions
     for node in graph.nodes:

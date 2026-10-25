@@ -30,7 +30,7 @@ inventory:
     - pepper
     - butter
     - oil
-    # oregano removed 2026-10-23: no source recipe uses it (Notes/10-recipe-variation.md B.6).
+    # oregano removed 2026-10-23: no source recipe uses it (Notes/10-recipe-variation.md B.7).
     # definition_version not bumped: no reviewed step names oregano, so no review changes.
   utensils:
     - pan

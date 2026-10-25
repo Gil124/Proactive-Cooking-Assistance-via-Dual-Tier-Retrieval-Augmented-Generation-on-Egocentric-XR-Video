@@ -6,8 +6,10 @@ One reviewed step (data/gold/{recipe_id}_stepNN.gold.json) serves two purposes:
   - it is the corrected step the final graph is built from (`k1 finalize`).
 
 Each file records how it was made (`mode`), how long it took (`seconds_spent`),
-and the definition it was made under (`definition_version`). Protocol:
-Notes/09-k1-evaluation.md.
+and the definition it was made under (`definition_version`). A step that holds
+more than one action can also be split into atomic sub-steps (`sub_steps`);
+the graph is built from those, and the time is kept apart in
+`split_seconds_spent`. Protocol: Notes/09-k1-evaluation.md.
 
 No model is called here. Used by viz/app.py, eval/correction.py, and cli.py.
 """
@@ -15,6 +17,7 @@ No model is called here. Used by viz/app.py, eval/correction.py, and cli.py.
 from __future__ import annotations
 
 import json
+import re
 import time
 from datetime import date
 from pathlib import Path
@@ -28,10 +31,12 @@ from k1_pipeline.models import (
     CriticOutput,
     CriticVerdict,
     ExtractedNode,
+    GoldExpected,
     GoldNode,
     NodeType,
     StateCondition,
     TimingConstraints,
+    artifact_stem,
 )
 from k1_pipeline.physics import is_thermal_action
 from k1_pipeline.scope import INGREDIENTS, apply_scope
@@ -146,18 +151,20 @@ def save_gold(
     """
     previous = load_gold(gold_dir, recipe_id, step_n)
     carried = previous.seconds_spent or 0.0 if is_current(previous) else 0.0
+    # A split made earlier under the same definition is kept.
+    split = (
+        {
+            "sub_steps": [x.model_dump(mode="json") for x in previous.sub_steps],
+            "split_checked": previous.split_checked,
+            "split_seconds_spent": previous.split_seconds_spent,
+        }
+        if is_current(previous) else {}
+    )
     entry = GoldNode.model_validate({
         "recipe_id": recipe_id,
         "step_number": step_n,
-        "expected": {
-            "node_type": expected["node_type"],
-            "action_phrase": str(expected.get("action_phrase", "")).strip(),
-            "pre_conditions": clean_conditions(expected.get("pre_conditions")),
-            "post_conditions": clean_conditions(expected.get("post_conditions")),
-            "tools": clean_tools(expected.get("tools")),
-            "has_safety_bound": bool(expected.get("has_safety_bound", False)),
-            "in_scope": bool(expected.get("in_scope", True)),
-        },
+        "expected": clean_expected(expected),
+        **split,
         "annotator": annotator,
         "annotation_date": str(date.today()),
         "notes": notes.strip(),
@@ -170,6 +177,68 @@ def save_gold(
     path = gold_path(gold_dir, recipe_id, step_n)
     path.write_text(entry.model_dump_json(indent=2))
     return path
+
+
+def clean_expected(expected: dict) -> dict:
+    """One reviewed action, as GoldExpected expects it."""
+    return {
+        "node_type": expected["node_type"],
+        "action_phrase": str(expected.get("action_phrase", "")).strip(),
+        "pre_conditions": clean_conditions(expected.get("pre_conditions")),
+        "post_conditions": clean_conditions(expected.get("post_conditions")),
+        "tools": clean_tools(expected.get("tools")),
+        "has_safety_bound": bool(expected.get("has_safety_bound", False)),
+        "in_scope": bool(expected.get("in_scope", True)),
+    }
+
+
+def save_split(
+    gold_dir: Path,
+    *,
+    recipe_id: str,
+    step_n: int,
+    sub_steps: list[dict],
+    seconds_spent: float,
+) -> Path:
+    """
+    Record the split decision for a step that is already reviewed. Two or more
+    actions are stored as `sub_steps`; one action means "keep the step as one
+    node" and clears any earlier split. `expected`, `seconds_spent` and the
+    review mode are left as they are, so the step-level scores do not move.
+    """
+    gold = load_gold(gold_dir, recipe_id, step_n)
+    if not is_current(gold):
+        raise ValueError(f"{recipe_id} step {step_n} has no current review; review the step first")
+    if not sub_steps:
+        raise ValueError("Give at least one action")
+    cleaned = [clean_expected(x) for x in sub_steps]
+    for i, x in enumerate(cleaned, 1):
+        if x["in_scope"] and not x["action_phrase"]:
+            raise ValueError(f"Sub-step {i} needs an action phrase")
+    entry = gold.model_copy(update={
+        "sub_steps": [GoldExpected.model_validate(x) for x in cleaned] if len(cleaned) > 1 else [],
+        "split_checked": True,
+        "split_seconds_spent": round((gold.split_seconds_spent or 0.0) + max(seconds_spent, 0.0), 1),
+    })
+    entry = GoldNode.model_validate(entry.model_dump())
+    path = gold_path(gold_dir, recipe_id, step_n)
+    path.write_text(entry.model_dump_json(indent=2))
+    return path
+
+
+_COMPOUND_WORDS = re.compile(r"\band\b|,|\bthen\b|;", re.IGNORECASE)
+
+
+def may_be_compound(gold: GoldNode | None, containing_phrases: set[str] = frozenset()) -> bool:
+    """
+    A reviewed step worth checking for a split: its action joins several verbs
+    ("crack and whisk", "finish cooking, then slide"), or a merge label says it
+    contains another step. A hint for the review queue, not a decision.
+    """
+    if gold is None or not gold.expected.in_scope:
+        return False
+    phrase = gold.expected.action_phrase
+    return bool(_COMPOUND_WORDS.search(phrase)) or phrase in containing_phrases
 
 
 # ── Work timer ────────────────────────────────────────────────────────────────
@@ -199,24 +268,20 @@ class WorkTimer:
 
 # ── Pipeline output for one step ──────────────────────────────────────────────
 
-def auto_step(run_dir: Path, recipe_id: str, step_n: int) -> dict:
-    """
-    What the pipeline did with one step in a run, after the scope rule:
-      {"status": "kept" | "dropped" | "missing", "reason": str, "expected": dict | None}
-    `expected` has the same shape as GoldExpected. For a dropped step it still
-    holds the raw extraction, so the reviewer can see what was thrown away.
-    """
-    gen_file = run_dir / "L2" / "gen" / f"{recipe_id}_step{step_n:02d}.gen.json"
+def _auto_node(run_dir: Path, recipe_id: str, step_n: int, sub_step: int) -> dict | None:
+    """One pipeline node after the scope rule, or None when the file is missing."""
+    stem = artifact_stem(recipe_id, step_n, sub_step)
+    gen_file = run_dir / "L2" / "gen" / f"{stem}.gen.json"
     if not gen_file.exists():
-        return {"status": "missing", "reason": "no extraction for this step", "expected": None}
+        return None
     try:
         node = ExtractedNode.model_validate_json(gen_file.read_text())
     except Exception as e:
         return {"status": "missing", "reason": f"unreadable extraction: {e}", "expected": None}
 
     critic_dir = run_dir / "L2" / "critic"
-    r2 = critic_dir / f"{recipe_id}_step{step_n:02d}.critic.r2.json"
-    r1 = critic_dir / f"{recipe_id}_step{step_n:02d}.critic.json"
+    r2 = critic_dir / f"{stem}.critic.r2.json"
+    r1 = critic_dir / f"{stem}.critic.json"
     critic_file = r2 if r2.exists() else r1
     rejected = False
     if critic_file.exists():
@@ -250,59 +315,99 @@ def auto_step(run_dir: Path, recipe_id: str, step_n: int) -> dict:
     return {"status": "kept", "reason": "", "expected": expected}
 
 
+def auto_step(run_dir: Path, recipe_id: str, step_n: int) -> dict:
+    """
+    What the pipeline did with one step in a run, after the scope rule:
+      {"status": "kept" | "dropped" | "missing", "reason": str, "expected": dict | None,
+       "sub_steps": [dict]}
+    `expected` has the same shape as GoldExpected and describes the step's first
+    action; it is what the step-level scores compare. For a dropped step it still
+    holds the raw extraction, so the reviewer can see what was thrown away.
+    `sub_steps` lists every action the pipeline kept, in order (one for a run
+    made before steps were split).
+    """
+    nodes = []
+    sub = 1
+    while (found := _auto_node(run_dir, recipe_id, step_n, sub)) is not None:
+        nodes.append(found)
+        sub += 1
+    if not nodes:
+        return {"status": "missing", "reason": "no extraction for this step",
+                "expected": None, "sub_steps": []}
+    kept = [n for n in nodes if n["status"] == "kept"]
+    first = kept[0] if kept else nodes[0]
+    return {**first, "sub_steps": [n["expected"] for n in kept]}
+
+
 # ── Reviewed step -> graph node ───────────────────────────────────────────────
 
-def gold_to_pair(
+def gold_to_pairs(
     gold: GoldNode,
     recipe: CanonicalRecipe,
     run_dir: Path | None = None,
-) -> tuple[ExtractedNode, CriticOutput]:
+) -> list[tuple[ExtractedNode, CriticOutput, GoldExpected]]:
     """
-    Turn a reviewed step into the (node, critic) pair that fusion consumes.
-    The source span is the pipeline's when it is still a substring of the step,
-    otherwise the whole step text. Timing constraints are not part of the review
-    form, so the pipeline's are carried over as extracted.
+    Turn a reviewed step into the (node, critic) pairs that fusion consumes, one
+    per in-scope action of `gold.graph_steps()`, with the reviewed action each
+    came from (its heat tick decides the safety bounds).
+
+    An unsplit step keeps the pipeline's source span when it is still a substring
+    of the step, otherwise the whole step text; a split step's actions all quote
+    the whole step. Timing constraints are not part of the review form, so the
+    pipeline's are carried over as extracted: on an unsplit step to its node, on
+    a split step to the first action with heat ticked, since that is where a
+    duration in the text belongs.
     """
     step = next(s for s in recipe.steps if s.number == gold.step_number)
     span = step.text
     timing = None
     if run_dir is not None:
-        gen_file = run_dir / "L2" / "gen" / f"{gold.recipe_id}_step{gold.step_number:02d}.gen.json"
+        gen_file = run_dir / "L2" / "gen" / f"{artifact_stem(gold.recipe_id, gold.step_number)}.gen.json"
         if gen_file.exists():
             try:
                 gen = json.loads(gen_file.read_text())
                 candidate = gen.get("source_span", "")
-                if candidate and candidate in step.text:
+                if candidate and candidate in step.text and not gold.sub_steps:
                     span = candidate
                 if gen.get("timing_constraints"):
                     timing = TimingConstraints.model_validate(gen["timing_constraints"])
             except (json.JSONDecodeError, ValueError):
                 pass
 
-    exp = gold.expected
+    actions = gold.graph_steps()
+    timed = 0
+    if gold.sub_steps:
+        timed = next((i for i, a in enumerate(actions) if a.has_safety_bound), None)
+
     conditions = lambda items: [  # noqa: E731
         StateCondition(entity_id=c.entity_id, physics_state=c.k2_label.value, k2_label=c.k2_label)
         for c in items
     ]
-    entities = [c.entity_id for c in exp.pre_conditions + exp.post_conditions]
-    node = ExtractedNode(
-        recipe_id=gold.recipe_id,
-        step_number=gold.step_number,
-        node_type=exp.node_type,
-        action_phrase=exp.action_phrase,
-        pre_conditions=conditions(exp.pre_conditions),
-        post_conditions=conditions(exp.post_conditions),
-        timing_constraints=timing,
-        ingredients=list(dict.fromkeys(e for e in entities if e in INGREDIENTS)),
-        tools=list(exp.tools),
-        source_span=span,
-        confidence=1.0,
-        extractor_model=f"human/{gold.annotator}",
-    )
-    critic = CriticOutput(
-        node_id=node.node_id,
-        verdict=CriticVerdict.accept,
-        grounding_quote=span,
-        critic_model=f"human/{gold.annotator}",
-    )
-    return node, critic
+    out = []
+    for i, exp in enumerate(actions):
+        if not exp.in_scope:
+            continue
+        entities = [c.entity_id for c in exp.pre_conditions + exp.post_conditions]
+        node = ExtractedNode(
+            recipe_id=gold.recipe_id,
+            step_number=gold.step_number,
+            sub_step=i + 1,
+            node_type=exp.node_type,
+            action_phrase=exp.action_phrase,
+            pre_conditions=conditions(exp.pre_conditions),
+            post_conditions=conditions(exp.post_conditions),
+            timing_constraints=timing if i == timed else None,
+            ingredients=list(dict.fromkeys(e for e in entities if e in INGREDIENTS)),
+            tools=list(exp.tools),
+            source_span=span,
+            confidence=1.0,
+            extractor_model=f"human/{gold.annotator}",
+        )
+        critic = CriticOutput(
+            node_id=node.node_id,
+            verdict=CriticVerdict.accept,
+            grounding_quote=span,
+            critic_model=f"human/{gold.annotator}",
+        )
+        out.append((node, critic, exp))
+    return out

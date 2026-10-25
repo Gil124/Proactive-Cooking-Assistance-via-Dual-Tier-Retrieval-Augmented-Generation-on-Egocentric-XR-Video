@@ -44,6 +44,11 @@ def load_models() -> dict:
     return _load("models.yaml")
 
 
+def load_variation_points() -> dict:
+    """Action classes, physical order rules and preference points (Notes/10, A.3)."""
+    return _load("variation_points.yaml")
+
+
 def get_k2_compile_map() -> dict[str, str]:
     """
     Returns {physics_state_string: k2_label} for all aliases in the compile map.

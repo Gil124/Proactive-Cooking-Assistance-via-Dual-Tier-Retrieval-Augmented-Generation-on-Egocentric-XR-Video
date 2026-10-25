@@ -5,6 +5,162 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Changed — merge pairs relabelled after splitting (2026-10-25/26, author)
+33/33 candidate pairs labelled in the Merge pairs tab: 21 same, 12 different, 6.2 min in
+total. One cooking-group pair had been saved as `different` by mistake; set back to `same`
+at the author's request, as decided on 2026-10-25. `k1 finalize`: 8 groups merged, none
+skipped. Reviewed graph 38 nodes / 306 edges → final **25 nodes / 221 edges**, 12 nodes shared
+by several recipes; all 7 gates passed; Neo4j reloaded (41 nodes, 221 relationships).
+Merged: "Cook eggs" (5), "melt butter" (3), "whisk salt and pepper in eggs" (3), and two
+nodes each into "push spatula through eggs", "serve eggs", "remove pan from heat",
+"spread butter in pan", "pour eggs in pan". Open question: "spread butter in pan"
+(`tudo_gostoso`, cold pan, no heat) now shares a node with "pan at low heat and add butter"
+(`jamie_oliver`, heat ticked), so it carries heat bounds; the two are different
+alternatives of the preference point `pan_start`.
+
+### Added — justified variation: physical order and preference reasons (2026-10-25)
+Author decisions: flexible order also has a reason, a preference; a step that varies must
+have a reason for its variations.
+- **Definition.** `Notes/10` A.3 gains "Justified variation" (and a LaTeX block in A.7):
+  every pair in ≺ has a physical reason; every variation point has alternatives, each with a
+  preference reason; reasons are quoted, curated (physical only) or recorded as unattested.
+  Project notes in `Notes/10` B.6.
+- **`k1/config/variation_points.yaml`** (`k1_pipeline/variation.py`): 11 action classes
+  covering all 38 reviewed actions; 8 physical order rules (7 curated, 1 quoted); 8
+  preference points (seasoning time, cooking fat, butter while beating, where the eggs are
+  mixed, hot pan or cold start, stirring frequency, heat and time, doneness) with 21
+  alternatives, of which 12 are quoted and the rest unattested. `check_config` verifies that
+  every quote is verbatim, the rules form no cycle, and every recipe exists. The rule "beat
+  the eggs before they cook" was considered and dropped: `tudo_gostoso` sets the white before
+  mixing, a technique, so it is a preference point.
+- **REQUIRES = physical order.** Built from the rules instead of matching K2 labels, each
+  with `rule_id` and `reason`: 70 → 53 REQUIRES edges in the reviewed graph. Unclassified
+  actions and rule violations go to `L3/order_report.json`; `k1 finalize` stops on either.
+- **Acyclicity per recipe.** Gate 2 and the cycle-breaker now require the physical order and
+  each recipe's own order to be acyclic, and allow recipes to order a flexible step
+  differently. The cycle-breaker removes one edge of one recipe, not every recipe's copy.
+- **Merges applied in `k1 finalize`** (`merge.apply_merges`): 4 groups merged, none skipped.
+  12 nodes into 4: "Cook eggs" (5), "whisk salt and pepper in eggs" (3), "heat pan and melt
+  butter" (2; no longer an order conflict), "remove pan from heat" (2). Other wordings kept in
+  `variant_phrases`. Reviewed graph 38 nodes / 306 edges → final 30 nodes / 248 edges, 10 nodes
+  shared by several recipes; all 7 gates passed; Neo4j reloaded (46 nodes, 248
+  relationships). `graph.unmerged.json` keeps the graph before merging for the Merge pairs
+  tab.
+- **Fusion queries.** `K1Query.required_before(node)` (prerequisites with reasons) and
+  `K1Query.preferences(branch)` (alternatives taken, with outcomes). The preference points are
+  copied into `graph.final.json`.
+- Tests: `tests/test_variation.py` (9), merge and query additions. **156/156 tests pass.**
+
+### Added — atomic steps
+Author decision after the merge-pair review: several small steps are better than one large
+one. A step that does several actions is split; the parts can then merge across recipes.
+- **Review.** The Gold set tab has a **Split into atomic steps** section and a filter for the
+  steps that may hold several actions (wording joins verbs, or a merge label says the step
+  contains another): 17 steps in the reviewed corpus. A gold file keeps its step-level
+  `expected` and adds ordered `sub_steps`, `split_checked` and `split_seconds_spent`
+  (`gold.save_split`). Re-saving the step-level review keeps the split.
+- **Finalize.** `gold_to_pairs` turns each in-scope sub-step into its own node. The heat
+  tick is now applied per node (`safety_overrides` keyed by node, not by step), pipeline
+  timing goes to the first heated action of a split step, and REQUIRES edges follow the
+  sequence position, so actions of one step link in order. With no split saved, the
+  rebuilt graph and eval report are identical to before.
+- **Pipeline.** Generator rule 9 (atomic steps) and an `ExtractedStep` response with one node
+  per action. Files: `{recipe}_stepNN.gen.json` for the first action, `{recipe}_stepNN.2.gen.json`
+  for the second (`artifact_stem`); critic files follow. The critic revises a whole step
+  when any of its actions gets `revise`. Jev and the generative critic are told a node may
+  cover only part of the step. Not yet run live: `scope02` stays one node per step.
+- **Eval.** New "Splitting into atomic steps" table: steps split and actions on each side,
+  agreement on the number of actions, time spent splitting (kept out of the step times).
+- **Docs.** "Atomic steps" rules in `ANNOTATION_PROTOCOL.md`; `Notes/08` (L2 contract) and
+  `Notes/09` updated.
+- `tests/test_sub_steps.py` (15 cases).
+
+### Changed — 17 flagged steps decided (2026-10-25, author's request, not timed)
+9 steps split, 8 kept as one. Split: `jamie_oliver` 4 and 6, `love_and_lemons` 1 and 3,
+`pingo_doce` 1 and 3, `recipe_tin_eats` 3 and 7, `tudo_gostoso` 1. Kept: `continente` 4,
+`jamie_oliver` 2 and 3, `love_and_lemons` 4, `pingo_doce` 2, `recipe_tin_eats` 2,
+`the_kitchn_soft_creamy` 1 and 3. Author decision: heating the pan to melt the butter is one
+action (`pingo_doce` 2, `the_kitchn_soft_creamy` 1, and `jamie_oliver` 3 by the same
+reasoning). Same action, same wording across recipes. `recipe_tin_eats` 7 "finish cooking
+eggs" has heat ticked under the residual-heat rule (the step-level review had it unticked).
+
+| | Before splitting | After |
+|---|---|---|
+| Actions (nodes before merging) | 39 | 49 |
+| Graph nodes | 39 | 38 |
+| Nodes shared by several recipes | 2 | 7 |
+| NEXT edges | 36 | 46 |
+| Edges | 307 | 323 |
+
+All 7 gates passed; no edges removed by the cycle-breaker; Neo4j reloaded (54 nodes, 323
+relationships). Step-level eval tables unchanged. Shared by wording alone: "pour eggs in pan"
+(5 recipes), "whisk eggs" (4), "crack the eggs into a bowl" (3), "melt butter", "add salt",
+"remove pan from heat" (2 each), plus the rule-added Plate step. Merge candidates: 33 pairs,
+15 still labelled, 18 open; 19 old labels out of date. With the still-valid labels, merging
+`pingo_doce` 2 and `the_kitchn_soft_creamy` 1 would be an order conflict: `the_kitchn`
+melts the butter before whisking, `pingo_doce` after.
+
+### Changed — cooking group labelled the same (2026-10-25, author decision)
+All 10 pairs among the five `egg: liquid -> coagulating` cooking nodes are `same`: same
+start and end state, and folding, stirring or no detail are ways of doing one action. This
+removes the non-transitive labels. Merge groups now: the five cooking nodes, the three
+whisk-with-seasoning nodes, the two heat-and-melt-butter nodes, the two remove-from-heat
+nodes. 17 pairs still open. One order conflict remains: `the_kitchn_soft_creamy` melts the
+butter before whisking, `pingo_doce` after.
+
+### Fixed
+- **A shared pair of consecutive nodes broke the second recipe's branch.** NEXT edges were
+  de-duplicated on (from, to) across recipes, so once two recipes shared "crack → whisk"
+  or "melt butter → pour eggs in pan", the second one lost the edge: `pingo_doce` started
+  at "whisk eggs" and `recipe_tin_eats` stopped after "melt butter". NEXT edges are now
+  keyed by recipe as well. Never triggered before, because no two recipes shared a
+  consecutive pair. Regression test in `tests/test_dag_cycles.py`; `test_query.py` caught it.
+- `test_merge_that_reverses_order_is_a_cycle` builds its own graph instead of looking up node
+  wording in the reviewed graph, which changes with review.
+- **Merge pairs tab broke the Gold set tab's step list.** Both tabs imported a function named
+  `is_current` into the same script namespace; the merge tab's version replaced the gold one.
+  Renamed to `label_is_current` in the merge tab.
+- `ANNOTATION_PROTOCOL.md` still listed oregano as an ingredient.
+
+### Added — hand labels for merging nodes
+- **Merge pairs tab** in `k1 viz` and `k1_pipeline/merge.py`. Lists the 34 candidate pairs
+  in `graph.final.json` (same node type and K2 transition), shows both steps with their
+  source text and neighbouring steps, and saves a four-way label (`same`, `a_contains_b`,
+  `b_contains_a`, `different`) with time spent to `k1/data/gold/merge_labels.json`. The tab
+  shows the resulting merge groups and flags non-transitive labels and merges that would
+  reverse one recipe's order. Nothing is merged in the graph yet. Protocol in
+  `Notes/09-k1-evaluation.md` ("Merge pairs"). `tests/test_merge.py` (8 cases).
+  **128/128 tests pass.**
+
+### Merge-pair review (2026-10-23, author, `k1/data/gold/merge_labels.json`)
+34/34 candidate pairs labelled in 352 s (mean 10.3 s, median 9.4 s per pair).
+
+| Label | Pairs |
+|---|---|
+| same | 11 |
+| one contains the other | 13 |
+| different | 10 |
+
+- Grouping by node type and K2 transition is necessary but not sufficient: 11 of 34
+  candidates (32%) are the same step. The exact fingerprint merged none of them.
+- Applying the `same` labels gives 6 merge groups and 39 → 30 nodes, with no order conflict
+  between recipes.
+- One inconsistency, in the egg-cooking group: "Cook eggs" is labelled the same as
+  "Stir eggs with spatula until cooked", which is the same as "cook eggs over low heat
+  folding slowly" and "pour and cook eggs to form soft curds", yet both of those are labelled
+  as containing it. Also, "Stir gently … remove from heat" contains "Stir eggs with spatula
+  until cooked" but is labelled different from its `same` partner "cook eggs over low heat
+  folding slowly".
+- "Contains" was used for two different relations: a compound step (two actions, e.g.
+  "crack and whisk") and a more specific wording of one action (e.g. "cook eggs over low
+  heat folding slowly" vs "Cook eggs").
+- Author decision: several small steps are better than one large step. Compound steps
+  should be split, and the parts merged. Not implemented yet.
+
+---
+
 ## [k1-0.4.2] — 2026-10-23
 
 ### Added — K1 handover to Fusion

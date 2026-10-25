@@ -24,9 +24,56 @@
     "has_safety_bound": false,
     "in_scope": true
   },
+  "sub_steps": [
+    {
+      "node_type": "Process",
+      "action_phrase": "finish cooking eggs",
+      "pre_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "coagulating"
+        }
+      ],
+      "post_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "solid"
+        }
+      ],
+      "tools": [
+        "spatula",
+        "pan"
+      ],
+      "has_safety_bound": true,
+      "in_scope": true
+    },
+    {
+      "node_type": "Plate",
+      "action_phrase": "transfer eggs to plate",
+      "pre_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "solid"
+        }
+      ],
+      "post_conditions": [
+        {
+          "entity_id": "egg",
+          "k2_label": "solid"
+        }
+      ],
+      "tools": [
+        "plate"
+      ],
+      "has_safety_bound": false,
+      "in_scope": true
+    }
+  ],
+  "split_checked": true,
+  "split_seconds_spent": 0.0,
   "annotator": "gil.arroteia",
   "annotation_date": "2026-10-12",
-  "notes": "",
+  "notes": "Split into atomic steps on 2026-10-25 at the annotator's request (suggestions accepted), not timed.",
   "mode": "corrected",
   "seconds_spent": 68.3,
   "seeded_from_run": "scope02",
